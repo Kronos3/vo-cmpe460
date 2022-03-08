@@ -2,27 +2,23 @@
 #define VO_CMPE460_RATEDRIVER_H
 
 #include <circle/types.h>
-#include <cfg/rates.h>
+#include <cfg/vo_car.h>
 
-
-typedef void (*RateGroupHandler)(void*);
+typedef void (*RateDriverHandler)(void*);
 typedef u32 RateGroupId;
 
-class CTimer;
 class RateDriver
 {
-    CTimer* m_timer;
-
-    struct RateGroup
+    struct RateTimer
     {
         boolean m_configured;
         boolean m_started;
         u32 m_value;                    //!< Timer interrupt deadline
         u32 m_reload;                   //!< Timer period
         void* m_param;                  //!< Parameter to pass to handler
-        RateGroupHandler m_handler;     //!< Handler to call when deadline runs out
+        RateDriverHandler m_handler;    //!< Handler to call when deadline runs out
 
-        RateGroup()
+        RateTimer()
         : m_configured(false), m_started(false),
         m_value(0), m_reload(0),
         m_param(nullptr), m_handler(nullptr)
@@ -30,10 +26,10 @@ class RateDriver
     };
 
     u32 m_group_n;
-    RateGroup m_groups[RATE_DRIVER_GROUPS_MAX];
+    RateTimer m_groups[RATE_DRIVER_GROUPS_MAX];
 
 public:
-    explicit RateDriver(CTimer* timer_base);
+    explicit RateDriver();
 
     /**
      * Set up a rate group for periodic interrupts
@@ -42,7 +38,7 @@ public:
      * @param param parameter to send to handler
      * @return rate group id of the group that was set up
      */
-    RateGroupId setup(u32 n_ticks, RateGroupHandler handler, void* param);
+    RateGroupId setup(u32 n_ticks, RateDriverHandler handler, void* param);
 
     /**
      * Start a rate group
