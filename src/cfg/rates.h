@@ -1,0 +1,9 @@
+#ifndef VO_CMPE460_RATES_H
+#define VO_CMPE460_RATES_H
+
+enum
+{
+    RATE_DRIVER_GROUPS_MAX = 4
+};
+
+#endif //VO_CMPE460_RATES_H
