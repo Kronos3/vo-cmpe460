@@ -5,6 +5,7 @@
 
 #include <cfg/vo_car.h>
 #include <rate_driver/rate_driver.h>
+#include <rate_driver/scheduled.h>
 
 typedef void (*RateHandler)(void*);
 
@@ -32,12 +33,14 @@ public:
      * @param param
      */
     void add(RateHandler handler, void* param);
+    void add(Scheduled* scheduled);
 
     /**
      * Start the rate group
      */
     void start() const;
 
+private:
     /**
      * Internal scheduler that will dispatch the handlers
      */

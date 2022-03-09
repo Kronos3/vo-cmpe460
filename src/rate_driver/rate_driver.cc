@@ -1,16 +1,15 @@
 #include <fw/fw.h>
 #include <rate_driver/rate_driver.h>
-
-#include <kernel/kernel.h>
+#include <circle/timer.h>
 
 static RateDriver* rgDriver = nullptr;
 
-RateDriver::RateDriver()
+RateDriver::RateDriver(CTimer* timer)
 : m_group_n(0)
 {
     FW_ASSERT(!rgDriver && "Only one RateDriver may be initialized");
     rgDriver = this;
-    kernel::tim.RegisterPeriodicHandler(RateDriver::global_interrupt);
+    timer->RegisterPeriodicHandler(RateDriver::global_interrupt);
 }
 
 RateGroupId RateDriver::setup(u32 n_ticks, RateDriverHandler handler, void* param)

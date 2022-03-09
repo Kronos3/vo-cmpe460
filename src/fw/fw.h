@@ -8,6 +8,7 @@
 #define CMPE460_FW_H
 
 #include <circle/types.h>
+#include <stdarg.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -74,9 +75,14 @@ typedef enum
 
 #endif
 
-#define ABS(x) ((x) < 0) ? (-(x)) : (x)
-#define MIN(a, b) ((a) < (b)) ? (a) : (b)
-#define MAX(a, b) ((a) > (b)) ? (a) : (b)
+#define FW_ABS(x) ((x) < 0) ? (-(x)) : (x)
+#define FW_MIN(a, b) ((a) < (b)) ? (a) : (b)
+#define FW_MAX(a, b) ((a) > (b)) ? (a) : (b)
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846264338327950288
+#endif
+#define SQR(x) ((x)*(x))
 
 /**
  * Handle assertion failures
@@ -89,6 +95,9 @@ typedef enum
  */
 __attribute__((noreturn)) void fw_assertion_failure(const char* file, u32 line, const char* expr_str, u32 nargs, ...);
 
+typedef void (*FwFatalHandler)(const char* file, u32 line, const char* expr_str, u32 nargs, va_list args);
+void fw_register_fatal_handler(FwFatalHandler func);
+
 #define ELEVENTH_ARGUMENT(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, ...) a11
 #define COUNT_ARGUMENTS(...) ELEVENTH_ARGUMENT(dummy, ## __VA_ARGS__, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)
 
@@ -99,13 +108,6 @@ __attribute__((noreturn)) void fw_assertion_failure(const char* file, u32 line, 
 #define FW_ASSERT(expr, ...) do {                \
     if (!(expr)) fw_assertion_failure(__FILE__, __LINE__, #expr, COUNT_ARGUMENTS(__VA_ARGS__), ##__VA_ARGS__);   \
 } while(0)
-
-#define FW_ABS(x_) ((x_) < 0 ? -(x_) : (x_))
-
-#ifndef M_PI
-#define M_PI 3.14159265358979323846264338327950288
-#endif
-#define SQR(x) ((x)*(x))
 
 #ifndef offsetof
 #ifdef __builtin_offsetof

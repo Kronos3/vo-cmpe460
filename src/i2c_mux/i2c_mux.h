@@ -22,7 +22,8 @@ enum
             I2C_MUX_CH_0 | I2C_MUX_CH_1 | I2C_MUX_CH_2 |
             I2C_MUX_CH_3 | I2C_MUX_CH_4 | I2C_MUX_CH_5 |
             I2C_MUX_CH_6 | I2C_MUX_CH_7
-            )
+            ),
+    I2C_MUX_CH_UNKNOWN = 1 << 8,
 };
 
 /**
@@ -40,7 +41,8 @@ enum
  *       H    H    H        0x77
  * @param a2_a1_a0 a2_a1_a0 mask connected to the multiplexer
  */
-void i2c_mux_init(u8 a2_a1_a0);
+class CI2CMaster;
+void i2c_mux_init(CI2CMaster* i2c, u8 a2_a1_a0);
 
 /**
  * Mask a set of I2C channels to transmit to
