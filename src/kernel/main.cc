@@ -2,57 +2,89 @@
 
 #include <kernel/kernel.h>
 #include <i2c_mux/i2c_mux.h>
+#include <fw/fw.h>
+#include <evrs.h>
+#include <circle/gpiomanager.h>
 
 namespace kernel
 {
-    CInterruptSystem interrupt_system;
-    CTimer tim(&interrupt_system);
+    CInterruptSystem interruptSystem;
+    CTimer tim(&interruptSystem);
 
-    RateDriver rgDriver;
+    CActLED actLed;
+    DbgAct act(&actLed);
+    CGPIOManager gpioManager(&interruptSystem);
+    DbgButton dbgButton(DBG_BUTTON_1_PIN, &act, &gpioManager);
+
+    RateDriver rgDriver(&tim);
     RateGroup rg1hz(&rgDriver, 100);
-    RateGroup rg10Hz(&rgDriver, 10);
-    RateGroup rg50Hz(&rgDriver, 2);
+    RateGroup rg10hz(&rgDriver, 10);
+    RateGroup rg50hz(&rgDriver, 2);
 
     CI2CMaster i2c(I2C_DEVICE_NUMBER, I2C_FAST_MODE);
-    CSPIMasterDMA spi(&interrupt_system, SPI_SPEED, SPI_POL, SPI_PHA);
+    CSPIMasterDMA spi(&interruptSystem, SPI_SPEED, SPI_POL, SPI_PHA);
 
-    OV2640 cam0(CAM_0_CS, CAM_0_MUX);
-    OV2640 cam1(CAM_1_CS, CAM_1_MUX);
+//    OV2640 cam0(CAM_0_CS, CAM_0_MUX);
+//    OV2640 cam1(CAM_1_CS, CAM_1_MUX);
 
-    CActLED led;
+    CDeviceNameService deviceNameService;
+    CEMMCDevice sdcard(&interruptSystem, &tim, nullptr);
+    FATFS root;
+    DpEngine dpEngine;
+    EvrEngine evrEngine(&dpEngine);
 }
 
-void blinky_interrupt(void* param)
+class FlushButton : public Button
 {
-    static boolean i = FALSE;
-    i = !i;
-    auto* led = reinterpret_cast<CActLED*>(param);
-    if (i)
-    {
-        led->On();
-    }
-    else
-    {
-        led->Off();
-    }
-}
+
+};
 
 s32 main()
 {
-    kernel::interrupt_system.Initialize();
-    kernel::tim.Initialize();
-    kernel::i2c.Initialize();
-    kernel::spi.Initialize();
+    boolean ok;
+    ok = kernel::interruptSystem.Initialize();
+    FW_ASSERT(ok && "Failed to initialize interrupt system");
+    ok = kernel::tim.Initialize();
+    FW_ASSERT(ok && "Failed to initialize tim");
+    ok = kernel::i2c.Initialize();
+    FW_ASSERT(ok && "Failed to initialize i2c");
+    ok = kernel::spi.Initialize();
+    FW_ASSERT(ok && "Failed to initialize spi");
+    ok = kernel::gpioManager.Initialize();
+    FW_ASSERT(ok && "Failed to initialize gpioManager");
+    ok = kernel::sdcard.Initialize();
+    FW_ASSERT(ok && "Failed to sdcard");
 
-    i2c_mux_init(I2C_MUX_A2_A1_A0);
+    kernel::dbgButton.Initialize();
+    kernel::evrEngine.init();
 
-    kernel::led.On();
+    i2c_mux_init(&kernel::i2c, I2C_MUX_A2_A1_A0);
+
+    // Mount root file system
+    auto mount_status = f_mount(&kernel::root, SD_DRIVE, 1);
+    FW_ASSERT(mount_status == FR_OK && "Failed to mount root filesystem");
+
+    kernel::dpEngine.init();
+
+    kernel::evrEngine.open(SD_DRIVE "/evr.dat");
+    kernel::actLed.On();
+
+    evr_RootMounted(SD_DRIVE);
+    evr_CarBoot(__DATE__, __TIME__);
+
+    // 1 Hz processes
+    kernel::rg1hz.add(&kernel::dpEngine);
+
+    // 10 Hz processes
+    kernel::rg10hz.add(&kernel::evrEngine);
+
+    kernel::rg1hz.start();
+    kernel::rg10hz.start();
+
 //    kernel::cam0.init();
 //    kernel::cam1.init();
-    kernel::led.Off();
 
-    kernel::rg10Hz.add(blinky_interrupt, &kernel::led);
-    kernel::rg10Hz.start();
+    kernel::actLed.On();
 
     while(TRUE)
     {

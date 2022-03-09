@@ -7,6 +7,7 @@
 typedef void (*RateDriverHandler)(void*);
 typedef u32 RateGroupId;
 
+class CTimer;
 class RateDriver
 {
     struct RateTimer
@@ -29,7 +30,7 @@ class RateDriver
     RateTimer m_groups[RATE_DRIVER_GROUPS_MAX];
 
 public:
-    explicit RateDriver();
+    explicit RateDriver(CTimer* timer);
 
     /**
      * Set up a rate group for periodic interrupts
