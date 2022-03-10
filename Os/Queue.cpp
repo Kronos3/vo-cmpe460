@@ -9,9 +9,6 @@
 #include <Fw/Types/Assert.hpp>
 #include <Os/Queue.hpp>
 
-#include <src/RPI/kernel.h>
-#include <circle/sched/scheduler.h>
-
 #include <Os/RPIQueue.h>
 
 namespace Os
@@ -55,7 +52,7 @@ namespace Os
         auto* handle = reinterpret_cast<RPIQueue*>(this->m_handle);
         if (nullptr != handle)
         {
-            CMemorySystem::HeapFree(handle);
+            delete handle;
         }
         this->m_handle = static_cast<POINTER_CAST>(NULL);
     }
@@ -77,10 +74,7 @@ namespace Os
     bareSendBlock(RPIQueue* queue, const U8* buffer, NATIVE_INT_TYPE size, NATIVE_INT_TYPE priority)
     {
         // If the queue is full, wait until a message is taken off the queue.
-        while (queue->isFull())
-        {
-            CScheduler::Get()->Yield();
-        }
+        queue->waitOnFull();
 
         // Push item onto queue:
         bool success = queue->push(buffer, size, priority);
@@ -170,12 +164,8 @@ namespace Os
         NATIVE_INT_TYPE pri = 0;
         Queue::QueueStatus status = Queue::QUEUE_OK;
 
-        // If the queue is full, wait until a message is taken off the queue.
-        while (queue->isEmpty())
-        {
-            // Yield to the OS
-            CScheduler::Get()->Yield();
-        }
+        // If the queue is empty, wait until a message is taken added.
+        queue->waitOnEmpty();
 
         // Get an item off of the queue:
         bool success = queue->pop(buffer, size, pri);
@@ -198,7 +188,7 @@ namespace Os
                 // If this happens, a programming error or bit flip occurred:
                 // The only reason a pop should fail is if the user's buffer
                 // was too small.
-                FW_ASSERT(0);
+                FW_ASSERT(0, size, capacity);
             }
         }
         return status;

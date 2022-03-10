@@ -12,6 +12,13 @@
         </port>
 
     </ports>
+    <telemetry>
+        <channel id="0" name="NumCycle" data_type="U32" update="on_change" format_string = "%u cycles">
+            <comment>
+                Number of cycles run
+            </comment>
+        </channel>
+    </telemetry>
     <events>
         <event id="0" name="TestCycle" severity="DIAGNOSTIC" format_string = "Test cycle ran: %d" >
             <comment>
