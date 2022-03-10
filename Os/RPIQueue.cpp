@@ -16,8 +16,17 @@
 #include <Fw/Types/Assert.hpp>
 #include <string.h>
 #include <circle/memory.h>
+#include <circle/sched/synchronizationevent.h>
 
 namespace Os {
+
+    struct FIFOQueue {
+        U8* data;
+        NATIVE_UINT_TYPE head;
+        NATIVE_UINT_TYPE tail;
+        CSynchronizationEvent enqueue_event;
+        CSynchronizationEvent dequeue_event;
+    };
 
     /////////////////////////////////////////////////////
     // Class functions:
@@ -67,6 +76,9 @@ namespace Os {
         if( this->count > this->maxCount ) {
             this->maxCount = this->count;
         }
+
+        // Notify any waiting tasks
+        reinterpret_cast<FIFOQueue*>(this->queue)->enqueue_event.Set();
         return true;
     }
 
@@ -86,6 +98,8 @@ namespace Os {
         // Decrement count:
         --this->count;
 
+        // Notify any waiting tasks
+        reinterpret_cast<FIFOQueue*>(this->queue)->dequeue_event.Set();
         return true;
     }
 
@@ -155,13 +169,6 @@ namespace Os {
         return true;
     }
 
-
-    struct FIFOQueue {
-        U8* data;
-        NATIVE_UINT_TYPE head;
-        NATIVE_UINT_TYPE tail;
-    };
-
     /////////////////////////////////////////////////////
     // Class functions:
     /////////////////////////////////////////////////////
@@ -221,6 +228,26 @@ namespace Os {
         // Increment head of fifo:
         ++fQueue->head;
         return true;
+    }
+
+    void RPIQueue::waitOnFull()
+    {
+        while(isFull())
+        {
+            // Wait for someone to dequeue
+            reinterpret_cast<FIFOQueue*>(this->queue)->dequeue_event.Wait();
+            reinterpret_cast<FIFOQueue*>(this->queue)->dequeue_event.Clear();
+        }
+    }
+
+    void RPIQueue::waitOnEmpty()
+    {
+        while(isEmpty())
+        {
+            // Wait for someone to enqueue
+            reinterpret_cast<FIFOQueue*>(this->queue)->enqueue_event.Wait();
+            reinterpret_cast<FIFOQueue*>(this->queue)->enqueue_event.Clear();
+        }
     }
 }
 

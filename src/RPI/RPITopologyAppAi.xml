@@ -169,6 +169,10 @@
         <source component="rg50hz" port="Tlm" type="Tlm" num="0"/>
         <target component="tlmChan" port="TlmRecv" type="Time" num="0"/>
     </connection>
+    <connection name="test__tlmChan">
+        <source component="test" port="Tlm" type="Tlm" num="0"/>
+        <target component="tlmChan" port="TlmRecv" type="Time" num="0"/>
+    </connection>
 
     <!--    <connection name="EventLoggerReg">-->
     <!--        <source component="eventLogger" port="CmdReg" type="CmdReg" num="0"/>-->

@@ -64,11 +64,13 @@ namespace Os {
         //! Is the queue full?
         //!
         bool isFull();
+        void waitOnFull();
         //! \brief check if the queue is empty
         //!
         //! Is the queue empty?
         //!
         bool isEmpty();
+        void waitOnEmpty();
         //! \brief Get the current number of items on the queue
         //!
         //! Get the number of items on the queue.

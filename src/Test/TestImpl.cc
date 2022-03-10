@@ -24,5 +24,6 @@ namespace Svc
         }
 
         log_DIAGNOSTIC_TestCycle(i);
+        tlmWrite_NumCycle(i);
     }
 }
