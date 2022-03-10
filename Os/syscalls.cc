@@ -26,7 +26,7 @@
 #include <errno.h>
 #include <sys/times.h>
 
-#include <src/RPI/kernel.h>
+#include <src/Rpi/kernel.h>
 
 
 extern "C" {

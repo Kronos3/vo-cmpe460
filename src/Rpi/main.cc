@@ -8,7 +8,7 @@
 
 #include "kernel.h"
 
-class RPIAssertHook : public Fw::AssertHook
+class RpiAssertHook : public Fw::AssertHook
 {
     void printAssert(const I8* msg) override
     {
@@ -47,7 +47,7 @@ namespace kernel
     CTimer tim(&interruptSystem);
     CSerialDevice serial(&interruptSystem, /* useFIQ */ TRUE);
 
-    RPIAssertHook assertHook;
+    RpiAssertHook assertHook;
 }
 
 s32 main()
@@ -58,14 +58,14 @@ s32 main()
 
     kernel::assertHook.registerHook();
 
-    RPI::init();
-    constructRPIArchitecture();
+    Rpi::init();
+    constructRpiArchitecture();
 
     kernel::led.On();
 
-    RPI::start();
+    Rpi::start();
 
-    RPI::prmDb.readParamFile();
+    Rpi::prmDb.readParamFile();
 
     while (1)
     {

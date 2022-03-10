@@ -1,7 +1,7 @@
 #include <StandardTypes.hpp>
 #include <cstdarg>
 
-#include <src/RPI/kernel.h>
+#include <src/Rpi/kernel.h>
 
 extern uint32_t strnlen(char const* str, unsigned long n);
 
