@@ -6,5 +6,6 @@
     <mapping directory="$PROJECT_DIR$/circle/addon/lvgl/lv_examples" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/circle/addon/lvgl/lvgl" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/circle/addon/wlan/hostap" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/fprime" vcs="Git" />
   </component>
 </project>

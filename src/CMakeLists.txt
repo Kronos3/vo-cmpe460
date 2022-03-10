@@ -1,12 +1,13 @@
 include_directories(${CMAKE_CURRENT_LIST_DIR})
 
-add_subdirectory(fw)
-add_subdirectory(rate_driver)
+add_subdirectory(utils)
 add_subdirectory(i2c_mux)
 add_subdirectory(ardu_cam)
-add_subdirectory(dp)
-add_subdirectory(evr)
-add_subdirectory(prm)
+
 add_subdirectory(dbg)
 
-add_subdirectory(kernel)
+add_subdirectory(Test)
+
+add_subdirectory(SystemTime)
+add_subdirectory(RPISerialDriver)
+add_subdirectory(RPI)

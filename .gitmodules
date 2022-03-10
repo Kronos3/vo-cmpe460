@@ -1,3 +1,6 @@
 [submodule "circle"]
 	path = circle
 	url = git@github.com:kronos3/circle.git
+[submodule "fprime"]
+	path = fprime
+	url = git@github.com:Kronos3/fprime.git

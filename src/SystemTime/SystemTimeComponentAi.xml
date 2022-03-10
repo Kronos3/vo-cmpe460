@@ -1,0 +1,16 @@
+<component name="SystemTime" kind="passive" namespace="RPI">
+    <import_port_type>Fw/Time/TimePortAi.xml</import_port_type>
+    <import_port_type>Svc/Cycle/CyclePortAi.xml</import_port_type>
+    <comment>
+        Get time
+    </comment>
+    <ports>
+        <port name="timeGetPort" data_type="Fw::Time" kind="sync_input">
+            <comment>
+                Port to retrieve time
+            </comment>
+        </port>
+
+        <port name="timerIsr" data_type="Cycle" kind="output"/>
+    </ports>
+</component>

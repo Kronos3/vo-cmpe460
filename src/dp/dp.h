@@ -2,7 +2,7 @@
 #define VO_CMPE460_DP_H
 
 #include <circle/types.h>
-#include <circle/string.h>
+#include <circle/circle_string.h>
 
 #include <rate_driver/scheduled.h>
 #include <fw/serializable.h>
