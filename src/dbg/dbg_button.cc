@@ -1,6 +1,5 @@
 #include <dbg/dbg_button.h>
 #include <circle/memio.h>
-#include <circle/startup.h>
 #include <circle/timer.h>
 
 
@@ -54,12 +53,12 @@ void DbgButton::Breakpoint(u32 n)
     }
 }
 
-void RebootButton::Interrupt()
+ExecuteButton::ExecuteButton(u32 pin, CGPIOManager* gpio_mgr, void (* function)())
+: Button(pin, gpio_mgr), m_function(function)
 {
-    reboot();
 }
 
-RebootButton::RebootButton(u32 pin, CGPIOManager* gpio_mgr)
-: Button(pin, gpio_mgr)
+void ExecuteButton::Interrupt()
 {
+    m_function();
 }

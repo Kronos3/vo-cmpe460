@@ -4,7 +4,7 @@
 #include <fw/fw_time.h>
 #include <cfg/vo_car.h>
 #include <rate_driver/scheduled.h>
-#include <circle/string.h>
+#include <circle/circle_string.h>
 #include <circle/genericlock.h>
 
 class DpEngine;
@@ -19,7 +19,7 @@ class EvrEngine : public Scheduled
     DpEngine* m_dp_engine;                      //!< Data product engine for generating EVR products
     Dp* m_dp;                                   //!< Resultant open EVR data product
 
-    CGenericLock lock;                          //!< Log mutex
+//    CGenericLock lock;                          //!< Log mutex
 
 public:
     explicit EvrEngine(DpEngine*);
@@ -39,6 +39,8 @@ public:
     void log(const Fw::SerializeBufferBase& evr);
 
     void flush();
+
+    void close();
 
 private:
     /**

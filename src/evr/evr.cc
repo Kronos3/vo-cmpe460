@@ -40,7 +40,8 @@ static void fatal_handler(const char* file, u32 line, const char* expr_str, u32 
             evr_Fatal_0(file, line, expr_str);
             break;
         case 1:
-            evr_Fatal_1(file, line, expr_str, fatal_args[0]);
+            evr_Fatal_1(file, line, expr_str,
+                        fatal_args[0]);
             break;
         case 2:
             evr_Fatal_2(file, line, expr_str,
@@ -73,7 +74,7 @@ void EvrEngine::log(const Fw::SerializeBufferBase &evr)
     Fw::SerializeStatus status;
 
     // Don't run the scheduler while we are copying bytes into the queue
-    lock.Acquire();
+//    lock.Acquire();
 
     // Actually serialize the EVR
     status = m_queue.serialize(evr);
@@ -89,7 +90,7 @@ void EvrEngine::log(const Fw::SerializeBufferBase &evr)
         m_queue_n++;
     }
 
-    lock.Release();
+//    lock.Release();
 }
 
 void EvrEngine::open(const CString &evr_file)
@@ -117,13 +118,13 @@ void EvrEngine::flush()
         return;
     }
 
-    // Don't run the scheduler while we are copying bytes into the queue
-    lock.Acquire();
-
     // Flush all the queued EVRs to DP
     m_dp->write(m_queue.getBuffAddr(), m_queue.getBuffLength());
     m_queue.resetSer();
+}
 
-    // Don't run the scheduler while we are copying bytes into the queue
-    lock.Release();
+void EvrEngine::close()
+{
+    m_dp->close();
+    m_dp = nullptr;
 }

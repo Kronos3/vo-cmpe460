@@ -3,6 +3,7 @@
 
 #include <circle/new.h>
 #include <evrs.h>
+#include <kernel/kernel.h>
 
 Dp::Dp()
 : m_opened(FALSE),
@@ -113,8 +114,10 @@ void Dp::flush()
 
     while(keep_going)
     {
+        kernel::dbgButton.Breakpoint(1);
         keep_going = m_buffer.deqeue_next_sector(sector, sector_n, mutex);
         result = f_write(&m_file_handle, sector, sector_n, &n_bytes_written);
+        kernel::dbgButton.Breakpoint(2);
 
         if (FR_OK != result)
         {
@@ -175,7 +178,6 @@ void DpEngine::flush()
         if (m_dp.m_opened)
         {
             m_dp.flush();
-            m_dp.reopen();
         }
     }
 }

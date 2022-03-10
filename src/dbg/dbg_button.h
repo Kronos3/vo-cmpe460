@@ -33,11 +33,13 @@ private:
     void Interrupt() override;
 };
 
-class RebootButton : public Button
+class ExecuteButton : public Button
 {
 public:
-    RebootButton(u32 pin, CGPIOManager* gpio_mgr);
+    ExecuteButton(u32 pin, CGPIOManager* gpio_mgr,
+                  void (*function)());
 private:
+    void (*m_function)();
     void Interrupt() override;
 };
 
