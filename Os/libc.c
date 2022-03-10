@@ -1,6 +1,8 @@
 #include <StandardTypes.hpp>
 
-uint32_t strnlen(char const* str, uint32_t n)
+extern uint32_t strnlen(char const* str, unsigned long n);
+
+uint32_t strnlen(char const* str, unsigned long n)
 {
     const char* iter = str;
     for (; iter - str < n && *iter; iter++);

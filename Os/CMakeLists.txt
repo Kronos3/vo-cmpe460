@@ -1,5 +1,4 @@
 set(SOURCE_FILES
-        "${CMAKE_CURRENT_LIST_DIR}/libc.c"
         "${CMAKE_CURRENT_LIST_DIR}/syscalls.c"
 
         "${CMAKE_CURRENT_LIST_DIR}/File.cpp"
@@ -33,3 +32,7 @@ set(MOD_DEPS
         Utils/Hash)
 
 register_fprime_module()
+
+add_library(libc_stubs STATIC
+        "${CMAKE_CURRENT_LIST_DIR}/libc.c"
+)
