@@ -1,5 +1,5 @@
 #include "TestImpl.h"
-#include <RPI/kernel.h>
+#include <src/Rpi/kernel.h>
 
 namespace Svc
 {

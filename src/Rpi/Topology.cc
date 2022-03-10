@@ -1,9 +1,9 @@
 #include <circle/timer.h>
-#include <RPI/Components.hpp>
+#include <src/Rpi/Components.hpp>
 
 #define QUEUE_DEPTH (20)
 
-namespace RPI
+namespace Rpi
 {
 
     static NATIVE_INT_TYPE rgDivs[Svc::RateGroupDriverImpl::DIVIDER_SIZE] = {
@@ -32,8 +32,8 @@ namespace RPI
 //    Svc::StaticMemoryComponentImpl staticMemory("STATIC_MEM");
 //    Svc::FatalHandlerComponentImpl fatalHandler("FATAL_HANDLER");
 //
-    RPI::SystemTimeImpl systemTime;
-    Drv::RPISerialDriverImpl serialDriver;
+    SystemTimeImpl systemTime;
+    Drv::RpiSerialDriverImpl serialDriver;
     Svc::TestImpl test;
 
     void init()

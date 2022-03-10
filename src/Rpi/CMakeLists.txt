@@ -13,24 +13,20 @@ add_dependencies(blinky usbboot)
 # Note: using PROJECT_NAME as EXECUTABLE_NAME
 ####
 set(SOURCE_FILES
-        "${CMAKE_CURRENT_LIST_DIR}/RPITopologyAppAi.xml"
+        "${CMAKE_CURRENT_LIST_DIR}/RpiTopologyAppAi.xml"
         "${CMAKE_CURRENT_LIST_DIR}/Topology.cc"
         )
 # Note: supply non-explicit dependencies here
 set(MOD_DEPS
         Fw/Logger
         src/SystemTime
-        # Communication Implementations
-#        Drv/Udp
-#        Drv/TcpClient
         Os
-#        src/RPISerialDriver
         )
 
 register_fprime_module()
 
 build_elf(vo-car main.cc)
-target_link_libraries(vo-car src_RPI)
+target_link_libraries(vo-car src_Rpi)
 
 #add_dependencies(vo-car usbboot)
 

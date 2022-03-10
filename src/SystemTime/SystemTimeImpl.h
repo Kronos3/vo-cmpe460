@@ -3,7 +3,7 @@
 
 #include <src/SystemTime/SystemTimeComponentAc.hpp>
 
-namespace RPI
+namespace Rpi
 {
     class SystemTimeImpl : public SystemTimeComponentBase
     {

@@ -1,14 +1,14 @@
 #ifndef VO_CMPE460_RPISERIALDRIVERIMPL_H
 #define VO_CMPE460_RPISERIALDRIVERIMPL_H
 
-#include <src/RPISerialDriver/RPISerialDriverComponentAc.hpp>
+#include <src/RpiSerialDriver/RpiSerialDriverComponentAc.hpp>
 
 namespace Drv
 {
-    class RPISerialDriverImpl : public RPISerialDriverComponentBase
+    class RpiSerialDriverImpl : public RpiSerialDriverComponentBase
     {
     public:
-        RPISerialDriverImpl();
+        RpiSerialDriverImpl();
         void init(NATIVE_INT_TYPE instance);
     private:
         void schedIn_handler(NATIVE_INT_TYPE portNum, NATIVE_UINT_TYPE context) override;

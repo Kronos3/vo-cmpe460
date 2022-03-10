@@ -18,10 +18,10 @@
 //#include <Svc/FatalHandler/FatalHandlerComponentImpl.hpp>
 
 #include <src/SystemTime/SystemTimeImpl.h>
-#include <src/RPISerialDriver/RPISerialDriverImpl.h>
+#include <src/RpiSerialDriver/RpiSerialDriverImpl.h>
 #include <src/Test/TestImpl.h>
 
-namespace RPI
+namespace Rpi
 {
     extern Svc::RateGroupDriverImpl rgDriver;
     extern Svc::ActiveRateGroupImpl rg1hz;
@@ -41,8 +41,8 @@ namespace RPI
 //    extern Svc::StaticMemoryComponentImpl staticMemory;
 //    extern Svc::FatalHandlerComponentImpl fatalHandler;
 
-    extern RPI::SystemTimeImpl systemTime;
-    extern Drv::RPISerialDriverImpl serialDriver;
+    extern Rpi::SystemTimeImpl systemTime;
+    extern Drv::RpiSerialDriverImpl serialDriver;
     extern Svc::TestImpl test;
 
     // FSW entry points
@@ -51,9 +51,9 @@ namespace RPI
     void reg_commands();
 }
 
-using namespace RPI;
+using namespace Rpi;
 
 // Autocoded definition
-void constructRPIArchitecture();
+void constructRpiArchitecture();
 
 #endif //RPI_COMPONENTS_H

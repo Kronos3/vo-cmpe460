@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-model href="../../Autocoders/Python/schema/ISF/topology_schema.rng" type="application/xml" schematypens="https://relaxng.org/ns/structure/1.0"?>
-<assembly name="RPI">
+<assembly name="Rpi">
     <!-- Import Core component declarations -->
     <import_component_type>Svc/RateGroupDriver/RateGroupDriverComponentAi.xml</import_component_type>
     <import_component_type>Svc/ActiveRateGroup/ActiveRateGroupComponentAi.xml</import_component_type>
@@ -16,34 +16,34 @@
     <!--    <import_component_type>Svc/Deframer/DeframerComponentAi.xml</import_component_type>-->
     <!--    <import_component_type>Svc/StaticMemory/StaticMemoryComponentAi.xml</import_component_type>-->
 
-    <!-- RPI Components -->
+    <!-- Rpi Components -->
     <import_component_type>src/SystemTime/SystemTimeComponentAi.xml</import_component_type>
-    <import_component_type>src/RPISerialDriver/RPISerialDriverComponentAi.xml</import_component_type>
+    <import_component_type>src/RpiSerialDriver/RpiSerialDriverComponentAi.xml</import_component_type>
     <import_component_type>src/Test/TestComponentAi.xml</import_component_type>
 
     <!-- Declare component instances - must match names in Components.hpp -->
     <!-- Core C&DH Components -->
-    <instance namespace="RPI" name="eventLogger" type="ActiveLogger" base_id="100" base_id_window="100"/>
-    <!--    <instance namespace="RPI" name="cmdDisp" type="CommandDispatcher" base_id="200" base_id_window="100"/>-->
-    <instance namespace="RPI" name="tlmChan" type="TlmChan" base_id="300" base_id_window="100"/>
-    <instance namespace="RPI" name="systemTime" type="SystemTime" base_id="500" base_id_window="100"/>
-    <instance namespace="RPI" name="prmDb" type="PrmDb" base_id="600" base_id_window="100"/>
-    <instance namespace="RPI" name="groundIf" type="GroundInterface" base_id="700" base_id_window="100"/>
+    <instance namespace="Rpi" name="eventLogger" type="ActiveLogger" base_id="100" base_id_window="100"/>
+    <!--    <instance namespace="Rpi" name="cmdDisp" type="CommandDispatcher" base_id="200" base_id_window="100"/>-->
+    <instance namespace="Rpi" name="tlmChan" type="TlmChan" base_id="300" base_id_window="100"/>
+    <instance namespace="Rpi" name="systemTime" type="SystemTime" base_id="500" base_id_window="100"/>
+    <instance namespace="Rpi" name="prmDb" type="PrmDb" base_id="600" base_id_window="100"/>
+    <instance namespace="Rpi" name="groundIf" type="GroundInterface" base_id="700" base_id_window="100"/>
 
     <!-- Rate Group Components -->
-    <instance namespace="RPI" name="rgDriver" type="RateGroupDriver" base_id="1100" base_id_window="100"/>
-    <instance namespace="RPI" name="rg1hz" type="ActiveRateGroup" base_id="1200" base_id_window="100"/>
-    <instance namespace="RPI" name="rg10hz" type="ActiveRateGroup" base_id="1300" base_id_window="100"/>
-    <instance namespace="RPI" name="rg20hz" type="ActiveRateGroup" base_id="1400" base_id_window="100"/>
-    <instance namespace="RPI" name="rg50hz" type="ActiveRateGroup" base_id="1500" base_id_window="100"/>
+    <instance namespace="Rpi" name="rgDriver" type="RateGroupDriver" base_id="1100" base_id_window="100"/>
+    <instance namespace="Rpi" name="rg1hz" type="ActiveRateGroup" base_id="1200" base_id_window="100"/>
+    <instance namespace="Rpi" name="rg10hz" type="ActiveRateGroup" base_id="1300" base_id_window="100"/>
+    <instance namespace="Rpi" name="rg20hz" type="ActiveRateGroup" base_id="1400" base_id_window="100"/>
+    <instance namespace="Rpi" name="rg50hz" type="ActiveRateGroup" base_id="1500" base_id_window="100"/>
 
-    <!--    <instance namespace="RPI" name="fatalHandler" type="FatalHandler" base_id="2100" base_id_window="100"/>-->
-    <!--    <instance namespace="RPI" name="staticMemory" type="StaticMemory" base_id="4100" base_id_window="100"/>-->
+    <!--    <instance namespace="Rpi" name="fatalHandler" type="FatalHandler" base_id="2100" base_id_window="100"/>-->
+    <!--    <instance namespace="Rpi" name="staticMemory" type="StaticMemory" base_id="4100" base_id_window="100"/>-->
 
-    <!--    <instance namespace="RPI" name="cmdSeq" type="CmdSequencer" base_id="2200" base_id_window="100"/>-->
+    <!--    <instance namespace="Rpi" name="cmdSeq" type="CmdSequencer" base_id="2200" base_id_window="100"/>-->
 
-    <instance namespace="RPI" name="serialDriver" type="RPISerialDriver" base_id="5000" base_id_window="100"/>
-    <instance namespace="RPI" name="test" type="Test" base_id="10000" base_id_window="100"/>
+    <instance namespace="Rpi" name="serialDriver" type="RpiSerialDriver" base_id="5000" base_id_window="100"/>
+    <instance namespace="Rpi" name="test" type="Test" base_id="10000" base_id_window="100"/>
 
     <!-- Rate group driver connections -->
     <connection name="systemTime__rgDriver_isr">
