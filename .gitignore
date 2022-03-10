@@ -53,4 +53,5 @@ dkms.conf
 
 cmake-build-*/*
 mnt
+dict/
 
