@@ -1,5 +1,5 @@
 set(SOURCE_FILES
-        "${CMAKE_CURRENT_LIST_DIR}/syscalls.c"
+        "${CMAKE_CURRENT_LIST_DIR}/syscalls.cc"
 
         "${CMAKE_CURRENT_LIST_DIR}/File.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/FileSystem.cpp"
@@ -34,5 +34,5 @@ set(MOD_DEPS
 register_fprime_module()
 
 add_library(libc_stubs STATIC
-        "${CMAKE_CURRENT_LIST_DIR}/libc.c"
+        "${CMAKE_CURRENT_LIST_DIR}/libc.cc"
 )

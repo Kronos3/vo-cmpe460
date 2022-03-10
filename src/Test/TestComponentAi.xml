@@ -12,32 +12,15 @@
         </port>
 
     </ports>
-    <telemetry>
-        <channel id="0" name="RgMaxTime" data_type="U32" abbrev="S001-000" update="on_change" format_string = "%u us">
-            <comment>
-            Max execution time rate group
-            </comment>
-        </channel>
-        <channel id="1" name="RgCycleSlips" data_type="U32" abbrev="S001-001" update="on_change">
-            <comment>
-            Cycle slips for rate group
-            </comment>
-        </channel>
-    </telemetry>
     <events>
-        <event id="0" name="RateGroupStarted" severity="DIAGNOSTIC" format_string = "Rate group started." >
+        <event id="0" name="TestCycle" severity="DIAGNOSTIC" format_string = "Test cycle ran: %d" >
             <comment>
             Informational event that rate group has started
             </comment>
-        </event>
-        <event id="1" name="RateGroupCycleSlip" severity="WARNING_HI" format_string = "Rate group cycle slipped on cycle %d" >
-            <comment>
-            Warning event that rate group has had a cycle slip
-            </comment>
             <args>
                 <arg name="cycle" type="U32">
-                    <comment>The cycle where the cycle occurred</comment>
-                </arg>          
+                    <comment>The cycle number</comment>
+                </arg>
             </args>
         </event>
     </events>

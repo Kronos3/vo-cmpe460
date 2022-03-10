@@ -1,5 +1,4 @@
 
-#include <RPICfg.hpp>
 #include "RPISerialDriverImpl.h"
 #include <RPI/kernel.h>
 
@@ -7,7 +6,7 @@ namespace Drv
 {
 
     RPISerialDriverImpl::RPISerialDriverImpl()
-    : m_read_buf(m_read_buf_ptr, sizeof(m_read_buf_ptr))
+    : m_read_buf_ptr{}, m_read_buf(m_read_buf_ptr, sizeof(m_read_buf_ptr))
     {
     }
 
@@ -20,16 +19,20 @@ namespace Drv
     void RPISerialDriverImpl::serialSend_handler(NATIVE_INT_TYPE portNum, Fw::Buffer &serBuffer)
     {
         // Send some data via Tx
-        kernel::serial.Write(serBuffer.getData(), serBuffer.getSize());
+        U32 written = 0;
+        while(written < serBuffer.getSize())
+        {
+            written += kernel::serial.Write(serBuffer.getData() + written, serBuffer.getSize() - written);
+        }
     }
 
     void RPISerialDriverImpl::schedIn_handler(NATIVE_INT_TYPE portNum, NATIVE_UINT_TYPE context)
     {
-        U32 n_read = kernel::serial.Read(m_read_buf.getData(), m_read_buf.getSize());
+        U32 n_read = kernel::serial.Read(m_read_buf.getData(), sizeof(m_read_buf_ptr));
         if (n_read)
         {
-            SerialReadStatus serReadStat = SER_OK;
-            serialRecv_out(0, m_read_buf, serReadStat);
+            m_read_buf.setSize(n_read);
+            serialRecv_out(0, m_read_buf);
         }
     }
 }

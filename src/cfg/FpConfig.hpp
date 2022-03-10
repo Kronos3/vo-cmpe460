@@ -92,7 +92,7 @@
 
 // Allow objects to have names. Allocates storage for each instance
 #ifndef FW_OBJECT_NAMES
-#define FW_OBJECT_NAMES                     1   //!< Indicates whether or not object names are stored (more memory, can be used for tracking objects)
+#define FW_OBJECT_NAMES                     0   //!< Indicates whether or not object names are stored (more memory, can be used for tracking objects)
 #endif
 
 // To reduce binary size, FW_OPTIONAL_NAME(<string>) can be used to substitute strings with an empty string

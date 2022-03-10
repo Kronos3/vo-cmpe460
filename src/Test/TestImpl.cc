@@ -22,5 +22,7 @@ namespace Svc
                 kernel::led.Off();
                 break;
         }
+
+        log_DIAGNOSTIC_TestCycle(i);
     }
 }

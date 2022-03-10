@@ -54,4 +54,4 @@ dkms.conf
 cmake-build-*/*
 mnt
 dict/
-
+logs/
