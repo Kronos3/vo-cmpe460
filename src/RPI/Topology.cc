@@ -1,7 +1,7 @@
 #include <circle/timer.h>
 #include <RPI/Components.hpp>
 
-#define QUEUE_DEPTH (10)
+#define QUEUE_DEPTH (20)
 
 namespace RPI
 {
@@ -26,6 +26,7 @@ namespace RPI
     Svc::ActiveLoggerImpl eventLogger("LOG");
     Svc::TlmChanImpl tlmChan("TLM");
     Svc::PrmDbImpl prmDb("PRM", "/prm.dat");
+    Svc::GroundInterfaceComponentImpl groundIf("GRD_IF");
 //
 //    Svc::FileManager fileManager("FILE_MGR");
 //    Svc::StaticMemoryComponentImpl staticMemory("STATIC_MEM");
@@ -49,6 +50,7 @@ namespace RPI
         eventLogger.init(QUEUE_DEPTH, 0);
         tlmChan.init(QUEUE_DEPTH, 0);
         prmDb.init(QUEUE_DEPTH, 0);
+        groundIf.init(0);
 //
 //        fileManager.init(QUEUE_DEPTH, 0);
 //        staticMemory.init(0);
@@ -61,14 +63,14 @@ namespace RPI
 
     void start()
     {
-        RPI::rg1hz.start();
-        RPI::rg10hz.start();
-        RPI::rg20hz.start();
-        RPI::rg50hz.start();
-        RPI::test.start();
+        rg1hz.start();
+        rg10hz.start();
+        rg20hz.start();
+        rg50hz.start();
+        test.start();
 
-        RPI::eventLogger.start();
-        RPI::tlmChan.start();
+        eventLogger.start();
+        tlmChan.start();
         prmDb.start();
     }
 

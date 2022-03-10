@@ -23,27 +23,22 @@
 
 /* Includes */
 #include <sys/stat.h>
-#include <stdlib.h>
 #include <errno.h>
-#include <stdio.h>
-#include <signal.h>
-#include <time.h>
-#include <sys/time.h>
 #include <sys/times.h>
 
+#include <src/RPI/kernel.h>
 
+
+extern "C" {
 extern int _kill(int pid, int sig);
 extern int _getpid(void);
 extern void _exit(int status);
 extern int _read(int file, char *ptr, int len);
 extern int _write(int file, char *ptr, int len);
 extern int _close(int file);
+};
 
 /* Variables */
-extern int __io_putchar(int ch) __attribute__((weak));
-
-extern int __io_getchar(void) __attribute__((weak));
-
 
 char *__env[1] = {0};
 char **environ = __env;
@@ -76,9 +71,10 @@ int read(int file, char *ptr, int len)
 {
     int DataIdx;
 
-    for (DataIdx = 0; DataIdx < len; DataIdx++)
+    unsigned read = 0;
+    while(read < len)
     {
-        *ptr++ = __io_getchar();
+        read += kernel::serial.Read(ptr, len);
     }
 
     return len;
@@ -86,12 +82,14 @@ int read(int file, char *ptr, int len)
 
 __attribute__((weak)) int _write(int file, char *ptr, int len)
 {
-    int DataIdx;
+    (void) file;
 
-    for (DataIdx = 0; DataIdx < len; DataIdx++)
+    unsigned written = 0;
+    while(written < len)
     {
-        __io_putchar(*ptr++);
+        written += kernel::serial.Write(ptr, len);
     }
+
     return len;
 }
 
@@ -154,8 +152,8 @@ int _stat(char *file, struct stat *st)
     return 0;
 }
 
-extern int _link(char *old, char *new);
-int _link(char *old, char *new)
+extern int _link(char *old, char *new_);
+int _link(char *old, char *new_)
 {
     errno = EMLINK;
     return -1;

@@ -7,13 +7,14 @@
     <import_component_type>Svc/ActiveLogger/ActiveLoggerComponentAi.xml</import_component_type>
     <import_component_type>Svc/TlmChan/TlmChanComponentAi.xml</import_component_type>
     <import_component_type>Svc/PrmDb/PrmDbComponentAi.xml</import_component_type>
+    <import_component_type>Svc/GroundInterface/GroundInterfaceComponentAi.xml</import_component_type>
     <!--    <import_component_type>Svc/CmdDispatcher/CommandDispatcherComponentAi.xml</import_component_type>-->
     <!--    <import_component_type>Svc/CmdSequencer/CmdSequencerComponentAi.xml</import_component_type>-->
-<!--    <import_component_type>Svc/FatalHandler/FatalHandlerComponentAi.xml</import_component_type>-->
-<!--    <import_component_type>Svc/FileManager/FileManagerComponentAi.xml</import_component_type>-->
-<!--    <import_component_type>Svc/Framer/FramerComponentAi.xml</import_component_type>-->
-<!--    <import_component_type>Svc/Deframer/DeframerComponentAi.xml</import_component_type>-->
-<!--    <import_component_type>Svc/StaticMemory/StaticMemoryComponentAi.xml</import_component_type>-->
+    <!--    <import_component_type>Svc/FatalHandler/FatalHandlerComponentAi.xml</import_component_type>-->
+    <!--    <import_component_type>Svc/FileManager/FileManagerComponentAi.xml</import_component_type>-->
+    <!--    <import_component_type>Svc/Framer/FramerComponentAi.xml</import_component_type>-->
+    <!--    <import_component_type>Svc/Deframer/DeframerComponentAi.xml</import_component_type>-->
+    <!--    <import_component_type>Svc/StaticMemory/StaticMemoryComponentAi.xml</import_component_type>-->
 
     <!-- RPI Components -->
     <import_component_type>src/SystemTime/SystemTimeComponentAi.xml</import_component_type>
@@ -23,10 +24,11 @@
     <!-- Declare component instances - must match names in Components.hpp -->
     <!-- Core C&DH Components -->
     <instance namespace="RPI" name="eventLogger" type="ActiveLogger" base_id="100" base_id_window="100"/>
-<!--    <instance namespace="RPI" name="cmdDisp" type="CommandDispatcher" base_id="200" base_id_window="100"/>-->
+    <!--    <instance namespace="RPI" name="cmdDisp" type="CommandDispatcher" base_id="200" base_id_window="100"/>-->
     <instance namespace="RPI" name="tlmChan" type="TlmChan" base_id="300" base_id_window="100"/>
     <instance namespace="RPI" name="systemTime" type="SystemTime" base_id="500" base_id_window="100"/>
     <instance namespace="RPI" name="prmDb" type="PrmDb" base_id="600" base_id_window="100"/>
+    <instance namespace="RPI" name="groundIf" type="GroundInterface" base_id="700" base_id_window="100"/>
 
     <!-- Rate Group Components -->
     <instance namespace="RPI" name="rgDriver" type="RateGroupDriver" base_id="1100" base_id_window="100"/>
@@ -35,10 +37,10 @@
     <instance namespace="RPI" name="rg20hz" type="ActiveRateGroup" base_id="1400" base_id_window="100"/>
     <instance namespace="RPI" name="rg50hz" type="ActiveRateGroup" base_id="1500" base_id_window="100"/>
 
-<!--    <instance namespace="RPI" name="fatalHandler" type="FatalHandler" base_id="2100" base_id_window="100"/>-->
-<!--    <instance namespace="RPI" name="staticMemory" type="StaticMemory" base_id="4100" base_id_window="100"/>-->
+    <!--    <instance namespace="RPI" name="fatalHandler" type="FatalHandler" base_id="2100" base_id_window="100"/>-->
+    <!--    <instance namespace="RPI" name="staticMemory" type="StaticMemory" base_id="4100" base_id_window="100"/>-->
 
-<!--    <instance namespace="RPI" name="cmdSeq" type="CmdSequencer" base_id="2200" base_id_window="100"/>-->
+    <!--    <instance namespace="RPI" name="cmdSeq" type="CmdSequencer" base_id="2200" base_id_window="100"/>-->
 
     <instance namespace="RPI" name="serialDriver" type="RPISerialDriver" base_id="5000" base_id_window="100"/>
     <instance namespace="RPI" name="test" type="Test" base_id="10000" base_id_window="100"/>
@@ -66,8 +68,16 @@
     </connection>
 
     <!-- Rate group connects -->
-    <connection name="rg1hz__Test_cycle">
+    <connection name="rg1hz__tlmChan_cycle">
         <source component="rg1hz" port="RateGroupMemberOut" type="Sched" num="0"/>
+        <target component="tlmChan" port="Run" type="Sched" num="0"/>
+    </connection>
+    <connection name="groundIf__Test_cycle">
+        <source component="rg1hz" port="RateGroupMemberOut" type="Sched" num="1"/>
+        <target component="serialDriver" port="schedIn" type="Sched" num="0"/>
+    </connection>
+    <connection name="rg1hz__Test_cycle">
+        <source component="rg1hz" port="RateGroupMemberOut" type="Sched" num="2"/>
         <target component="test" port="schedIn" type="Sched" num="0"/>
     </connection>
 
@@ -84,24 +94,98 @@
         <source component="prbDb" port="Log" type="Log" num="0"/>
         <target component="eventLogger" port="LogRecv" type="Log" num="0"/>
     </connection>
+    <connection name="groundIfLog">
+        <source component="groundIf" port="Log" type="Log" num="0"/>
+        <target component="eventLogger" port="LogRecv" type="Log" num="0"/>
+    </connection>
 
-<!--    <connection name="EventLoggerReg">-->
-<!--        <source component="eventLogger" port="CmdReg" type="CmdReg" num="0"/>-->
-<!--        <target component="cmdDisp" port="compCmdReg" type="CmdReg" num="0"/>-->
-<!--    </connection>-->
-<!--    <connection name="CmdDispReg">-->
-<!--        <source component="cmdDisp" port="CmdReg" type="CmdReg" num="0"/>-->
-<!--        <target component="cmdDisp" port="compCmdReg" type="CmdReg" num="1"/>-->
-<!--    </connection>-->
-<!--    <connection name="PrmDbReg">-->
-<!--        <source component="prmDb" port="CmdReg" type="CmdReg" num="0"/>-->
-<!--        <target component="cmdDisp" port="compCmdReg" type="CmdReg" num="2"/>-->
-<!--    </connection>-->
-<!--    <connection name="CmdSeqReg">-->
-<!--        <source component="cmdSeq" port="cmdRegOut" type="CmdReg" num="0"/>-->
-<!--        <target component="cmdDisp" port="compCmdReg" type="CmdReg" num="3"/>-->
-<!--    </connection>-->
+    <!-- Downlink interface to hardware -->
+    <connection name="CommunicationRecv">
+        <source component="serialDriver" port="serialRecv" type="Fw::BufferSend" num="0"/>
+        <target component="groundIf" port="readCallback" type="Fw::BufferSend" num="0"/>
+    </connection>
+    <connection name="CommunicationSend">
+        <source component="groundIf" port="write" type="Fw::BufferSend" num="0"/>
+        <target component="serialDriver" port="serialSend" type="Fw::BufferSend" num="0"/>
+    </connection>
 
+    <!-- Downlink interface to FSW -->
+    <connection name="eventLogger__groundIf_comm">
+        <source component="eventLogger" port="PktSend" type="Com" num="0"/>
+        <target component="groundIf" port="downlinkPort" type="Com" num="0"/>
+    </connection>
+    <connection name="tlmChan__groundIf_comm">
+        <source component="tlmChan" port="PktSend" type="Com" num="0"/>
+        <target component="groundIf" port="downlinkPort" type="Com" num="0"/>
+    </connection>
+
+    <connection name="prmDbTime">
+        <source component="prmDb" port="Time" type="Time" num="0"/>
+        <target component="systemTime" port="timeGetPort" type="Time" num="0"/>
+    </connection>
+    <connection name="eventLoggerTime">
+        <source component="eventLogger" port="Time" type="Time" num="0"/>
+        <target component="systemTime" port="timeGetPort" type="Time" num="0"/>
+    </connection>
+    <connection name="rg1Time">
+        <source component="rg1hz" port="Time" type="Time" num="0"/>
+        <target component="systemTime" port="timeGetPort" type="Time" num="0"/>
+    </connection>
+    <connection name="rg10Time">
+        <source component="rg10hz" port="Time" type="Time" num="0"/>
+        <target component="systemTime" port="timeGetPort" type="Time" num="0"/>
+    </connection>
+    <connection name="rg20Time">
+        <source component="rg20hz" port="Time" type="Time" num="0"/>
+        <target component="systemTime" port="timeGetPort" type="Time" num="0"/>
+    </connection>
+    <connection name="rg50Time">
+        <source component="rg50hz" port="Time" type="Time" num="0"/>
+        <target component="systemTime" port="timeGetPort" type="Time" num="0"/>
+    </connection>
+    <connection name="groundIfTime">
+        <source component="groundIf" port="Time" type="Time" num="0"/>
+        <target component="systemTime" port="timeGetPort" type="Time" num="0"/>
+    </connection>
+    <connection name="testTime">
+        <source component="test" port="Time" type="Time" num="0"/>
+        <target component="systemTime" port="timeGetPort" type="Time" num="0"/>
+    </connection>
+
+    <!-- Telemetry connections -->
+    <connection name="rg1hz__tlmChan">
+        <source component="rg1hz" port="Tlm" type="Tlm" num="0"/>
+        <target component="tlmChan" port="TlmRecv" type="Time" num="0"/>
+    </connection>
+    <connection name="rg10hz__tlmChan">
+        <source component="rg10hz" port="Tlm" type="Tlm" num="0"/>
+        <target component="tlmChan" port="TlmRecv" type="Time" num="0"/>
+    </connection>
+    <connection name="rg20hz__tlmChan">
+        <source component="rg20hz" port="Tlm" type="Tlm" num="0"/>
+        <target component="tlmChan" port="TlmRecv" type="Time" num="0"/>
+    </connection>
+    <connection name="rg50hz__tlmChan">
+        <source component="rg50hz" port="Tlm" type="Tlm" num="0"/>
+        <target component="tlmChan" port="TlmRecv" type="Time" num="0"/>
+    </connection>
+
+    <!--    <connection name="EventLoggerReg">-->
+    <!--        <source component="eventLogger" port="CmdReg" type="CmdReg" num="0"/>-->
+    <!--        <target component="cmdDisp" port="compCmdReg" type="CmdReg" num="0"/>-->
+    <!--    </connection>-->
+    <!--    <connection name="CmdDispReg">-->
+    <!--        <source component="cmdDisp" port="CmdReg" type="CmdReg" num="0"/>-->
+    <!--        <target component="cmdDisp" port="compCmdReg" type="CmdReg" num="1"/>-->
+    <!--    </connection>-->
+    <!--    <connection name="PrmDbReg">-->
+    <!--        <source component="prmDb" port="CmdReg" type="CmdReg" num="0"/>-->
+    <!--        <target component="cmdDisp" port="compCmdReg" type="CmdReg" num="2"/>-->
+    <!--    </connection>-->
+    <!--    <connection name="CmdSeqReg">-->
+    <!--        <source component="cmdSeq" port="cmdRegOut" type="CmdReg" num="0"/>-->
+    <!--        <target component="cmdDisp" port="compCmdReg" type="CmdReg" num="3"/>-->
+    <!--    </connection>-->
 
 
 </assembly>

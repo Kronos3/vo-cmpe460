@@ -1,23 +1,24 @@
 #include <Os/Mutex.hpp>
+#include <circle/sched/scheduler.h>
+#include <circle/sched/mutex.h>
 
 namespace Os
 {
-    /**
-     * On baremetal, mutexes are not required as there is a single threaded
-     * engine to run on.
-     */
-    Mutex::Mutex(void)
+    Mutex::Mutex()
+    : m_handle(0)
     {
-        static U32 counter = 0;
-        m_handle = counter++;
+        m_handle = reinterpret_cast<POINTER_CAST>(new CMutex);
     }
 
-    Mutex::~Mutex(void)
-    {}
+    Mutex::~Mutex() = default;
 
-    void Mutex::lock(void)
-    {}
+    void Mutex::lock()
+    {
+        reinterpret_cast<CMutex*>(m_handle)->Acquire();
+    }
 
-    void Mutex::unLock(void)
-    {}
+    void Mutex::unLock()
+    {
+        reinterpret_cast<CMutex*>(m_handle)->Release();
+    }
 }
