@@ -5,11 +5,11 @@
 
 enum
 {
-    RATE_DRIVER_GROUPS_MAX = 4,             //!< Total number of rate groups
-    RATE_DRIVER_GROUPS_HANDLERS_MAX = 16,    //!< Number of handlers per rate group
+//    RATE_DRIVER_GROUPS_MAX = 4,             //!< Total number of rate groups
+//    RATE_DRIVER_GROUPS_HANDLERS_MAX = 16,    //!< Number of handlers per rate group
 
     I2C_DEVICE_NUMBER = 0,      //!< See i2cmaster.h
-    I2C_FAST_MODE = 1,          //!< 400 kHz
+    I2C_FAST_MODE = TRUE,          //!< 400 kHz
 
     DBG_BUTTON_1_PIN = 0x4,
 

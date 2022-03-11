@@ -34,6 +34,8 @@ namespace Rpi
 //
     SystemTimeImpl systemTime;
     Drv::RpiSerialDriverImpl serialDriver;
+    Drv::RpiI2cDriverImpl i2cDriver;
+    Drv::RpiSpiDriverImpl spiDriver;
     Svc::TestImpl test;
 
     void init()
@@ -58,6 +60,9 @@ namespace Rpi
 //
         systemTime.init(0);
         serialDriver.init(0);
+        i2cDriver.init(0);
+        spiDriver.init(0);
+
         test.init(QUEUE_DEPTH, 0);
     }
 

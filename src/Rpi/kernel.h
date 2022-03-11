@@ -5,6 +5,8 @@
 #include <circle/actled.h>
 #include <circle/serial.h>
 #include <circle/memory.h>
+#include <circle/i2cmaster.h>
+#include <circle/spimasterdma.h>
 
 namespace kernel
 {
@@ -15,8 +17,8 @@ namespace kernel
     extern CSerialDevice serial;
 
     // External communication
-//    extern CI2CMaster i2c;
-//    extern CSPIMasterDMA spi;
+    extern CI2CMaster i2c;
+    extern CSPIMasterDMA spi;
 //    extern OV2640 cam0;
 //    extern OV2640 cam1;
 
