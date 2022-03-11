@@ -19,6 +19,8 @@
 
 #include <src/SystemTime/SystemTimeImpl.h>
 #include <src/RpiSerialDriver/RpiSerialDriverImpl.h>
+#include <src/RpiI2cDriver/RpiI2cDriverImpl.h>
+#include <src/RpiSpiDriver/RpiSpiDriverImpl.h>
 #include <src/Test/TestImpl.h>
 
 namespace Rpi
@@ -43,6 +45,8 @@ namespace Rpi
 
     extern Rpi::SystemTimeImpl systemTime;
     extern Drv::RpiSerialDriverImpl serialDriver;
+    extern Drv::RpiI2cDriverImpl i2cDriver;
+    extern Drv::RpiSpiDriverImpl spiDriver;
     extern Svc::TestImpl test;
 
     // FSW entry points

@@ -1,0 +1,62 @@
+<events>
+    <event id="0" name="SPI_Busy" severity="WARNING_HI"
+           format_string="SPI transaction (CS=%d) requested while busy">
+        <args>
+            <arg name="chipSelect" type="U32">
+                <comment>The chipSelect</comment>
+            </arg>
+        </args>
+    </event>
+    <event id="1" name="SPI_ChipSelectInvalid" severity="WARNING_HI"
+           format_string="SPI transaction (CS=%d) has invalid chip select">
+        <args>
+            <arg name="chipSelect" type="U32">
+                <comment>The chipSelect</comment>
+            </arg>
+        </args>
+    </event>
+    <event id="2" name="SPI_SizeMismatch" severity="WARNING_HI"
+           format_string="SPI transaction (CS=%d) has differing buffer sizes read=%d, write=%d">
+        <args>
+            <arg name="chipSelect" type="U32">
+                <comment>The chipSelect</comment>
+            </arg>
+            <arg name="readSize" type="U32">
+                <comment>Length of read buffer</comment>
+            </arg>
+            <arg name="writeSize" type="U32">
+                <comment>Length of Write Buffer</comment>
+            </arg>
+        </args>
+    </event>
+    <event id="3" name="SPI_PollingFailed" severity="WARNING_HI"
+           format_string="SPI transaction (CS=%d) failed to poll">
+        <args>
+            <arg name="chipSelect" type="U32">
+                <comment>The chipSelect</comment>
+            </arg>
+        </args>
+    </event>
+    <event id="4" name="SPI_DmaFailed" severity="WARNING_HI"
+           format_string="SPI transaction (CS=%d) failed set up DMA">
+        <args>
+            <arg name="chipSelect" type="U32">
+                <comment>The chipSelect</comment>
+            </arg>
+        </args>
+    </event>
+    <event id="5" name="SPI_DmaInvalidBuffer" severity="WARNING_HI"
+           format_string="SPI transaction (CS=%d) misaligned buffers read=%p write=%p">
+        <args>
+            <arg name="chipSelect" type="U32">
+                <comment>The chipSelect</comment>
+            </arg>
+            <arg name="readAddress" type="U32">
+                <comment>The read address</comment>
+            </arg>
+            <arg name="writeAddress" type="U32">
+                <comment>The write address</comment>
+            </arg>
+        </args>
+    </event>
+</events>

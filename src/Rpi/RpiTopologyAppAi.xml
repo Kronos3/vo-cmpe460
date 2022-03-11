@@ -18,6 +18,8 @@
 
     <!-- Rpi Components -->
     <import_component_type>src/SystemTime/SystemTimeComponentAi.xml</import_component_type>
+    <import_component_type>src/RpiI2cDriver/RpiI2cDriverComponentAi.xml</import_component_type>
+    <import_component_type>src/RpiSpiDriver/RpiSpiDriverComponentAi.xml</import_component_type>
     <import_component_type>src/RpiSerialDriver/RpiSerialDriverComponentAi.xml</import_component_type>
     <import_component_type>src/Test/TestComponentAi.xml</import_component_type>
 
@@ -43,6 +45,9 @@
     <!--    <instance namespace="Rpi" name="cmdSeq" type="CmdSequencer" base_id="2200" base_id_window="100"/>-->
 
     <instance namespace="Rpi" name="serialDriver" type="RpiSerialDriver" base_id="5000" base_id_window="100"/>
+    <instance namespace="Rpi" name="i2cDriver" type="RpiI2cDriver" base_id="5100" base_id_window="100"/>
+    <instance namespace="Rpi" name="spiDriver" type="RpiSpiDriver" base_id="5200" base_id_window="100"/>
+
     <instance namespace="Rpi" name="test" type="Test" base_id="10000" base_id_window="100"/>
 
     <!-- Rate group driver connections -->

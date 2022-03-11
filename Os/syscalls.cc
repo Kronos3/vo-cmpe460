@@ -22,6 +22,7 @@
  */
 
 /* Includes */
+#include <FpConfig.hpp>
 #include <sys/stat.h>
 #include <errno.h>
 #include <sys/times.h>

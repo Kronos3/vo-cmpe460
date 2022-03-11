@@ -4,6 +4,7 @@
 #include <circle/memory.h>
 #include <RPICfg.hpp>
 #include <circle/sched/scheduler.h>
+#include <VoCarCfg.h>
 #include "Components.hpp"
 
 #include "kernel.h"
@@ -45,7 +46,13 @@ namespace kernel
     CScheduler scheduler;
     CActLED led;
     CTimer tim(&interruptSystem);
+
     CSerialDevice serial(&interruptSystem, /* useFIQ */ TRUE);
+    CI2CMaster i2c(I2C_DEVICE_NUMBER, I2C_FAST_MODE);
+    CSPIMasterDMA spi(&interruptSystem,
+                      SPI_SPEED,
+                      SPI_POL, SPI_PHA,
+                      /* DMAChannelLite */ FALSE);
 
     RpiAssertHook assertHook;
 }

@@ -21,3 +21,8 @@ GenericHubOutputBuffers = 10
 GenericRepeaterOutputPorts = 2
 
 StaticMemoryAllocations = 4
+
+; ---------------------- ;
+; Raspberry Pi Constants ;
+; ---------------------- ;
+RpiSpiDriverDmaPorts = 2    ; One for each ArduCam
