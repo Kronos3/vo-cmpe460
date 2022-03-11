@@ -44,6 +44,7 @@ namespace Drv
 
         static void dmaCompletion_routine(bool status, void* this_);
 
+        U32 m_tlm_RxTx;             //!< Total number of send and received bytes
         volatile bool m_busy;       //!< A Spi transaction is running
         SpiDmaRequest m_dma;        //!< Running SPI DMA request
     };

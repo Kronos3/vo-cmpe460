@@ -6,6 +6,7 @@
     <import_port_type>src/RpiSpiDriver/SpiDmaReplyPortAi.xml</import_port_type>
 
     <import_dictionary>src/RpiSpiDriver/Events.xml</import_dictionary>
+    <import_dictionary>src/RpiSpiDriver/Telemetry.xml</import_dictionary>
 
     <ports>
         <port name="transactPolling" data_type="Drv::SpiTransact" kind="guarded_input">
