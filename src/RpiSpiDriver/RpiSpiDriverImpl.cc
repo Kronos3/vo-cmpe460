@@ -4,7 +4,7 @@
 namespace Drv
 {
     RpiSpiDriverImpl::RpiSpiDriverImpl()
-            : m_busy(false)
+    : m_tlm_RxTx(0), m_busy(false)
     {
     }
 
@@ -76,6 +76,11 @@ namespace Drv
             log_WARNING_HI_SPI_PollingFailed(chipSelect);
             return Drv::SpiStatus::SPI_TRANSACT_POLLING_ERR;
         }
+        else
+        {
+            m_tlm_RxTx += num_bytes;
+            tlmWrite_SPI_Bytes(m_tlm_RxTx);
+        }
 
         return Drv::SpiStatus::SPI_OK;
     }
@@ -143,6 +148,8 @@ namespace Drv
         Drv::SpiStatus spi_status;
         if (status)
         {
+            m_tlm_RxTx += readBuffer->getSize();
+            tlmWrite_SPI_Bytes(m_tlm_RxTx);
             spi_status = Drv::SpiStatus::SPI_OK;
         }
         else
