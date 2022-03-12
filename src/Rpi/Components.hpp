@@ -21,7 +21,9 @@
 #include <src/RpiSerialDriver/RpiSerialDriverImpl.h>
 #include <src/RpiI2cDriver/RpiI2cDriverImpl.h>
 #include <src/RpiSpiDriver/RpiSpiDriverImpl.h>
+
 #include <src/Test/TestImpl.h>
+#include <src/Cam/CamImpl.h>
 
 namespace Rpi
 {
@@ -48,6 +50,9 @@ namespace Rpi
     extern Drv::RpiI2cDriverImpl i2cDriver;
     extern Drv::RpiSpiDriverImpl spiDriver;
     extern Svc::TestImpl test;
+
+    extern Rpi::CamImpl camL;
+    extern Rpi::CamImpl camR;
 
     // FSW entry points
     void init();

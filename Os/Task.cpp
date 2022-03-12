@@ -1,6 +1,7 @@
 #include <Os/Task.hpp>
 #include <Fw/Types/Assert.hpp>
 
+#include <circle/sched/scheduler.h>
 #include <circle/sched/task.h>
 
 namespace Os
@@ -57,8 +58,8 @@ namespace Os
 
     Task::TaskStatus Task::delay(NATIVE_UINT_TYPE milliseconds)
     {
-        //Task delays are a bad idea in baremetal tasks
-        return Task::TASK_DELAY_ERROR;
+        CScheduler::Get()->MsSleep(milliseconds);
+        return Task::TASK_OK;
     }
 
     Task::~Task()

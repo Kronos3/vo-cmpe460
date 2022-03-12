@@ -1,9 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<interface name="SpiTransact" namespace="Drv">
+<interface name="CamBuffer" namespace="Drv">
     <import_enum_type>src/RpiSpiDriver/SpiStatusEnumAi.xml</import_enum_type>
     <include_header>Fw/Buffer/Buffer.hpp</include_header>
-    <comment>Perform a transaction with the SPI</comment>
+    <comment>Reply to SPI caller when DMA was requested</comment>
     <args>
+        <arg name="status" type="Drv::SpiStatus">
+            <comment>Status of the DMA transaction</comment>
+        </arg>
+        <arg name="chipSelect" type="U32">
+            <comment>chipSelect of the transaction</comment>
+        </arg>
         <arg name="writeBuffer" type="Fw::Buffer" pass_by="reference">
             <comment>Master to slave buffer</comment>
         </arg>
@@ -11,5 +17,4 @@
             <comment>Slave to master buffer</comment>
         </arg>
     </args>
-    <return type="Drv::SpiStatus" pass_by="value"> </return>
 </interface>

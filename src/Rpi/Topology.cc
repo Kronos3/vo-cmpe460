@@ -1,5 +1,6 @@
 #include <circle/timer.h>
 #include <src/Rpi/Components.hpp>
+#include <VoCarCfg.h>
 
 #define QUEUE_DEPTH (20)
 
@@ -35,8 +36,13 @@ namespace Rpi
     SystemTimeImpl systemTime;
     Drv::RpiSerialDriverImpl serialDriver;
     Drv::RpiI2cDriverImpl i2cDriver;
-    Drv::RpiSpiDriverImpl spiDriver;
+
+    static const U32 cs_lines[] = {CAM_0_CS, CAM_1_CS};
+    Drv::RpiSpiDriverImpl spiDriver(cs_lines, FW_NUM_ARRAY_ELEMENTS(cs_lines));
     Svc::TestImpl test;
+
+    Rpi::CamImpl camL;
+    Rpi::CamImpl camR;
 
     void init()
     {
@@ -64,6 +70,8 @@ namespace Rpi
         spiDriver.init(0);
 
         test.init(QUEUE_DEPTH, 0);
+        camL.init(QUEUE_DEPTH, 0);
+        camR.init(QUEUE_DEPTH, 0);
     }
 
     void start()

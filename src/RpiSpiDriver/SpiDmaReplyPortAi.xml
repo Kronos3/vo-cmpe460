@@ -7,9 +7,6 @@
         <arg name="status" type="Drv::SpiStatus">
             <comment>Status of the DMA transaction</comment>
         </arg>
-        <arg name="chipSelect" type="U32">
-            <comment>chipSelect of the transaction</comment>
-        </arg>
         <arg name="writeBuffer" type="Fw::Buffer" pass_by="reference">
             <comment>Master to slave buffer</comment>
         </arg>

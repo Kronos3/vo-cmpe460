@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<component name="I2cMux" kind="passive" namespace="Drv">
+
+    <import_port_type>Drv/I2cDriverPorts/I2cPortAi.xml</import_port_type>
+    <import_port_type>Drv/I2cDriverPorts/I2cWriteReadPortAi.xml</import_port_type>
+    <ports>
+        <!-- Communication with the I2C driver -->
+        <port name="writeOut" data_type="Drv::I2c" kind="output">
+        </port>
+        <port name="readOut" data_type="Drv::I2c" kind="output">
+        </port>
+        <port name="writeReadOut" data_type="Drv::I2cWriteRead" kind="output">
+        </port>
+
+        <!-- Communication with other components -->
+        <!-- Port number will select the channel -->
+        <port name="write" data_type="Drv::I2c" kind="guarded_input" max_number="$I2cMuxChannelPorts">
+        </port>
+        <port name="read" data_type="Drv::I2c" kind="guarded_input" max_number="$I2cMuxChannelPorts">
+        </port>
+        <port name="writeRead" data_type="Drv::I2cWriteRead" kind="guarded_input" max_number="$I2cMuxChannelPorts">
+        </port>
+    </ports>
+
+</component>

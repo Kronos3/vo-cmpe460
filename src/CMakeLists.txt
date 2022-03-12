@@ -9,4 +9,9 @@ add_subdirectory(SystemTime)
 add_subdirectory(RpiSerialDriver)
 add_subdirectory(RpiI2cDriver)
 add_subdirectory(RpiSpiDriver)
+add_subdirectory(I2cMux)
+
+add_subdirectory(FrameBuffer)
+add_subdirectory(Cam)
+
 add_subdirectory(Rpi)

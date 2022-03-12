@@ -1,9 +1,9 @@
-#include <ardu_cam/ardu_cam.h>
-#include <ardu_cam/ov5642_regs.h>
-#include <kernel/kernel.h>
+#include <Os/Task.hpp>
+#include "ardu_cam.h"
+#include "ov5642_regs.h"
 
-OV5642::OV5642(u32 chip_select, u8 mux, ImgType format)
-: ArduCam(0x3C, mux, chip_select), m_fmt(format)
+OV5642::OV5642(ImgType format)
+: ArduCam(0x3C), m_fmt(format)
 {
 }
 
@@ -17,7 +17,7 @@ void OV5642::init()
     switch (m_fmt)
     {
         case BMP:
-            u8 reg_val;
+            U8 reg_val;
             ws_16_8(0x4740, 0x21);
             ws_16_8(0x501e, 0x2a);
             ws_16_8(0x5002, 0xf8);
@@ -30,10 +30,10 @@ void OV5642::init()
             break;
         case JPEG:
             ws_16_8(OV5642_QVGA_Preview);
-            kernel::tim.MsDelay(100);
+            Os::Task::delay(100);
             ws_16_8(OV5642_JPEG_Capture_QSXGA);
             ws_16_8(ov5642_320x240);
-            kernel::tim.MsDelay(100);
+            Os::Task::delay(100);
             ws_16_8(0x3818, 0xa8);
             ws_16_8(0x3621, 0x10);
             ws_16_8(0x3801, 0xb0);
@@ -647,7 +647,7 @@ void OV5642::set_sharpness(Sharpness sharpness)
 
 void OV5642::set_mirror_flip(MirrorFlip mirror_flip)
 {
-    u8 reg_val;
+    U8 reg_val;
     switch (mirror_flip)
     {
         case MIRROR:
