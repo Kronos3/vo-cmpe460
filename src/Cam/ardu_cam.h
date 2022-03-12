@@ -1,9 +1,8 @@
 #ifndef CMPE460_ARDU_CAM_H
 #define CMPE460_ARDU_CAM_H
 
-#include <circle/types.h>
-#include <ardu_cam/common.h>
-#include <i2c_mux/i2c_mux.h>
+#include <Assert.hpp>
+#include "common.h"
 
 #ifndef __cplusplus
 #error "ArduCam needs C++ to be included"
@@ -20,17 +19,15 @@ protected:
      * @param mux_channels I2C multiplexer channel selection
      * @param chip_select SPI CS pin on the GPIO header (0-2)
      */
-    ArduCam(u8 addr, u8 mux_channels, u32 chip_select);
+    explicit ArduCam(U8 addr);
 
     virtual void init();
 
     // Camera hardware configuration
-    u8 m_addr;              //!< I2C slave address
-    u8 m_mux;               //!< I2C mux channel selection
-    u32 m_cs;               //!< SPI CS Gpio Pin
+    U8 m_addr;              //!< I2C slave address
 
     // Camera state
-    u32 m_fifo_size;        //!< Image size in bytes
+    U32 m_fifo_size;        //!< Image size in bytes
 
     /**
      * Write to a SPI register
@@ -38,14 +35,14 @@ protected:
      * @param data data to write
      * @param read buffer to read into NULL for ignore
      */
-    void w_spi_reg(u8 addr, u8 data, u8* read = nullptr) const;
+//    void w_spi_reg(U8 addr, U8 data, U8* read = nullptr) const;
 
     /**
      * Read from a SPI register
      * @param addr address of register
      * @param read buffer to read into
      */
-    u8 r_spi_reg(u8 addr) const;
+//    U8 r_spi_reg(U8 addr) const;
 
     /**
      * Update the internal FIFO length
@@ -54,24 +51,29 @@ protected:
     void update_fifo_length();
 
     // Read/write 8 bit value to/from 8 bit register address
-    void ws_8_8(const SensorReg* regs) const;
-    void ws_8_8(u8 regID, u8 regDat) const;
-    void rs_8_8(u8 regID, u8* regDat) const;
+    void ws_8_8(const SensorReg* regs);
+    void ws_8_8(U8 regID, U8 regDat);
+    void rs_8_8(U8 regID, U8* regDat);
 
     // Read/write 16 bit value to/from 8 bit register address
-    void ws_8_16(const SensorReg* regs) const;
-    void ws_8_16(u8 regID, u16 regDat) const;
-    void rs_8_16(u8 regID, u16* regDat) const;
+    void ws_8_16(const SensorReg* regs);
+    void ws_8_16(U8 regID, U16 regDat);
+    void rs_8_16(U8 regID, U16* regDat);
 
     // Read/write 8 bit value to/from 16 bit register address
-    void ws_16_8(const SensorReg* regs) const;
-    void ws_16_8(u16 regID, u8 regDat) const;
-    void rs_16_8(u16 regID, u8* regDat) const;
+    void ws_16_8(const SensorReg* regs);
+    void ws_16_8(U16 regID, U8 regDat);
+    void rs_16_8(U16 regID, U8* regDat);
 
     // Read/write 16 bit value to/from 16 bit register address
-    void ws_16_16(const SensorReg* regs) const;
-    void ws_16_16(u16 regID, u16 regDat) const;
-    void rs_16_16(u16 regID, u16* regDat) const;
+    void ws_16_16(const SensorReg* regs);
+    void ws_16_16(U16 regID, U16 regDat);
+    void rs_16_16(U16 regID, U16* regDat);
+
+    // Implemented by FPrime component
+
+    virtual void read_i2c(U8 address, U8* dst, U32 len) = 0;
+    virtual void write_i2c(U8 address, U8* src, U32 len) = 0;
 
 public:
     /**
@@ -80,7 +82,7 @@ public:
      * This way the cameras can be triggered simultaneously
      * and transferred serially along the SPI bus
      */
-    void capture_image() const;
+//    void capture_image() const;
 
     /**
      * Capture a single image
@@ -89,13 +91,13 @@ public:
      * @param reply reply from DMA that data has been transferred
      * @param param parameter to be sent to reply
      */
-    void transfer_image(u8* image_buffer, void (* reply)(boolean, void*), void* param) const;
+//    void transfer_image(U8* image_buffer, void (* reply)(bool, void*), void* param) const;
 };
 
 class OV2640 : public ArduCam
 {
 public:
-    explicit OV2640(u32 chip_select, u8 mux = I2C_MUX_CH_NONE);
+    explicit OV2640();
 
     /**
      * Initialize the camera by setting up the
@@ -154,6 +156,10 @@ public:
     void set_color_saturation(Calibration color_saturation);
     void set_light_mode(LightMode light_mode);
     void set_jpeg_size(JpegSize size);
+
+private:
+//    virtual void read_i2c(U8 address, U8* dst, U32 len) = 0;
+//    virtual void write_i2c(U8 address, const U8* src, U32 len) = 0;
 };
 
 class OV5642 : public ArduCam
@@ -281,9 +287,7 @@ public:
         PLUS_17_EV,
     };
 
-    explicit OV5642(u32 chip_select,
-                    u8 mux = I2C_MUX_CH_NONE,
-                    ImgType format = JPEG);
+    explicit OV5642(ImgType format = JPEG);
     void init() override;
 
     void set_special_effects(SpecialEffects effect);

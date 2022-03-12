@@ -1,9 +1,9 @@
-#include <ardu_cam/ardu_cam.h>
-#include <ardu_cam/ov2640_regs.h>
-#include <kernel/kernel.h>
+#include "ardu_cam.h"
+#include "ov2640_regs.h"
+#include <Os/Task.hpp>
 
-OV2640::OV2640(u32 chip_select, u8 mux)
-: ArduCam(0x30, mux, chip_select)
+OV2640::OV2640()
+: ArduCam(0x30)
 {
 }
 
@@ -16,7 +16,7 @@ void OV2640::init()
     ws_8_8(0xff, 0x01);
     ws_8_8(0x12, 0x80);
 
-    kernel::tim.MsDelay(100);
+    Os::Task::delay(100);
 
     ws_8_8(OV2640_JPEG_INIT);
     ws_8_8(OV2640_YUV422);

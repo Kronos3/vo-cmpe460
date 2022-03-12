@@ -3,8 +3,8 @@
 
 struct SensorReg
 {
-    u16 reg;
-    u16 val;
+    U16 reg;
+    U16 val;
 };
 
 #endif //CMPE460_ARDU_CAM_COMMON_H

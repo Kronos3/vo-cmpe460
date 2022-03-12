@@ -25,4 +25,5 @@ StaticMemoryAllocations = 4
 ; ---------------------- ;
 ; Raspberry Pi Constants ;
 ; ---------------------- ;
-RpiSpiDriverDmaPorts = 2    ; One for each ArduCam
+RpiSpiChipSelects = 2       ; Raspberry Pi supports two chip selects
+I2cMuxChannelPorts = 2      ; Number of I2C multiplexer channels
