@@ -1,20 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
 
-# Initialize the compiler toolchain
-include(toolchain.cmake)
-
 project(VO-CMPE460)
-add_compile_options(-pipe)
-
-include(ExternalProject)
-ExternalProject_Add(
-        usbboot
-        SOURCE_DIR ${CMAKE_SOURCE_DIR}/usbboot
-        BINARY_DIR ${CMAKE_BINARY_DIR}/usbboot
-        CONFIGURE_COMMAND "${CMAKE_COMMAND}" -E make_directory ${CMAKE_BINARY_DIR}/usbboot
-        BUILD_COMMAND "${CMAKE_COMMAND}" --build ${CMAKE_SOURCE_DIR}/usbboot
-        INSTALL_COMMAND ""
-)
+enable_language(C CXX ASM)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -22,10 +9,23 @@ set(AARCH 32)
 set(RASPPI 1)
 set(ARM_ALLOW_MULTI_CORE OFF)
 set(FLOAT_ABI "hard")
+
+# Initialize the compiler toolchain
+include(toolchain.cmake)
 include(circle/circle.cmake)
 
+# Add circle drivers
+add_subdirectory(circle/lib)
+add_subdirectory(circle/addon)
+
+target_include_directories(circle PUBLIC
+        ${CMAKE_CURRENT_LIST_DIR}/circle/include
+        ${CMAKE_CURRENT_LIST_DIR}/circle/addon)
+
+add_compile_options(-pipe)
+
 # Override default FPrime configuration
-set(FPRIME_CONFIG_DIR "${PROJECT_SOURCE_DIR}/src/cfg")
+set(FPRIME_CONFIG_DIR "${PROJECT_SOURCE_DIR}/Cfg")
 set(FPRIME_AC_CONSTANTS_FILE "${FPRIME_CONFIG_DIR}/AiConstants.txt")
 
 ##
@@ -51,9 +51,10 @@ include(cmake/fprime.cmake)
 fprime_enter_root(${PROJECT_SOURCE_DIR}/fprime)
 include(cmake/fprime_code.cmake)
 
-fprime_enter_root(${PROJECT_SOURCE_DIR})
-add_subdirectory(circle)   # driver implementations
-add_subdirectory(src)   # FSW
+fprime_enter_root(${CMAKE_CURRENT_LIST_DIR})
+
+add_subdirectory(Drv)   # Raspberry Pi drivers
+add_subdirectory(Rpi)   # FSW
 
 cmake_policy(SET CMP0079 NEW)
 
