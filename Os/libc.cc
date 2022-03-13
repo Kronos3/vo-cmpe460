@@ -1,7 +1,7 @@
-#include <StandardTypes.hpp>
+#include <Fw/Types/Assert.hpp>
 #include <cstdarg>
 
-#include <src/Rpi/kernel.h>
+#include <Rpi/Top/kernel.h>
 
 extern uint32_t strnlen(char const* str, unsigned long n);
 
@@ -14,7 +14,7 @@ uint32_t strnlen(char const* str, unsigned long n)
 
 void uart_putchar(char c)
 {
-    kernel::serial.Write(&c, 1);
+//    kernel::serial.Write(&c, 1);
 }
 
 static inline void printf_string(

@@ -22,12 +22,11 @@
  */
 
 /* Includes */
-#include <FpConfig.hpp>
 #include <sys/stat.h>
 #include <errno.h>
 #include <sys/times.h>
 
-#include <src/Rpi/kernel.h>
+#include <Rpi/Top/kernel.h>
 
 
 extern "C" {
@@ -72,11 +71,11 @@ int read(int file, char *ptr, int len)
 {
     int DataIdx;
 
-    unsigned read = 0;
-    while(read < len)
-    {
-        read += kernel::serial.Read(ptr, len);
-    }
+//    unsigned read = 0;
+//    while(read < len)
+//    {
+//        read += kernel::serial.Read(ptr, len);
+//    }
 
     return len;
 }
@@ -85,11 +84,11 @@ __attribute__((weak)) int _write(int file, char *ptr, int len)
 {
     (void) file;
 
-    unsigned written = 0;
-    while(written < len)
-    {
-        written += kernel::serial.Write(ptr, len);
-    }
+//    unsigned written = 0;
+//    while(written < len)
+//    {
+//        written += kernel::serial.Write(ptr, len);
+//    }
 
     return len;
 }

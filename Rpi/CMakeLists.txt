@@ -1,0 +1,6 @@
+add_fprime_subdirectory("${CMAKE_CURRENT_LIST_DIR}/FrameBuffer")
+add_fprime_subdirectory("${CMAKE_CURRENT_LIST_DIR}/Logger")
+add_fprime_subdirectory("${CMAKE_CURRENT_LIST_DIR}/Cam")
+add_fprime_subdirectory("${CMAKE_CURRENT_LIST_DIR}/SystemTime")
+add_fprime_subdirectory("${CMAKE_CURRENT_LIST_DIR}/Test")
+add_fprime_subdirectory("${CMAKE_CURRENT_LIST_DIR}/Top")
