@@ -5,8 +5,8 @@ enable_language(C CXX ASM)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-set(AARCH 32)
-set(RASPPI 1)
+set(AARCH 64)
+set(RASPPI 3)
 set(ARM_ALLOW_MULTI_CORE OFF)
 set(FLOAT_ABI "hard")
 
@@ -20,7 +20,8 @@ add_subdirectory(circle/addon)
 
 target_include_directories(circle PUBLIC
         ${CMAKE_CURRENT_LIST_DIR}/circle/include
-        ${CMAKE_CURRENT_LIST_DIR}/circle/addon)
+        ${CMAKE_CURRENT_LIST_DIR}/circle/addon
+)
 
 add_compile_options(-pipe)
 

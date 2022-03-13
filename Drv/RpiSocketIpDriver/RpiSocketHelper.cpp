@@ -37,14 +37,13 @@ namespace Drv
         delete m_socketOutFd;
     }
 
-    SocketIpStatus RpiSocketHelper::configure(const char* hostname,
+    SocketIpStatus RpiSocketHelper::configure(const CIPAddress& hostname,
                                               const U16 port,
                                               const bool send_udp)
     {
         m_sendUdp = send_udp;
         m_port = port;
-
-        m_hostname.Set(reinterpret_cast<const u8*>(hostname));
+        m_hostname = hostname;
 
         return SOCK_SUCCESS;
     }
@@ -64,15 +63,23 @@ namespace Drv
 
     SocketIpStatus RpiSocketHelper::open()
     {
-        int status;
         // Only the input (TCP) socket needs closing
         delete m_socketInFd; // Close open sockets, to force a re-open
+
+        CString hostname;
+        m_hostname.Format(&hostname);
 
         // Open a TCP socket for incoming commands, and outgoing data if not using UDP
         m_socketInFd = new CSocket(CNetSubSystem::Get(), IPPROTO_TCP);
         if (m_socketInFd->Connect(m_hostname, m_port) < 0)
         {
-            Fw::Logger::logMsg("Failed to connect TCP: %s:%d\n", (POINTER_CAST) m_hostname.Get(), m_port);
+            static bool shown_error = false;
+            if (!shown_error)
+            {
+                Fw::Logger::logMsg("Failed to connect TCP: %s:%d\r\n", (POINTER_CAST)(const char*)hostname, m_port);
+                shown_error = true;
+            }
+
             return SOCK_FAILED_TO_CONNECT;
         }
 
@@ -83,13 +90,13 @@ namespace Drv
 
             if (m_socketOutFd->Bind(m_port) < 0)
             {
-                Fw::Logger::logMsg("Failed to bind UDP to port %d\n", m_port);
+                Fw::Logger::logMsg("Failed to bind UDP to port %d\r\n", m_port);
                 return SOCK_FAILED_TO_GET_SOCKET;
             }
 
             if (m_socketOutFd->Connect(m_hostname, m_port) < 0)
             {
-                Fw::Logger::logMsg("Failed to connect UDP %s:%d\n", (POINTER_CAST) m_hostname.Get(), m_port);
+                Fw::Logger::logMsg("Failed to connect UDP %s:%d\r\n", (POINTER_CAST)(const char*)hostname, m_port);
                 return SOCK_FAILED_TO_CONNECT;
             }
         }
@@ -99,7 +106,7 @@ namespace Drv
             m_socketOutFd = m_socketInFd;
         }
 
-        Fw::Logger::logMsg("Connected successfully to %s:%d\n", (POINTER_CAST) m_hostname.Get(), m_port);
+        Fw::Logger::logMsg("Connected successfully to %s:%d\r\n", (POINTER_CAST)(const char*)hostname, m_port);
         return SOCK_SUCCESS;
     }
 

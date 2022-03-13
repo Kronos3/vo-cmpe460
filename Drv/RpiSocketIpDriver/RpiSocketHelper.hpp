@@ -25,7 +25,7 @@ namespace Drv
 
         virtual ~RpiSocketHelper();
 
-        SocketIpStatus configure(const char* hostname,
+        SocketIpStatus configure(const CIPAddress& hostname,
                                  U16 port,
                                  bool send_udp);
 

@@ -54,7 +54,8 @@ namespace Rpi
         rg50hz.init(QUEUE_DEPTH, 3);
 
         // Connect to GDS
-        comm.init(0, "192.168.1.220", 50000);
+        static U8 hostIp[4] = {192, 168, 1, 220};
+        comm.init(0, CIPAddress(hostIp), 50000);
 
 //        cmdSeq.init(QUEUE_DEPTH, 0);
 //        cmdDisp.init(QUEUE_DEPTH, 0);
