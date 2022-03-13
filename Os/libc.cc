@@ -1,8 +1,6 @@
 #include <Fw/Types/Assert.hpp>
 #include <cstdarg>
 
-#include <Rpi/Top/kernel.h>
-
 extern uint32_t strnlen(char const* str, unsigned long n);
 
 uint32_t strnlen(char const* str, unsigned long n)
@@ -126,10 +124,10 @@ int uvprintf(
                     uart_put_udec(va_arg(args, unsigned), pad_char, pad_amt);
                     break;
                 case 'x':
-                    uart_put_hex(va_arg(args, int), TRUE);
+                    uart_put_hex(va_arg(args, int), true);
                     break;
                 case 'X':
-                    uart_put_hex(va_arg(args, int), FALSE);
+                    uart_put_hex(va_arg(args, int), false);
                     break;
                 case 'f':
                     uart_put_floating(va_arg(args, double));

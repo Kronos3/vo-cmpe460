@@ -31,7 +31,7 @@ namespace Drv
     {}
 
     void RpiSocketIpDriverComponentImpl::init(const NATIVE_INT_TYPE instance,
-                                              const char* hostname,
+                                              const CIPAddress& hostname,
                                               U16 port,
                                               const bool send_udp)
     {
@@ -46,7 +46,6 @@ namespace Drv
     void RpiSocketIpDriverComponentImpl::task()
     {
         SocketIpStatus status = SOCK_SUCCESS;
-        m_helper.configure(m_server.hostname, m_server.port, m_server.is_udp);
 
         do
         {
@@ -97,13 +96,18 @@ namespace Drv
             // Start by opening the socket
             if (not m_helper.isOpened())
             {
+                Fw::Logger::logMsg("Configuring WLAN\r\n");
+                m_helper.configure(m_server.hostname, m_server.port, m_server.is_udp);
+
+                Fw::Logger::logMsg("Opening socket to GDS\r\n");
                 SocketIpStatus stat = m_helper.open();
                 if (stat != SOCK_SUCCESS)
                 {
-                    Fw::Logger::logMsg("Unable to open socket: %d\n", stat);
+                    Fw::Logger::logMsg("Unable to open socket: %d\r\n", stat);
                 }
             }
 
+            Fw::Logger::logMsg("Starting comm task\r\n");
             Os::Task::TaskStatus stat = m_recvTask.start(name, RpiSocketIpDriverComponentImpl::taskRoutine, this);
             FW_ASSERT(Os::Task::TASK_OK == stat, static_cast<NATIVE_INT_TYPE>(stat));
         }

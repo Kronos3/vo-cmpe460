@@ -43,7 +43,7 @@ namespace Drv
         //!
         void init(
                 NATIVE_INT_TYPE instance, /*!< The instance number*/
-                const char* hostname, /*!< Hostname of remote server */
+                const CIPAddress& hostname, /*!< Hostname of remote server */
                 U16 port, /*!< Port of remote server */
                 bool send_udp = SOCKET_SEND_UDP /*!< Send down using UDP. Default: read from configuration HPP*/
         );
@@ -82,11 +82,11 @@ namespace Drv
 
         struct ServerParams
         {
-            const char* hostname;
+            CIPAddress hostname;
             U16 port;
             bool is_udp;
             ServerParams()
-            : hostname(nullptr), port(0), is_udp(false)
+            : port(0), is_udp(false)
             {}
         } m_server;
 

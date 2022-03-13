@@ -27,6 +27,8 @@ enum
     SPI_PHA = 1,
 };
 
-#define SD_DRIVE "SD:"
+#define DRIVE               "SD:"
+#define FIRMWARE_PATH       DRIVE "/firmware/"
+#define CONFIG_FILE         DRIVE "/wpa_supplicant.conf"
 
 #endif //VO_CMPE460_VO_CAR_H

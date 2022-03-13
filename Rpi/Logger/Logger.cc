@@ -19,7 +19,8 @@ void Rpi::Logger::log(
     char timestamp[20];
     U32 s, us;
     kernel::tim.GetLocalTime(&s, &us);
-    I32 len = snprintf(timestamp, sizeof timestamp, "%06d.%03d ", s, us);
+    F64 time_f = (F64)s + (F64)us / 1000000.0;
+    I32 len = snprintf(timestamp, sizeof timestamp, "%06.3f ", time_f);
     U32 written = 0;
     while (written < len)
     {

@@ -26,8 +26,6 @@
 #include <errno.h>
 #include <sys/times.h>
 
-#include <Rpi/Top/kernel.h>
-
 
 extern "C" {
 extern int _kill(int pid, int sig);

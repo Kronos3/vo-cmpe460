@@ -15,6 +15,10 @@ set(MOD_DEPS
         Rpi/SystemTime
         Rpi/Logger
         Os
+        circle
+        wlan wpa_supplicant
+        fatfs sdcard
+        net usb input fs
         )
 
 register_fprime_module()
