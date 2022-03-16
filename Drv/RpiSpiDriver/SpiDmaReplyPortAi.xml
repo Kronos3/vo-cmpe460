@@ -4,7 +4,7 @@
     <include_header>Fw/Buffer/Buffer.hpp</include_header>
     <comment>Reply to SPI caller when DMA was requested</comment>
     <args>
-        <arg name="status" type="Drv::SpiStatus">
+        <arg name="spiStatus" type="Drv::SpiStatus">
             <comment>Status of the DMA transaction</comment>
         </arg>
         <arg name="writeBuffer" type="Fw::Buffer" pass_by="reference">

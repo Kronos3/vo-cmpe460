@@ -9,6 +9,7 @@ set(SOURCE_FILES
         "${CMAKE_CURRENT_LIST_DIR}/Task.cpp"
 
         "${CMAKE_CURRENT_LIST_DIR}/RPIQueue.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/RPIFs.cpp"
 
         "${PROJECT_SOURCE_DIR}/fprime/Os/IntervalTimerCommon.cpp"
         "${PROJECT_SOURCE_DIR}/fprime/Os/TaskString.cpp"

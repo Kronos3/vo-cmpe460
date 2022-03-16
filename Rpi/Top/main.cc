@@ -7,7 +7,6 @@
 #include <Logger.hpp>
 #include <Logger.h>
 #include <SDCard/emmc.h>
-#include <fatfs/ff.h>
 #include <wlan/bcm4343.h>
 #include <wlan/hostap/wpa_supplicant/wpasupplicant.h>
 #include <circle/devicenameservice.h>
@@ -17,7 +16,7 @@
 #include "kernel.h"
 
 #include <unwind.h> // GCC's internal unwinder, part of libgcc
-
+#include <fatfs/ff.h>
 
 
 class RpiAssertHook : public Fw::AssertHook
