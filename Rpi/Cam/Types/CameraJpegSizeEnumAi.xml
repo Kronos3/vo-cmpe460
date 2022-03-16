@@ -1,0 +1,11 @@
+<enum namespace="Rpi" name="CameraJpegSize">
+    <item name="P_160x120" value="0"/>
+    <item name="P_176x144" value="1"/>
+    <item name="P_320x240" value="2"/>
+    <item name="P_352x288" value="3"/>
+    <item name="P_640x480" value="4"/>
+    <item name="P_800x600" value="5"/>
+    <item name="P_1024x768" value="6"/>
+    <item name="P_1280x1024" value="7"/>
+    <item name="P_1600x1200" value="8"/>
+</enum>

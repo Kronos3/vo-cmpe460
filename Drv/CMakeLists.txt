@@ -1,5 +1,5 @@
-add_subdirectory(RpiSerialDriver)
-add_subdirectory(RpiI2cDriver)
-add_subdirectory(RpiSpiDriver)
 add_subdirectory(I2cMux)
+add_subdirectory(RpiI2cDriver)
+add_subdirectory(RpiSerialDriver)
 add_subdirectory(RpiSocketIpDriver)
+add_subdirectory(RpiSpiDriver)

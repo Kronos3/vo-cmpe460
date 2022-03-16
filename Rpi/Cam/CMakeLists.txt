@@ -1,3 +1,5 @@
+add_fprime_subdirectory("${CMAKE_CURRENT_LIST_DIR}/Types")
+
 set(SOURCE_FILES
         "${CMAKE_CURRENT_LIST_DIR}/ardu_cam.cc"
         "${CMAKE_CURRENT_LIST_DIR}/ardu_cam_i2c.cc"

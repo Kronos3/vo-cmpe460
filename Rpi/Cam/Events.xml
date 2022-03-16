@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<events>
+    <event id="0" name="CameraPanicI2CWrite" severity="WARNING_HI"
+           format_string="Camera has entered panic due to I2C write failure">
+    </event>
+    <event id="1" name="CameraPanicI2CRead" severity="WARNING_HI"
+           format_string="Camera has entered panic due to I2C read failure">
+    </event>
+    <event id="2"
+           name="CameraInitializing"
+           severity="ACTIVITY_HI"
+           format_string="Sending camera initial byte sequence">
+    </event>
+    <event id="3"
+           name="CameraContrast"
+           severity="ACTIVITY_LO"
+           format_string="Setting camera contrast to %d">
+        <args>
+            <arg name="calibration" type="I8"/>
+        </args>
+    </event>
+    <event id="4"
+           name="CameraBrightness"
+           severity="ACTIVITY_LO"
+           format_string="Setting camera brightness to %d">
+        <args>
+            <arg name="calibration" type="I8"/>
+        </args>
+    </event>
+    <event id="5"
+           name="CameraColorSaturation"
+           severity="ACTIVITY_LO"
+           format_string="Setting camera color saturation to %d">
+        <args>
+            <arg name="calibration" type="I8"/>
+        </args>
+    </event>
+    <event id="6"
+           name="CameraJpegSize"
+           severity="ACTIVITY_HI"
+           format_string="Setting JPEG size to %d">
+        <args>
+            <arg name="jpeg_size" type="Rpi::CameraJpegSize"/>
+        </args>
+    </event>
+    <event id="7"
+           name="CameraLightMode"
+           severity="ACTIVITY_LO"
+           format_string="Setting light mode to %d">
+        <args>
+            <arg name="light_mode" type="Rpi::CameraLightMode"/>
+        </args>
+    </event>
+    <event id="8"
+           name="CameraSpecialEffect"
+           severity="ACTIVITY_LO"
+           format_string="Setting special effect to %d">
+        <args>
+            <arg name="special_effect" type="Rpi::CameraSpecialEffect"/>
+        </args>
+    </event>
+    <event id="9" name="CameraPanicFailure" severity="WARNING_HI"
+           format_string="Camera request failed while in panic mode">
+    </event>
+    <event id="10" name="CameraAlreadyInitialized" severity="DIAGNOSTIC"
+           format_string="Camera is already initialized">
+    </event>
+    <event id="11" name="CameraNotInitialized" severity="WARNING_HI"
+           format_string="Camera is not initialized yet">
+    </event>
+    <event id="12" name="CameraReset" severity="ACTIVITY_HI"
+           format_string="Camera is resetting to not initialized">
+    </event>
+    <event id="13" name="CameraPanicSPITransfer" severity="WARNING_HI"
+           format_string="Camera has entered panic due to SPI transfer failure">
+    </event>
+    <event id="14" name="CameraBusy" severity="WARNING_LO"
+           format_string="Camera has a running request">
+    </event>
+    <event id="15" name="CameraFileOpenFailed" severity="WARNING_LO"
+           format_string="Failed to open file %s">
+        <args>
+            <arg name="filename" type="string" size="80"/>
+        </args>
+    </event>
+    <event id="16" name="CameraFileWriteFailed" severity="WARNING_LO"
+           format_string="Failed to write to file %s, failed at %d bytes">
+        <args>
+            <arg name="filename" type="string" size="80"/>
+            <arg name="position" type="U32"/>
+        </args>
+    </event>
+    <event id="17" name="CameraFileSuccess" severity="ACTIVITY_LO"
+           format_string="Wrote %d bytes from frame to %s">
+        <args>
+            <arg name="filename" type="string" size="80"/>
+            <arg name="length" type="U32"/>
+        </args>
+    </event>
+</events>

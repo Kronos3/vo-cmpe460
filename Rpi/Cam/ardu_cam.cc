@@ -46,54 +46,37 @@ void ArduCam::init()
 //    w_spi_reg(CCR, 1);
 }
 
-//
-//void ArduCam::w_spi_reg(U8 addr, U8 data, U8* read) const
-//{
-//    U8 r_buf[2];    // dummy buffer
-//    U8 w_buf[2] = {
-//            static_cast<U8>(addr | ACAM_SPI_WRITE),
-//            data
-//    };
-//
-//    kernel::spi.WriteReadSync(m_cs, w_buf, read ? read : r_buf, 2);
-//}
-//
-//U8 ArduCam::r_spi_reg(U8 addr) const
-//{
-//    U8 w_buf[2] = {static_cast<U8>(addr & 0x7f), 0x0};
-//    U8 r_buf[2];
-//
-//    kernel::spi.WriteReadSync(m_cs, &w_buf, &r_buf, 2);
-//    return r_buf[1];
-//}
+void ArduCam::w_spi_reg(U8 addr, U8 data, U8* read)
+{
+    U8 r_buf[2];    // dummy buffer
+    U8 w_buf[2] = {
+            static_cast<U8>(addr | ACAM_SPI_WRITE),
+            data
+    };
+
+    read_write_sync_spi(w_buf, read ? read : r_buf, 2);
+}
+
+U8 ArduCam::r_spi_reg(U8 addr)
+{
+    U8 w_buf[2] = {static_cast<U8>(addr & 0x7f), 0x0};
+    U8 r_buf[2];
+
+    read_write_sync_spi(w_buf, r_buf, 2);
+    return r_buf[1];
+}
+
+void ArduCam::capture_image()
+{
+    // Trigger the camera to capture an image
+    w_spi_reg(FIFO, ACAM_FIFO_START);
+}
 
 void ArduCam::update_fifo_length()
 {
-//    U32 len1, len2, len3;
-//    len1 = r_spi_reg(FIFO_SIZE_0);
-//    len2 = r_spi_reg(FIFO_SIZE_1);
-//    len3 = r_spi_reg(FIFO_SIZE_2) & 0x7f;
-//    m_fifo_size = ((len3 << 16) | (len2 << 8) | len1) & 0x07fffff;
+    U32 len1, len2, len3;
+    len1 = r_spi_reg(FIFO_SIZE_0);
+    len2 = r_spi_reg(FIFO_SIZE_1);
+    len3 = r_spi_reg(FIFO_SIZE_2) & 0x7f;
+    m_fifo_size = ((len3 << 16) | (len2 << 8) | len1) & 0x07fffff;
 }
-
-//
-//void ArduCam::capture_image() const
-//{
-//    // Trigger the camera to capture an image
-//    w_spi_reg(FIFO, ACAM_FIFO_START);
-//}
-//
-//void ArduCam::transfer_image(U8* image_buffer, void (* reply)(bool, void*), void* param) const
-//{
-//    FW_ASSERT(image_buffer);
-//    FW_ASSERT(reply);
-//
-//    // Command the SPI to burst the entire FIFO over SPI
-//    image_buffer[0] = BURST_FIFO;
-//
-//    kernel::spi.SetCompletionRoutine(reply, param);
-//
-//    // Queue the SPI data transfer with DMA
-//    kernel::spi.StartWriteRead(m_cs, image_buffer, image_buffer, m_fifo_size);
-//}
-//

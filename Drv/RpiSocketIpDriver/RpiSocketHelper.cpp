@@ -11,7 +11,7 @@
 
 #include <circle/net/netsubsystem.h>
 #include <circle/net/in.h>
-#include <Logger.hpp>
+#include <Fw/Logger/Logger.hpp>
 
 // This implementation has primarily implemented to isolate
 // the socket interface from the F' Fw::Buffer class.
@@ -153,12 +153,12 @@ namespace Drv
     {
         SocketIpStatus status = SOCK_SUCCESS;
         // Attempt to recv out data
-        size = m_socketInFd->Receive(data, MAX_RECV_BUFFER_SIZE, SOCKET_RECV_FLAGS);
+        size = m_socketInFd->Receive(data, size, SOCKET_RECV_FLAGS);
 
         FW_ASSERT(size != 0);
 
         // Error returned, and it wasn't an interrupt, nor a reset
-        if (size == -1)
+        if (size < 0)
         {
             status = SOCK_READ_ERROR; // Stop recv task on error
         }

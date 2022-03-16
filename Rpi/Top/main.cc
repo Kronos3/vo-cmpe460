@@ -11,15 +11,30 @@
 #include <wlan/bcm4343.h>
 #include <wlan/hostap/wpa_supplicant/wpasupplicant.h>
 #include <circle/devicenameservice.h>
+#include <circle/debug.h>
 #include "Components.hpp"
 
 #include "kernel.h"
 
+#include <unwind.h> // GCC's internal unwinder, part of libgcc
+
+
+
 class RpiAssertHook : public Fw::AssertHook
 {
 public:
+    static _Unwind_Reason_Code printStackTrace(
+            struct _Unwind_Context* ctx, void* arg)
+    {
+        (void) arg;
+        _Unwind_Ptr ip = _Unwind_GetIP(ctx);
+        Fw::Logger::logMsg("ip: 0x%x\r\n", ip);
+        return _URC_CONTINUE_UNWIND;
+    }
+
     void printAssert(const I8* msg) override
     {
+//        _Unwind_Backtrace(printStackTrace, nullptr);
         Fw::Logger::logMsg("%s\r\n", (POINTER_CAST)msg);
     }
 
@@ -54,11 +69,11 @@ namespace kernel
     Rpi::Logger logger;
 
     CSerialDevice serial(&interruptSystem, /* fiq */ TRUE);
-//    CI2CMaster i2c(I2C_DEVICE_NUMBER, I2C_FAST_MODE);
-//    CSPIMasterDMA spi(&interruptSystem,
-//                      SPI_SPEED,
-//                      SPI_POL, SPI_PHA,
-//                      /* DMAChannelLite */ FALSE);
+    CI2CMaster i2c(I2C_DEVICE_NUMBER, I2C_FAST_MODE);
+    CSPIMasterDMA spi(&interruptSystem,
+                      SPI_SPEED,
+                      SPI_POL, SPI_PHA,
+                      /* DMAChannelLite */ FALSE);
 
     RpiAssertHook assertHook;
 
@@ -73,7 +88,7 @@ namespace kernel
             /* DefaultGateway */ nullptr,
             /* DNSServer */ nullptr,
             DEFAULT_HOSTNAME,
-            NetDeviceTypeWLAN);
+            NetDeviceTypeEthernet);
     CWPASupplicant wpa_supplicant(CONFIG_FILE);
 }
 
@@ -101,6 +116,10 @@ s32 main()
 
     Fw::Logger::logMsg("Initializing hardware\r\n");
 
+    Fw::Logger::logMsg("Initializing I2C/SPI\r\n");
+    kernel::i2c.Initialize();
+    kernel::spi.Initialize();
+
     Fw::Logger::logMsg("Initializing USB\r\n");
     hardOk = kernel::usbhci.Initialize();
     FW_ASSERT(hardOk);
@@ -119,17 +138,21 @@ s32 main()
         Fw::Logger::logMsg("Mounted %s to /\r\n", (POINTER_CAST)DRIVE);
     }
 
+#ifdef USE_WLAN
     Fw::Logger::logMsg("Initializing WLAN\r\n");
     hardOk = kernel::wlan.Initialize();
     FW_ASSERT(hardOk);
+#endif
 
     Fw::Logger::logMsg("Initializing Network\r\n");
-    hardOk = kernel::net.Initialize(FALSE);
+    hardOk = kernel::net.Initialize(TRUE);
     FW_ASSERT(hardOk);
 
+#ifdef USE_WLAN
     Fw::Logger::logMsg("Initializing WPA Supplicant\r\n");
     hardOk = kernel::wpa_supplicant.Initialize();
     FW_ASSERT(hardOk);
+#endif
 
     CString ip_address;
     kernel::net.GetConfig()->GetIPAddress()->Format(&ip_address);
@@ -145,6 +168,9 @@ s32 main()
     Rpi::start();
 
 //    Rpi::prmDb.readParamFile();
+
+    Fw::Logger::logMsg("Registering commands\r\n");
+    reg_commands();
 
     Fw::Logger::logMsg("Boot complete\r\n");
 
