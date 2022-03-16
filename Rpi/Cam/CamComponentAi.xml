@@ -13,6 +13,7 @@
     <import_enum_type>Rpi/Cam/Types/CameraJpegSizeEnumAi.xml</import_enum_type>
     <import_enum_type>Rpi/Cam/Types/CameraLightModeEnumAi.xml</import_enum_type>
     <import_enum_type>Rpi/Cam/Types/CameraSpecialEffectEnumAi.xml</import_enum_type>
+    <import_enum_type>Drv/I2cDriverPorts/I2cStatusEnumAi.xml</import_enum_type>
 
 <!--    <import_dictionary>Rpi/Cam/Telemetry.xml</import_dictionary>-->
     <import_dictionary>Rpi/Cam/Events.xml</import_dictionary>

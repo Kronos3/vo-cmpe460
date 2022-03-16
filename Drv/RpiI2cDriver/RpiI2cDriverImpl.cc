@@ -16,7 +16,7 @@ namespace Drv
         // Circle only supported 7bit address
         if ((addr & 0x7F) != addr)
         {
-            return {Drv::I2cStatus::I2C_ADDRESS_ERR};
+            return Drv::I2cStatus::I2C_ADDRESS_ERR;
         }
 
         NATIVE_INT_TYPE status;
@@ -31,10 +31,11 @@ namespace Drv
 
         if (status < 0)
         {
-            return {Drv::I2cStatus::I2C_READ_ERR};
+            log_WARNING_HI_I2cReadError(static_cast<const RpiI2cStatus::t>(-status));
+            return Drv::I2cStatus::I2C_READ_ERR;
         }
 
-        return {Drv::I2cStatus::I2C_OK};
+        return Drv::I2cStatus::I2C_OK;
     }
 
     Drv::I2cStatus RpiI2cDriverImpl::writeRead_handler(NATIVE_INT_TYPE portNum, U32 addr,
@@ -58,14 +59,14 @@ namespace Drv
         // Circle only supported 7bit address
         if ((addr & 0x7F) != addr)
         {
-            return {Drv::I2cStatus::I2C_ADDRESS_ERR};
+            return Drv::I2cStatus::I2C_ADDRESS_ERR;
         }
 
         NATIVE_INT_TYPE status;
         U32 total_write = 0;
         do
         {
-            status = kernel::i2c.Read(addr,
+            status = kernel::i2c.Write(addr,
                                       serBuffer.getData() + total_write,
                                       serBuffer.getSize() - total_write);
             total_write += status;
@@ -73,9 +74,10 @@ namespace Drv
 
         if (status < 0)
         {
-            return {Drv::I2cStatus::I2C_WRITE_ERR};
+            log_WARNING_HI_I2cWriteError(static_cast<const RpiI2cStatus::t>(-status));
+            return Drv::I2cStatus::I2C_WRITE_ERR;
         }
 
-        return {Drv::I2cStatus::I2C_OK};
+        return Drv::I2cStatus::I2C_OK;
     }
 }

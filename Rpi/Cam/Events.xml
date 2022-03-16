@@ -1,10 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <events>
     <event id="0" name="CameraPanicI2CWrite" severity="WARNING_HI"
-           format_string="Camera has entered panic due to I2C write failure">
+           format_string="Camera has entered panic due to I2C write failure: %d">
+        <args>
+            <arg name="i2c_status" type="Drv::I2cStatus"/>
+        </args>
     </event>
     <event id="1" name="CameraPanicI2CRead" severity="WARNING_HI"
-           format_string="Camera has entered panic due to I2C read failure">
+           format_string="Camera has entered panic due to I2C read failure: %d">
+        <args>
+            <arg name="i2c_status" type="Drv::I2cStatus"/>
+        </args>
     </event>
     <event id="2"
            name="CameraInitializing"
