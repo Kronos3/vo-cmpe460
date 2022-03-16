@@ -270,6 +270,10 @@
         <source component = "fileUplinkBufferManager" port = "eventOut" type = "Log" num = "0"/>
         <target component = "eventLogger" port = "LogRecv" type = "Log" num = "0"/>
     </connection>
+    <connection name = "i2cDriver__eventLogger_LogRecv">
+        <source component = "i2cDriver" port = "Log" type = "Log" num = "0"/>
+        <target component = "eventLogger" port = "LogRecv" type = "Log" num = "0"/>
+    </connection>
 
     <!-- Telemetry connections -->
     <connection name="rg1hz__chanTlm">

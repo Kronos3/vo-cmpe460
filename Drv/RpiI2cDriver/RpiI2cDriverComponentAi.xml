@@ -4,6 +4,7 @@
 
     <import_port_type>Drv/I2cDriverPorts/I2cPortAi.xml</import_port_type>
     <import_port_type>Drv/I2cDriverPorts/I2cWriteReadPortAi.xml</import_port_type>
+    <import_enum_type>Drv/RpiI2cDriver/RpiI2cStatusEnumAi.xml</import_enum_type>
     <ports>
         <port name="write" data_type="Drv::I2c" kind="guarded_input">
         </port>
@@ -12,5 +13,16 @@
         <port name="writeRead" data_type="Drv::I2cWriteRead" kind="guarded_input">
         </port>
     </ports>
+
+    <events>
+        <event id="0" name="I2cReadError" severity="WARNING_HI"
+            format_string="I2C read error %d">
+            <args><arg name="error" type="Drv::RpiI2cStatus"/></args>
+        </event>
+        <event id="1" name="I2cWriteError" severity="WARNING_HI"
+            format_string="I2C write error %d">
+            <args><arg name="error" type="Drv::RpiI2cStatus"/></args>
+        </event>
+    </events>
 
 </component>

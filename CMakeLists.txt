@@ -19,6 +19,7 @@ include(circle/circle.cmake)
 # Add circle drivers
 add_subdirectory(circle/lib)
 add_subdirectory(circle/addon)
+add_subdirectory(opencv)
 
 target_include_directories(circle PUBLIC
         ${CMAKE_CURRENT_LIST_DIR}/circle/include

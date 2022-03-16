@@ -29,7 +29,7 @@ namespace Rpi
         if (i2cStatus != Drv::I2cStatus::I2C_OK)
         {
             m_state = CAM_STATE_PANIC;
-            log_WARNING_HI_CameraPanicI2CRead();
+            log_WARNING_HI_CameraPanicI2CRead(i2cStatus);
         }
     }
 
@@ -46,7 +46,7 @@ namespace Rpi
 
         if (i2cStatus != Drv::I2cStatus::I2C_OK)
         {
-            log_WARNING_HI_CameraPanicI2CWrite();
+            log_WARNING_HI_CameraPanicI2CWrite(i2cStatus);
             m_state = CAM_STATE_PANIC;
         }
     }
