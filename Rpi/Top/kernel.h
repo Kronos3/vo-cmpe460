@@ -24,8 +24,8 @@ namespace kernel
     extern CNetSubSystem net;
 
     // External communication
-//    extern CI2CMaster i2c;
-//    extern CSPIMasterDMA spi;
+    extern CI2CMaster i2c;
+    extern CSPIMasterDMA spi;
 }
 
 #endif //VO_CMPE460_KERNEL_H

@@ -21,11 +21,13 @@
 #include <Drv/RpiSocketIpDriver/RpiSocketIpDriverTypes.hpp>
 #include <Os/Task.hpp>
 
+#include <Drv/ByteStreamDriverModel/ByteStreamDriverComponentAc.hpp>
+
 #include <circle/net/socket.h>
 
 namespace Drv
 {
-    class RpiSocketIpDriverComponentImpl : public RpiSocketIpDriverComponentBase
+    class RpiSocketIpDriverComponentImpl : public ByteStreamDriverModelComponentBase
     {
     public:
 
@@ -73,12 +75,8 @@ namespace Drv
         // Handler implementations for user-defined typed input ports
         // ----------------------------------------------------------------------
 
-        //! Handler implementation for downlink
-        //!
-        void send_handler(
-                NATIVE_INT_TYPE portNum, /*!< The port number*/
-                Fw::Buffer &fwBuffer
-        ) override;
+        Drv::PollStatus poll_handler(NATIVE_INT_TYPE portNum, Fw::Buffer &pollBuffer) override;
+        Drv::SendStatus send_handler(NATIVE_INT_TYPE portNum, Fw::Buffer &fwBuffer) override;
 
         struct ServerParams
         {
@@ -94,8 +92,6 @@ namespace Drv
         RpiSocketHelper m_helper;
 
         Os::Task m_recvTask;                         //!< Os::Task to start for receiving data
-        Fw::Buffer m_buffer;                         //!< Fw::Buffer used to pass data
-        U8 m_backing_data[MAX_RECV_BUFFER_SIZE];     //!< Buffer used to store data
         bool m_stop;                                 //!< Stop the receiving port
     };
 

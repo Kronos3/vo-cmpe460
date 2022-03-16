@@ -23,55 +23,55 @@ void OV2640::init()
     ws_8_8(OV2640_JPEG);
     ws_8_8(0xff, 0x01);
     ws_8_8(0x15, 0x00);
-    ws_8_8(OV2640_320x240_JPEG);
+
+    set_jpeg_size(Rpi::CameraJpegSize::P_320x240);
 
     update_fifo_length();
 }
 
-void OV2640::set_jpeg_size(JpegSize size)
+void OV2640::set_jpeg_size(const Rpi::CameraJpegSize& size)
 {
-    switch (size)
+    switch (size.e)
     {
-        case DIMENSION_160x120:
+        case Rpi::CameraJpegSize::P_160x120:
             ws_8_8(OV2640_160x120_JPEG);
             break;
-        case DIMENSION_176x144:
+        case Rpi::CameraJpegSize::P_176x144:
             ws_8_8(OV2640_176x144_JPEG);
             break;
-        case DIMENSION_320x240:
+        case Rpi::CameraJpegSize::P_320x240:
             ws_8_8(OV2640_320x240_JPEG);
             break;
-        case DIMENSION_352x288:
+        case Rpi::CameraJpegSize::P_352x288:
             ws_8_8(OV2640_352x288_JPEG);
             break;
-        case DIMENSION_640x480:
+        case Rpi::CameraJpegSize::P_640x480:
             ws_8_8(OV2640_640x480_JPEG);
             break;
-        case DIMENSION_800x600:
+        case Rpi::CameraJpegSize::P_800x600:
             ws_8_8(OV2640_800x600_JPEG);
             break;
-        case DIMENSION_1024x768:
+        case Rpi::CameraJpegSize::P_1024x768:
             ws_8_8(OV2640_1024x768_JPEG);
             break;
-        case DIMENSION_1280x1024:
+        case Rpi::CameraJpegSize::P_1280x1024:
             ws_8_8(OV2640_1280x1024_JPEG);
             break;
-        case DIMENSION_1600x1200:
+        case Rpi::CameraJpegSize::P_1600x1200:
             ws_8_8(OV2640_1600x1200_JPEG);
             break;
         default:
-            ws_8_8(OV2640_320x240_JPEG);
-            break;
+            FW_ASSERT(0, size.e);
     }
 
     update_fifo_length();
 }
 
-void OV2640::set_special_effects(OV2640::SpecialEffects effect)
+void OV2640::set_special_effects(const Rpi::CameraSpecialEffect& effect)
 {
-    switch (effect)
+    switch (effect.e)
     {
-        case ANTIQUE:
+        case Rpi::CameraSpecialEffect::ANTIQUE:
             ws_8_8(0xff, 0x00);
             ws_8_8(0x7c, 0x00);
             ws_8_8(0x7d, 0x18);
@@ -79,7 +79,7 @@ void OV2640::set_special_effects(OV2640::SpecialEffects effect)
             ws_8_8(0x7d, 0x40);
             ws_8_8(0x7d, 0xa6);
             break;
-        case BLUEISH:
+        case Rpi::CameraSpecialEffect::BLUEISH:
             ws_8_8(0xff, 0x00);
             ws_8_8(0x7c, 0x00);
             ws_8_8(0x7d, 0x18);
@@ -87,7 +87,7 @@ void OV2640::set_special_effects(OV2640::SpecialEffects effect)
             ws_8_8(0x7d, 0xa0);
             ws_8_8(0x7d, 0x40);
             break;
-        case GREENISH:
+        case Rpi::CameraSpecialEffect::GREENISH:
             ws_8_8(0xff, 0x00);
             ws_8_8(0x7c, 0x00);
             ws_8_8(0x7d, 0x18);
@@ -95,7 +95,7 @@ void OV2640::set_special_effects(OV2640::SpecialEffects effect)
             ws_8_8(0x7d, 0x40);
             ws_8_8(0x7d, 0x40);
             break;
-        case REDDISH:
+        case Rpi::CameraSpecialEffect::REDDISH:
             ws_8_8(0xff, 0x00);
             ws_8_8(0x7c, 0x00);
             ws_8_8(0x7d, 0x18);
@@ -103,7 +103,7 @@ void OV2640::set_special_effects(OV2640::SpecialEffects effect)
             ws_8_8(0x7d, 0x40);
             ws_8_8(0x7d, 0xc0);
             break;
-        case BW:
+        case Rpi::CameraSpecialEffect::BW:
             ws_8_8(0xff, 0x00);
             ws_8_8(0x7c, 0x00);
             ws_8_8(0x7d, 0x18);
@@ -111,7 +111,7 @@ void OV2640::set_special_effects(OV2640::SpecialEffects effect)
             ws_8_8(0x7d, 0x80);
             ws_8_8(0x7d, 0x80);
             break;
-        case NEGATIVE:
+        case Rpi::CameraSpecialEffect::NEGATIVE:
             ws_8_8(0xff, 0x00);
             ws_8_8(0x7c, 0x00);
             ws_8_8(0x7d, 0x40);
@@ -119,7 +119,7 @@ void OV2640::set_special_effects(OV2640::SpecialEffects effect)
             ws_8_8(0x7d, 0x80);
             ws_8_8(0x7d, 0x80);
             break;
-        case BW_NEGATIVE:
+        case Rpi::CameraSpecialEffect::BW_NEGATIVE:
             ws_8_8(0xff, 0x00);
             ws_8_8(0x7c, 0x00);
             ws_8_8(0x7d, 0x58);
@@ -127,7 +127,7 @@ void OV2640::set_special_effects(OV2640::SpecialEffects effect)
             ws_8_8(0x7d, 0x80);
             ws_8_8(0x7d, 0x80);
             break;
-        case NORMAL:
+        case Rpi::CameraSpecialEffect::NORMAL:
             ws_8_8(0xff, 0x00);
             ws_8_8(0x7c, 0x00);
             ws_8_8(0x7d, 0x00);
@@ -140,11 +140,11 @@ void OV2640::set_special_effects(OV2640::SpecialEffects effect)
     update_fifo_length();
 }
 
-void OV2640::set_contrast(Calibration contrast)
+void OV2640::set_contrast(I8 contrast)
 {
     switch (contrast)
     {
-        case PLUS_2:
+        case 2:
 
             ws_8_8(0xff, 0x00);
             ws_8_8(0x7c, 0x00);
@@ -155,7 +155,7 @@ void OV2640::set_contrast(Calibration contrast)
             ws_8_8(0x7d, 0x0c);
             ws_8_8(0x7d, 0x06);
             break;
-        case PLUS_1:
+        case 1:
             ws_8_8(0xff, 0x00);
             ws_8_8(0x7c, 0x00);
             ws_8_8(0x7d, 0x04);
@@ -165,7 +165,7 @@ void OV2640::set_contrast(Calibration contrast)
             ws_8_8(0x7d, 0x16);
             ws_8_8(0x7d, 0x06);
             break;
-        case ZERO:
+        case 0:
             ws_8_8(0xff, 0x00);
             ws_8_8(0x7c, 0x00);
             ws_8_8(0x7d, 0x04);
@@ -175,7 +175,7 @@ void OV2640::set_contrast(Calibration contrast)
             ws_8_8(0x7d, 0x20);
             ws_8_8(0x7d, 0x06);
             break;
-        case MINUS_1:
+        case -1:
             ws_8_8(0xff, 0x00);
             ws_8_8(0x7c, 0x00);
             ws_8_8(0x7d, 0x04);
@@ -185,7 +185,7 @@ void OV2640::set_contrast(Calibration contrast)
             ws_8_8(0x7d, 0x2a);
             ws_8_8(0x7d, 0x06);
             break;
-        case MINUS_2:
+        case -2:
             ws_8_8(0xff, 0x00);
             ws_8_8(0x7c, 0x00);
             ws_8_8(0x7d, 0x04);
@@ -195,16 +195,18 @@ void OV2640::set_contrast(Calibration contrast)
             ws_8_8(0x7d, 0x34);
             ws_8_8(0x7d, 0x06);
             break;
+        default:
+            FW_ASSERT(0, contrast);
     }
 
     update_fifo_length();
 }
 
-void OV2640::set_brightness(Calibration brightness)
+void OV2640::set_brightness(I8 brightness)
 {
     switch (brightness)
     {
-        case PLUS_2:
+        case 2:
             ws_8_8(0xff, 0x00);
             ws_8_8(0x7c, 0x00);
             ws_8_8(0x7d, 0x04);
@@ -212,7 +214,7 @@ void OV2640::set_brightness(Calibration brightness)
             ws_8_8(0x7d, 0x40);
             ws_8_8(0x7d, 0x00);
             break;
-        case PLUS_1:
+        case 1:
             ws_8_8(0xff, 0x00);
             ws_8_8(0x7c, 0x00);
             ws_8_8(0x7d, 0x04);
@@ -220,7 +222,7 @@ void OV2640::set_brightness(Calibration brightness)
             ws_8_8(0x7d, 0x30);
             ws_8_8(0x7d, 0x00);
             break;
-        case ZERO:
+        case 0:
             ws_8_8(0xff, 0x00);
             ws_8_8(0x7c, 0x00);
             ws_8_8(0x7d, 0x04);
@@ -228,7 +230,7 @@ void OV2640::set_brightness(Calibration brightness)
             ws_8_8(0x7d, 0x20);
             ws_8_8(0x7d, 0x00);
             break;
-        case MINUS_1:
+        case -1:
             ws_8_8(0xff, 0x00);
             ws_8_8(0x7c, 0x00);
             ws_8_8(0x7d, 0x04);
@@ -236,7 +238,7 @@ void OV2640::set_brightness(Calibration brightness)
             ws_8_8(0x7d, 0x10);
             ws_8_8(0x7d, 0x00);
             break;
-        case MINUS_2:
+        case -2:
             ws_8_8(0xff, 0x00);
             ws_8_8(0x7c, 0x00);
             ws_8_8(0x7d, 0x04);
@@ -244,16 +246,18 @@ void OV2640::set_brightness(Calibration brightness)
             ws_8_8(0x7d, 0x00);
             ws_8_8(0x7d, 0x00);
             break;
+        default:
+            FW_ASSERT(0, brightness);
     }
 
     update_fifo_length();
 }
 
-void OV2640::set_color_saturation(Calibration color_saturation)
+void OV2640::set_color_saturation(I8 color_saturation)
 {
     switch (color_saturation)
     {
-        case PLUS_2:
+        case 2:
 
             ws_8_8(0xff, 0x00);
             ws_8_8(0x7c, 0x00);
@@ -262,7 +266,7 @@ void OV2640::set_color_saturation(Calibration color_saturation)
             ws_8_8(0x7d, 0x68);
             ws_8_8(0x7d, 0x68);
             break;
-        case PLUS_1:
+        case 1:
             ws_8_8(0xff, 0x00);
             ws_8_8(0x7c, 0x00);
             ws_8_8(0x7d, 0x02);
@@ -270,7 +274,7 @@ void OV2640::set_color_saturation(Calibration color_saturation)
             ws_8_8(0x7d, 0x58);
             ws_8_8(0x7d, 0x58);
             break;
-        case ZERO:
+        case 0:
             ws_8_8(0xff, 0x00);
             ws_8_8(0x7c, 0x00);
             ws_8_8(0x7d, 0x02);
@@ -278,7 +282,7 @@ void OV2640::set_color_saturation(Calibration color_saturation)
             ws_8_8(0x7d, 0x48);
             ws_8_8(0x7d, 0x48);
             break;
-        case MINUS_1:
+        case -1:
             ws_8_8(0xff, 0x00);
             ws_8_8(0x7c, 0x00);
             ws_8_8(0x7d, 0x02);
@@ -286,7 +290,7 @@ void OV2640::set_color_saturation(Calibration color_saturation)
             ws_8_8(0x7d, 0x38);
             ws_8_8(0x7d, 0x38);
             break;
-        case MINUS_2:
+        case -2:
             ws_8_8(0xff, 0x00);
             ws_8_8(0x7c, 0x00);
             ws_8_8(0x7d, 0x02);
@@ -294,48 +298,51 @@ void OV2640::set_color_saturation(Calibration color_saturation)
             ws_8_8(0x7d, 0x28);
             ws_8_8(0x7d, 0x28);
             break;
+        default:
+            FW_ASSERT(0, color_saturation);
     }
 
     update_fifo_length();
 }
 
-void OV2640::set_light_mode(LightMode light_mode)
+void OV2640::set_light_mode(const Rpi::CameraLightMode& light_mode)
 {
-    switch (light_mode)
+    switch (light_mode.e)
     {
-        default:
-        case AUTO:
+        case Rpi::CameraLightMode::AUTO:
             ws_8_8(0xff, 0x00);
             ws_8_8(0xc7, 0x00); //AWB on
             break;
-        case SUNNY:
+        case Rpi::CameraLightMode::SUNNY:
             ws_8_8(0xff, 0x00);
             ws_8_8(0xc7, 0x40); //AWB off
             ws_8_8(0xcc, 0x5e);
             ws_8_8(0xcd, 0x41);
             ws_8_8(0xce, 0x54);
             break;
-        case CLOUDY:
+        case Rpi::CameraLightMode::CLOUDY:
             ws_8_8(0xff, 0x00);
             ws_8_8(0xc7, 0x40); //AWB off
             ws_8_8(0xcc, 0x65);
             ws_8_8(0xcd, 0x41);
             ws_8_8(0xce, 0x4f);
             break;
-        case OFFICE:
+        case Rpi::CameraLightMode::OFFICE:
             ws_8_8(0xff, 0x00);
             ws_8_8(0xc7, 0x40); //AWB off
             ws_8_8(0xcc, 0x52);
             ws_8_8(0xcd, 0x41);
             ws_8_8(0xce, 0x66);
             break;
-        case HOME:
+        case Rpi::CameraLightMode::HOME:
             ws_8_8(0xff, 0x00);
             ws_8_8(0xc7, 0x40); //AWB off
             ws_8_8(0xcc, 0x42);
             ws_8_8(0xcd, 0x3f);
             ws_8_8(0xce, 0x71);
             break;
+        default:
+            FW_ASSERT(0, light_mode.e);
     }
 
     update_fifo_length();

@@ -19,7 +19,7 @@ namespace Drv
     void RpiSpiDriverImpl::init(NATIVE_INT_TYPE instance)
     {
         RpiSpiDriverComponentBase::init(instance);
-//        kernel::spi.SetCompletionRoutine(dmaCompletion_routine, this);
+        kernel::spi.SetCompletionRoutine(dmaCompletion_routine, this);
     }
 
     Drv::SpiStatus RpiSpiDriverImpl::transactDma_handler(
@@ -52,10 +52,10 @@ namespace Drv
         m_dma.writeBuffer = &writeBuffer;
 
         // Perform the polling on the Raspberry Pi SPI
-//        kernel::spi.StartWriteRead(m_chipSelect[portNum],
-//                                   writeBuffer.getData(),
-//                                   readBuffer.getData(),
-//                                   writeBuffer.getSize());
+        kernel::spi.StartWriteRead(m_chipSelect[portNum],
+                                   writeBuffer.getData(),
+                                   readBuffer.getData(),
+                                   writeBuffer.getSize());
 
         return Drv::SpiStatus::SPI_OK;
     }
@@ -79,10 +79,10 @@ namespace Drv
 
         I32 num_bytes;
         // Perform the polling on the Raspberry Pi SPI
-//        num_bytes = kernel::spi.WriteReadSync(m_chipSelect[portNum],
-//                                              writeBuffer.getData(),
-//                                              readBuffer.getData(),
-//                                              writeBuffer.getSize());
+        num_bytes = kernel::spi.WriteReadSync(m_chipSelect[portNum],
+                                              writeBuffer.getData(),
+                                              readBuffer.getData(),
+                                              writeBuffer.getSize());
 
         m_busy = false;
 

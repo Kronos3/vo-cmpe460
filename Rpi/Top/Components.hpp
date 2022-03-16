@@ -5,17 +5,18 @@
 #include <Svc/ActiveRateGroup/ActiveRateGroupImpl.hpp>
 #include <Svc/RateGroupDriver/RateGroupDriverImpl.hpp>
 
-//#include <Svc/CmdDispatcher/CommandDispatcherImpl.hpp>
-//#include <Svc/CmdSequencer/CmdSequencerImpl.hpp>
+#include <Svc/CmdDispatcher/CommandDispatcherImpl.hpp>
+#include <Svc/Deframer/DeframerComponentImpl.hpp>
+#include <Svc/Framer/FramerComponentImpl.hpp>
 
 #include <Svc/ActiveLogger/ActiveLoggerImpl.hpp>
 #include <Svc/TlmChan/TlmChanImpl.hpp>
 #include <Svc/PrmDb/PrmDbImpl.hpp>
-#include <Svc/GroundInterface/GroundInterface.hpp>
 
 //#include <Svc/FileManager/FileManager.hpp>
-//#include <Svc/StaticMemory/StaticMemoryComponentImpl.hpp>
+#include <Svc/StaticMemory/StaticMemoryComponentImpl.hpp>
 //#include <Svc/FatalHandler/FatalHandlerComponentImpl.hpp>
+#include <Svc/FileUplink/FileUplink.hpp>
 
 #include <Drv/RpiSerialDriver/RpiSerialDriverImpl.h>
 #include <Drv/RpiI2cDriver/RpiI2cDriverImpl.h>
@@ -26,6 +27,7 @@
 #include <Rpi/Cam/CamImpl.h>
 
 #include <Rpi/Test/TestImpl.h>
+#include <Svc/BufferManager/BufferManagerComponentImpl.hpp>
 
 namespace Rpi
 {
@@ -36,15 +38,19 @@ namespace Rpi
     extern Svc::ActiveRateGroupImpl rg50hz;
 
 //    extern Svc::CmdSequencerComponentImpl cmdSeq;
-//    extern Svc::CommandDispatcherImpl cmdDisp;
+    extern Svc::CommandDispatcherImpl cmdDisp;
 
     extern Svc::ActiveLoggerImpl eventLogger;
-    extern Svc::TlmChanImpl tlmChan;
+    extern Svc::TlmChanImpl chanTlm;
     extern Svc::PrmDbImpl prmDb;
-    extern Svc::GroundInterfaceComponentImpl groundIf;
+
+    extern Svc::DeframerComponentImpl uplink;
+    extern Svc::FramerComponentImpl downlink;
+    extern Svc::FileUplink fileUplink;
+    extern Svc::BufferManagerComponentImpl fileUplinkBufferManager;
 
 //    extern Svc::FileManager fileManager;
-//    extern Svc::StaticMemoryComponentImpl staticMemory;
+    extern Svc::StaticMemoryComponentImpl staticMemory;
 //    extern Svc::FatalHandlerComponentImpl fatalHandler;
 
     extern Rpi::SystemTimeImpl systemTime;
@@ -57,6 +63,7 @@ namespace Rpi
 
 //    extern Rpi::CamImpl camL;
 //    extern Rpi::CamImpl camR;
+    extern Rpi::CamImpl cam;
 
     // FSW entry points
     void init();

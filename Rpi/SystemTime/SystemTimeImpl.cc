@@ -7,6 +7,7 @@ namespace Rpi
     static SystemTimeImpl* self = nullptr;
     SystemTimeImpl::SystemTimeImpl()
     {
+        FW_ASSERT(!self, (POINTER_CAST)self);
         self = this;
     }
 

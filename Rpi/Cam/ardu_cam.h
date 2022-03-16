@@ -4,9 +4,17 @@
 #include <Assert.hpp>
 #include "common.h"
 
+#include <circle/sched/synchronizationevent.h>
+
 #ifndef __cplusplus
 #error "ArduCam needs C++ to be included"
 #endif
+
+#include <Rpi/Cam/Types/CameraCalibrationEnumAc.hpp>
+#include <Rpi/Cam/Types/CameraCalibrationSettingEnumAc.hpp>
+#include <Rpi/Cam/Types/CameraJpegSizeEnumAc.hpp>
+#include <Rpi/Cam/Types/CameraLightModeEnumAc.hpp>
+#include <Rpi/Cam/Types/CameraSpecialEffectEnumAc.hpp>
 
 class ArduCam
 {
@@ -35,14 +43,14 @@ protected:
      * @param data data to write
      * @param read buffer to read into NULL for ignore
      */
-//    void w_spi_reg(U8 addr, U8 data, U8* read = nullptr) const;
+    void w_spi_reg(U8 addr, U8 data, U8* read = nullptr);
 
     /**
      * Read from a SPI register
      * @param addr address of register
      * @param read buffer to read into
      */
-//    U8 r_spi_reg(U8 addr) const;
+    U8 r_spi_reg(U8 addr);
 
     /**
      * Update the internal FIFO length
@@ -74,6 +82,7 @@ protected:
 
     virtual void read_i2c(U8 address, U8* dst, U32 len) = 0;
     virtual void write_i2c(U8 address, U8* src, U32 len) = 0;
+    virtual void read_write_sync_spi(U8* write, U8* read, U32 size) = 0;
 
 public:
     /**
@@ -82,16 +91,7 @@ public:
      * This way the cameras can be triggered simultaneously
      * and transferred serially along the SPI bus
      */
-//    void capture_image() const;
-
-    /**
-     * Capture a single image
-     * Note that this function will return immediately
-     * @param image_buffer image buffer
-     * @param reply reply from DMA that data has been transferred
-     * @param param parameter to be sent to reply
-     */
-//    void transfer_image(U8* image_buffer, void (* reply)(bool, void*), void* param) const;
+    void capture_image();
 };
 
 class OV2640 : public ArduCam
@@ -105,57 +105,12 @@ public:
      */
     void init() override;
 
-    //Light Mode
-    enum LightMode
-    {
-        AUTO,
-        SUNNY,
-        CLOUDY,
-        OFFICE,
-        HOME,
-    };
-
-    // Saturation, Brightness, Contrast
-    enum Calibration
-    {
-        PLUS_2,
-        PLUS_1,
-        ZERO,
-        MINUS_1,
-        MINUS_2,
-    };
-
-    enum SpecialEffects
-    {
-        ANTIQUE,
-        BLUEISH,
-        GREENISH,
-        REDDISH,
-        BW,
-        NEGATIVE,
-        BW_NEGATIVE,
-        NORMAL,
-    };
-
-    enum JpegSize
-    {
-        DIMENSION_160x120,
-        DIMENSION_176x144,
-        DIMENSION_320x240,
-        DIMENSION_352x288,
-        DIMENSION_640x480,
-        DIMENSION_800x600,
-        DIMENSION_1024x768,
-        DIMENSION_1280x1024,
-        DIMENSION_1600x1200,
-    };
-
-    void set_special_effects(SpecialEffects effect);
-    void set_contrast(Calibration contrast);
-    void set_brightness(Calibration brightness);
-    void set_color_saturation(Calibration color_saturation);
-    void set_light_mode(LightMode light_mode);
-    void set_jpeg_size(JpegSize size);
+    void set_special_effects(const Rpi::CameraSpecialEffect& effect);
+    void set_contrast(I8 contrast);
+    void set_brightness(I8 brightness);
+    void set_color_saturation(I8 color_saturation);
+    void set_light_mode(const Rpi::CameraLightMode& light_mode);
+    void set_jpeg_size(const Rpi::CameraJpegSize& size);
 
 private:
 //    virtual void read_i2c(U8 address, U8* dst, U32 len) = 0;

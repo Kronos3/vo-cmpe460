@@ -1,0 +1,10 @@
+<enum namespace="Rpi" name="CameraSpecialEffect">
+    <item name="ANTIQUE" value="0"/>
+    <item name="BLUEISH" value="1"/>
+    <item name="GREENISH" value="2"/>
+    <item name="REDDISH" value="3"/>
+    <item name="BW" value="4"/>
+    <item name="NEGATIVE" value="5"/>
+    <item name="BW_NEGATIVE" value="6"/>
+    <item name="NORMAL" value="7"/>
+</enum>

@@ -5,6 +5,11 @@ namespace Drv
 {
     RpiI2cDriverImpl::RpiI2cDriverImpl() = default;
 
+    void RpiI2cDriverImpl::init(NATIVE_INT_TYPE instance)
+    {
+        RpiI2cDriverComponentBase::init(instance);
+    }
+
     Drv::I2cStatus RpiI2cDriverImpl::read_handler(NATIVE_INT_TYPE portNum, U32 addr, Fw::Buffer &serBuffer)
     {
         // Validate the I2C address
@@ -18,9 +23,9 @@ namespace Drv
         U32 total_read = 0;
         do
         {
-//            status = kernel::i2c.Read(addr,
-//                                       serBuffer.getData() + total_read,
-//                                       serBuffer.getSize() - total_read);
+            status = kernel::i2c.Read(addr,
+                                       serBuffer.getData() + total_read,
+                                       serBuffer.getSize() - total_read);
             total_read += status;
         } while(status > 0 && total_read < serBuffer.getSize());
 
@@ -60,9 +65,9 @@ namespace Drv
         U32 total_write = 0;
         do
         {
-//            status = kernel::i2c.Read(addr,
-//                                      serBuffer.getData() + total_write,
-//                                      serBuffer.getSize() - total_write);
+            status = kernel::i2c.Read(addr,
+                                      serBuffer.getData() + total_write,
+                                      serBuffer.getSize() - total_write);
             total_write += status;
         } while(status > 0 && total_write < serBuffer.getSize());
 
@@ -72,10 +77,5 @@ namespace Drv
         }
 
         return {Drv::I2cStatus::I2C_OK};
-    }
-
-    void RpiI2cDriverImpl::init(NATIVE_INT_TYPE instance)
-    {
-        RpiI2cDriverComponentBase::init(instance);
     }
 }

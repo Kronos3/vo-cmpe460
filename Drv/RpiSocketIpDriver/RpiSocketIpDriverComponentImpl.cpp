@@ -19,14 +19,9 @@
 
 namespace Drv
 {
-    //!< Storage for our keep-alive data
-    const char KEEPALIVE_CONST[] = KEEPALIVE_DATA;
-
     RpiSocketIpDriverComponentImpl::RpiSocketIpDriverComponentImpl(const char* const compName)
-    : RpiSocketIpDriverComponentBase(compName),
+    : ByteStreamDriverModelComponentBase(compName),
         m_helper(),
-        m_buffer(m_backing_data, sizeof(m_buffer)),
-        m_backing_data{},
         m_stop(false)
     {}
 
@@ -35,7 +30,7 @@ namespace Drv
                                               U16 port,
                                               const bool send_udp)
     {
-        RpiSocketIpDriverComponentBase::init(instance);
+        ByteStreamDriverModelComponentBase::init(instance);
         m_server.hostname = hostname;
         m_server.port = port;
         m_server.is_udp = send_udp;
@@ -60,25 +55,21 @@ namespace Drv
             // If the network connection is open, read from it
             if (m_helper.isOpened())
             {
-                U8* data = m_buffer.getData();
+                Fw::Buffer buffer = allocate_out(0, 1024);
+                U8* data = buffer.getData();
                 FW_ASSERT(data);
-                I32 size = 0;
+                I32 size = static_cast<I32>(buffer.getSize());
                 status = m_helper.recv(data, size);
                 if (status != SOCK_SUCCESS &&
                     status != SOCK_INTERRUPTED_TRY_AGAIN)
                 {
                     m_helper.close();
+                    recv_out(0, buffer, RECV_ERROR);
                 }
                 else
                 {
-                    // Ignore KEEPALIVE data and send out any other data.
-                    if (memcmp(data, KEEPALIVE_CONST,
-                               (size > static_cast<I32>(sizeof(KEEPALIVE_CONST)) - 1) ? sizeof(KEEPALIVE_CONST) - 1
-                                                                                      : size) != 0)
-                    {
-                        m_buffer.setSize(size);
-                        recv_out(0, m_buffer);
-                    }
+                    buffer.setSize(size);
+                    recv_out(0, buffer, RECV_OK);
                 }
             }
         }
@@ -129,17 +120,17 @@ namespace Drv
         m_stop = true;
     }
 
-    // ----------------------------------------------------------------------
-    // Handler implementations for user-defined typed input ports
-    // ----------------------------------------------------------------------
-
-    void RpiSocketIpDriverComponentImpl::send_handler(
-            const NATIVE_INT_TYPE portNum,
-            Fw::Buffer &fwBuffer)
+    Drv::PollStatus RpiSocketIpDriverComponentImpl::poll_handler(NATIVE_INT_TYPE portNum, Fw::Buffer &pollBuffer)
     {
-        U32 size = fwBuffer.getSize();
-        U8* data = fwBuffer.getData();
-        FW_ASSERT(data);
-        m_helper.send(data, size);
+        FW_ASSERT(0); // It is an error to call this handler on IP drivers
+        return Drv::POLL_ERROR;
+    }
+
+    Drv::SendStatus RpiSocketIpDriverComponentImpl::send_handler(NATIVE_INT_TYPE portNum, Fw::Buffer &fwBuffer)
+    {
+        m_helper.send(fwBuffer.getData(), fwBuffer.getSize());
+        // Always return the buffer
+        deallocate_out(0, fwBuffer);
+        return SEND_OK;
     }
 } // end namespace Svc

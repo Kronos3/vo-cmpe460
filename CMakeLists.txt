@@ -10,6 +10,8 @@ set(RASPPI 3)
 set(ARM_ALLOW_MULTI_CORE OFF)
 set(FLOAT_ABI "hard")
 
+add_compile_options(-funwind-tables)
+
 # Initialize the compiler toolchain
 include(toolchain.cmake)
 include(circle/circle.cmake)

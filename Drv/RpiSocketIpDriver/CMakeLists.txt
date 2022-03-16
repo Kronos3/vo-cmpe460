@@ -6,11 +6,12 @@
 #
 ####
 set(SOURCE_FILES
-        "${CMAKE_CURRENT_LIST_DIR}/RpiSocketIpDriverComponentAi.xml"
         "${CMAKE_CURRENT_LIST_DIR}/RpiSocketIpDriverComponentImpl.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/RpiSocketHelper.cpp"
         )
 
-set(MOD_DEPS net)
+set(MOD_DEPS
+        Fw/Logger
+        net)
 
 register_fprime_module()
