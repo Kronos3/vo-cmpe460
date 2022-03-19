@@ -26,6 +26,8 @@ namespace kernel
     // External communication
     extern CI2CMaster i2c;
     extern CSPIMasterDMA spi;
+
+    // Hardware control
 }
 
 #endif //VO_CMPE460_KERNEL_H

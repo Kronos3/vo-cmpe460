@@ -17,42 +17,33 @@
 
 #include <unwind.h> // GCC's internal unwinder, part of libgcc
 #include <fatfs/ff.h>
+#include <circle/exceptionhandler.h>
 
 
 class RpiAssertHook : public Fw::AssertHook
 {
 public:
-    static _Unwind_Reason_Code printStackTrace(
-            struct _Unwind_Context* ctx, void* arg)
-    {
-        (void) arg;
-        _Unwind_Ptr ip = _Unwind_GetIP(ctx);
-        Fw::Logger::logMsg("ip: 0x%x\r\n", ip);
-        return _URC_CONTINUE_UNWIND;
-    }
 
     void printAssert(const I8* msg) override
     {
-//        _Unwind_Backtrace(printStackTrace, nullptr);
-        Fw::Logger::logMsg("%s\r\n", (POINTER_CAST)msg);
+        CLogger::Get()->Write("fsw", LogPanic, msg);
     }
 
     void doAssert() override
     {
-        EnterCritical();
         // Hang this task
         while(TRUE)
         {
             for (unsigned i = 1; i <= 2; i++)
             {
                 kernel::led.On();
-                kernel::tim.MsDelay(100);
+                Os::Task::delay(100);
 
                 kernel::led.Off();
-                kernel::tim.MsDelay(100);
+                Os::Task::delay(100);
             }
 
-            kernel::tim.MsDelay(300);
+            Os::Task::delay(300);
         }
     }
 };
@@ -66,15 +57,17 @@ namespace kernel
     CActLED led;
     CTimer tim(&interruptSystem);
     Rpi::Logger logger;
+    CLogger circle_logger(LogDebug, &tim);
 
-    CSerialDevice serial(&interruptSystem, /* fiq */ TRUE);
-    CI2CMaster i2c(I2C_DEVICE_NUMBER, I2C_FAST_MODE);
+    CSerialDevice serial(nullptr);
+    CI2CMaster i2c(I2C_DEVICE_NUMBER, I2C_FAST_MODE, I2C_CONFIG_NUMBER);
     CSPIMasterDMA spi(&interruptSystem,
                       SPI_SPEED,
                       SPI_POL, SPI_PHA,
                       /* DMAChannelLite */ FALSE);
 
     RpiAssertHook assertHook;
+    CExceptionHandler exceptionHandler;
 
     CDeviceNameService deviceNameService;
     CUSBHCIDevice usbhci(&interruptSystem, &tim);
@@ -93,7 +86,8 @@ namespace kernel
 
 void assertion_failed (const char *pExpr, const char *pFile, unsigned nLine)
 {
-    Fw::Logger::logMsg("%s:%d %s\r\n", (POINTER_CAST)pFile, nLine, (POINTER_CAST)pExpr);
+    CLogger::Get()->Write("circle", LogPanic,
+                          "%s:%d %s", pFile, nLine, pExpr);
     kernel::assertHook.doAssert();
 }
 
@@ -110,14 +104,18 @@ s32 main()
 
     kernel::led.On();
     kernel::assertHook.registerHook();
+    kernel::circle_logger.Initialize(&kernel::serial);
 
     Fw::Logger::logMsg("Booting up\r\n");
 
     Fw::Logger::logMsg("Initializing hardware\r\n");
 
     Fw::Logger::logMsg("Initializing I2C/SPI\r\n");
-    kernel::i2c.Initialize();
-    kernel::spi.Initialize();
+    hardOk = kernel::i2c.Initialize();
+    FW_ASSERT(hardOk);
+
+    hardOk = kernel::spi.Initialize();
+    FW_ASSERT(hardOk);
 
     Fw::Logger::logMsg("Initializing USB\r\n");
     hardOk = kernel::usbhci.Initialize();
@@ -166,10 +164,12 @@ s32 main()
     Fw::Logger::logMsg("Starting active tasks\r\n");
     Rpi::start();
 
-//    Rpi::prmDb.readParamFile();
-
     Fw::Logger::logMsg("Registering commands\r\n");
     reg_commands();
+
+    Fw::Logger::logMsg("Load parameter database\r\n");
+    Rpi::prmDb.readParamFile();
+    loadParameters();
 
     Fw::Logger::logMsg("Boot complete\r\n");
 

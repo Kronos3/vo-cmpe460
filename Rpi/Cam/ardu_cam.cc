@@ -33,19 +33,6 @@ ArduCam::ArduCam(U8 addr)
 {
 }
 
-void ArduCam::init()
-{
-//    // Clear all internal camera fifos
-//    w_spi_reg(FIFO,
-//              ACAM_FIFO_RST_WPTR |
-//              ACAM_FIFO_RST_RPTR |
-//              ACAM_FIFO_CLR_DONE
-//              );
-//
-//    // We only need a single image per burst for our purposes
-//    w_spi_reg(CCR, 1);
-}
-
 void ArduCam::w_spi_reg(U8 addr, U8 data, U8* read)
 {
     U8 r_buf[2];    // dummy buffer

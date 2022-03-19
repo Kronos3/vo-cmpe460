@@ -35,13 +35,13 @@ namespace Os
             case OPEN_SYNC_WRITE:
             case OPEN_WRITE:
             case OPEN_SYNC_DIRECT_WRITE:
-                fat_fs_mode = FA_WRITE;
+                fat_fs_mode = FA_WRITE | FA_OPEN_ALWAYS;
                 break;
             case OPEN_CREATE:
-                fat_fs_mode = FA_WRITE | FA_CREATE_NEW;
+                fat_fs_mode = FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_NEW;
                 break;
             case OPEN_APPEND:
-                fat_fs_mode = FA_WRITE | FA_OPEN_APPEND;
+                fat_fs_mode = FA_WRITE | FA_OPEN_ALWAYS | FA_OPEN_APPEND;
                 break;
         }
 

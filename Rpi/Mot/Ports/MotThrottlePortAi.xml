@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface name="MotThrottle" namespace="Rpi">
+    <comment>Run the car's DC motors at a certain rate</comment>
+    <args>
+        <arg name="left" type="F64">
+            <comment>Left motor drive strength (-1.0 - 1.0)</comment>
+        </arg>
+        <arg name="right" type="F64">
+            <comment>Left motor drive strength (-1.0 - 1.0)</comment>
+        </arg>
+    </args>
+</interface>

@@ -16,6 +16,9 @@ namespace Drv
         );
 
     private:
+        U32 m_tx;
+        U32 m_rx;
+
         Drv::I2cStatus read_handler(NATIVE_INT_TYPE portNum, U32 addr, Fw::Buffer &serBuffer) override;
 
         Drv::I2cStatus writeRead_handler(NATIVE_INT_TYPE portNum, U32 addr, Fw::Buffer &writeBuffer, Fw::Buffer &readBuffer) override;

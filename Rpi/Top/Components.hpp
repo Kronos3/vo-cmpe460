@@ -13,7 +13,7 @@
 #include <Svc/TlmChan/TlmChanImpl.hpp>
 #include <Svc/PrmDb/PrmDbImpl.hpp>
 
-//#include <Svc/FileManager/FileManager.hpp>
+#include <Svc/FileManager/FileManager.hpp>
 #include <Svc/StaticMemory/StaticMemoryComponentImpl.hpp>
 //#include <Svc/FatalHandler/FatalHandlerComponentImpl.hpp>
 #include <Svc/FileUplink/FileUplink.hpp>
@@ -25,6 +25,7 @@
 
 #include <Rpi/SystemTime/SystemTimeImpl.h>
 #include <Rpi/Cam/CamImpl.h>
+#include <Rpi/Mot/MotImpl.h>
 
 #include <Rpi/Test/TestImpl.h>
 #include <Svc/BufferManager/BufferManagerComponentImpl.hpp>
@@ -49,7 +50,7 @@ namespace Rpi
     extern Svc::FileUplink fileUplink;
     extern Svc::BufferManagerComponentImpl fileUplinkBufferManager;
 
-//    extern Svc::FileManager fileManager;
+    extern Svc::FileManager fileManager;
     extern Svc::StaticMemoryComponentImpl staticMemory;
 //    extern Svc::FatalHandlerComponentImpl fatalHandler;
 
@@ -64,11 +65,13 @@ namespace Rpi
 //    extern Rpi::CamImpl camL;
 //    extern Rpi::CamImpl camR;
     extern Rpi::CamImpl cam;
+    extern Rpi::MotImpl mot;
 
     // FSW entry points
     void init();
     void start();
     void reg_commands();
+    void loadParameters();
 }
 
 using namespace Rpi;

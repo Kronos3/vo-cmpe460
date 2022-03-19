@@ -1,12 +1,19 @@
 #include <Os/File.hpp>
 #include "CamImpl.h"
+#include "ov2640_regs.h"
+
+#define OV2640_CHIPID_HIGH 	0x0A
+#define OV2640_CHIPID_LOW 	0x0B
 
 namespace Rpi
 {
-    CamImpl::CamImpl()
-    : OV2640(),
+    CamImpl::CamImpl(const char* comp_name)
+    : CamComponentBase(comp_name), OV2640(),
+    m_request(nullptr),
     m_state(CAM_STATE_NOT_INITIALIZED),
-    m_tlm_img_n(0), m_tlm_hz(0.0)
+    m_write_buffer(new U8[U16_MAX], U16_MAX),
+    m_tlm_img_n(0),
+    m_tlm_hz(0.0)
     {
     }
 
@@ -80,7 +87,7 @@ namespace Rpi
         {
             case CAM_STATE_NOT_INITIALIZED:
                 log_ACTIVITY_HI_CameraInitializing();
-                OV2640::init();
+                cam_i2c_init();
                 break;
             case CAM_STATE_READY:
                 log_DIAGNOSTIC_CameraAlreadyInitialized();
@@ -341,43 +348,20 @@ namespace Rpi
             return;
         }
 
-        Fw::Buffer write_buff(new U8[m_fifo_size], m_fifo_size);
-        Fw::Buffer read_buff(new U8[m_fifo_size], m_fifo_size);
-        m_request.opCode = opCode;
-        m_request.cmdSeq = cmdSeq;
-        m_request.filename = destination;
-        m_request.is_command = true;
-
         // Burst FIFO
-        write_buff.getData()[0] = 0x3C;
+        m_write_buffer.getData()[0] = 0x3C;
 
-        Drv::SpiStatus status = spiDma_out(0, write_buff, read_buff);
+        m_state = CAM_STATE_CAPTURE;
+        m_request = new CommandRequest(this, opCode, cmdSeq, destination);
 
-        switch(status.e)
+        Drv::SpiStatus status = spiDma_out(0, m_write_buffer, m_request->get_read_block());
+
+        if (status != Drv::SpiStatus::SPI_OK)
         {
-            case Drv::SpiStatus::SPI_OK:
-                // Don't reply yet
-                return;
-            case Drv::SpiStatus::SPI_BUSY_ERR:
-                cmdResponse_out(opCode, cmdSeq, Fw::COMMAND_BUSY);
-                break;
-            case Drv::SpiStatus::SPI_SIZE_MISMATCH_ERR:
-            case Drv::SpiStatus::SPI_TRANSACT_POLLING_ERR:
-                FW_ASSERT(0);
-                break;
-            case Drv::SpiStatus::SPI_TRANSACT_DMA_ERR:
-            case Drv::SpiStatus::SPI_OTHER_ERR:
-                m_state = CAM_STATE_PANIC;
-                log_WARNING_HI_CameraPanicSPITransfer();
-                cmdResponse_out(opCode, cmdSeq, Fw::COMMAND_EXECUTION_ERROR);
-                break;
+            // The initial DMA request failed
+            // Reply to the request
+            captureFinished_internalInterfaceInvoke(status);
         }
-
-        // The DMA request failed
-        // Un-mark the request as active
-        m_request.reset();
-        delete[] write_buff.getData();
-        delete[] read_buff.getData();
     }
 
     void CamImpl::RESET_cmdHandler(U32 opCode, U32 cmdSeq)
@@ -392,89 +376,78 @@ namespace Rpi
                                       Fw::Buffer &writeBuffer,
                                       Fw::Buffer &readBuffer)
     {
+        FW_ASSERT(m_state == CAM_STATE_CAPTURE, m_state);
+        FW_ASSERT(m_request);
+
+        m_request->dma_reply(status, writeBuffer, readBuffer);
+    }
+
+    void CamImpl::cam_i2c_init()
+    {
+        // Reset the CPLD
+        log_ACTIVITY_LO_CameraInitCPLD();
+        w_spi_reg(0x07, 0x80);
+        Os::Task::delay(100);
+        w_spi_reg(0x07, 0x00);
+        Os::Task::delay(100);
+
+        // Enable FIFO mode
+        log_ACTIVITY_LO_CameraInitEnableFifo();
+        w_spi_reg(0x03, 1 << 4);
+        Os::Task::delay(100);
+
+        // TODO Check SPI interface
+
+        //Check if the camera module type is OV2640
+        log_ACTIVITY_LO_CameraInitCheckModule();
+        ws_8_8(0xff, 0x01);
+        U8 vid, pid;
+        rs_8_8(OV2640_CHIPID_HIGH, &vid);
+        rs_8_8(OV2640_CHIPID_LOW, &pid);
+        // TODO
+
+        // Initialize the OV2640
+        // This camera only works with the JPEG imaging format
+        log_ACTIVITY_LO_CameraInitOV2640();
+        ws_8_8(0xff, 0x01);
+        ws_8_8(0x12, 0x80);
+
+        Os::Task::delay(100);
+
+        log_ACTIVITY_LO_CameraInitJpegInit();
+        ws_8_8(OV2640_JPEG_INIT);
+
+        log_ACTIVITY_LO_CameraInitYUV422();
+        ws_8_8(OV2640_YUV422);
+
+        log_ACTIVITY_LO_CameraInitJpeg();
+        ws_8_8(OV2640_JPEG);
+        ws_8_8(0xff, 0x01);
+        ws_8_8(0x15, 0x00);
+
+        set_jpeg_size(Rpi::CameraJpegSize::P_320x240);
+
+        update_fifo_length();
+
+        m_state = CAM_STATE_READY;
+    }
+
+    void CamImpl::captureFinished_internalInterfaceHandler(Drv::SpiStatus &spiStatus)
+    {
         // Make sure there is an active request
         FW_ASSERT(m_state == CAM_STATE_CAPTURE, m_state);
+        FW_ASSERT(m_request);
 
-        Fw::CommandResponse response;
-        switch(status.e)
-        {
-            case Drv::SpiStatus::SPI_OK:
-                response = Fw::COMMAND_OK;
-                break;
-            case Drv::SpiStatus::SPI_BUSY_ERR:
-                response = Fw::COMMAND_BUSY;
-                break;
-            default:
-            case Drv::SpiStatus::SPI_SIZE_MISMATCH_ERR:
-            case Drv::SpiStatus::SPI_TRANSACT_POLLING_ERR:
-            case Drv::SpiStatus::SPI_TRANSACT_DMA_ERR:
-            case Drv::SpiStatus::SPI_OTHER_ERR:
-                response = Fw::COMMAND_EXECUTION_ERROR;
-                m_state = CAM_STATE_PANIC;
-                log_WARNING_HI_CameraPanicSPITransfer();
-                break;
-        }
+        m_request->reply(spiStatus);
 
-        // Mark the camera as ready again
-        m_state = CAM_STATE_READY;
+        // Clear the request
+        delete m_request;
+        m_request = nullptr;
+    }
 
-        // Respond to the requester
-        if (m_request.is_command)
-        {
-            // The command will utilize malloc()ed
-            delete[] writeBuffer.getData();
-
-            if (response == Fw::COMMAND_OK)
-            {
-                // Write all FIFO data down to a file
-                Os::File fp;
-                Os::File::Status file_status;
-                Fw::LogStringArg fn_arg(m_request.filename.toChar());
-
-                // Attempt to open the file
-                // Truncate/create
-                file_status = fp.open(m_request.filename.toChar(), Os::File::Mode::OPEN_CREATE);
-                if (file_status != Os::File::OP_OK)
-                {
-                    // Failed to open
-                    // Log error and respond with failure
-                    delete[] readBuffer.getData();
-                    log_WARNING_LO_CameraFileOpenFailed(fn_arg);
-                    cmdResponse_out(m_request.opCode, m_request.cmdSeq, Fw::COMMAND_EXECUTION_ERROR);
-                    return;
-                }
-
-                U32 size_written = readBuffer.getSize();
-                while(size_written < readBuffer.getSize())
-                {
-                    I32 block_size = (I32)(readBuffer.getSize() - size_written);
-                    file_status = fp.write(readBuffer.getData() + size_written, block_size);
-                    if (file_status != Os::File::Status::OP_OK)
-                    {
-                        log_WARNING_LO_CameraFileWriteFailed(fn_arg, size_written);
-                        fp.close();
-                        delete[] readBuffer.getData();
-                        cmdResponse_out(m_request.opCode, m_request.cmdSeq, Fw::COMMAND_EXECUTION_ERROR);
-                        return;
-                    }
-
-                    size_written += block_size;
-                }
-
-                log_ACTIVITY_LO_CameraFileSuccess(fn_arg, size_written);
-                fp.close();
-                delete[] readBuffer.getData();
-                cmdResponse_out(m_request.opCode, m_request.cmdSeq, Fw::COMMAND_OK);
-            }
-            else
-            {
-                delete[] readBuffer.getData();
-                cmdResponse_out(m_request.opCode, m_request.cmdSeq, response);
-            }
-        }
-        else
-        {
-            FW_ASSERT(0 && "Not implemented yet");
-        }
+    CamImpl::~CamImpl()
+    {
+        delete m_request;
+        m_request = nullptr;
     }
 }

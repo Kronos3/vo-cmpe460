@@ -16,13 +16,29 @@
 
     <events>
         <event id="0" name="I2cReadError" severity="WARNING_HI"
-            format_string="I2C read error %d">
-            <args><arg name="error" type="Drv::RpiI2cStatus"/></args>
+            format_string="I2C read error %d on address 0x%x">
+            <args>
+                <arg name="error" type="Drv::RpiI2cStatus"/>
+                <arg name="addr" type="U8"/>
+            </args>
         </event>
         <event id="1" name="I2cWriteError" severity="WARNING_HI"
-            format_string="I2C write error %d">
-            <args><arg name="error" type="Drv::RpiI2cStatus"/></args>
+            format_string="I2C write error %d on address 0x%x">
+            <args>
+                <arg name="error" type="Drv::RpiI2cStatus"/>
+                <arg name="addr" type="U8"/>
+            </args>
         </event>
     </events>
+
+    <telemetry>
+        <channel id="0" name="I2C_TxBytes" data_type="U32">
+            <comment>Bytes Sent</comment>
+        </channel>
+        <channel id="1" name="I2C_RxBytes" data_type="U32">
+            <comment>Bytes Received</comment>
+        </channel>
+    </telemetry>
+
 
 </component>

@@ -2,31 +2,10 @@
 #include "ov2640_regs.h"
 #include <Os/Task.hpp>
 
+
 OV2640::OV2640()
 : ArduCam(0x30)
 {
-}
-
-void OV2640::init()
-{
-    ArduCam::init();
-
-    // Initialize the OV2640
-    // This camera only works with the JPEG imaging format
-    ws_8_8(0xff, 0x01);
-    ws_8_8(0x12, 0x80);
-
-    Os::Task::delay(100);
-
-    ws_8_8(OV2640_JPEG_INIT);
-    ws_8_8(OV2640_YUV422);
-    ws_8_8(OV2640_JPEG);
-    ws_8_8(0xff, 0x01);
-    ws_8_8(0x15, 0x00);
-
-    set_jpeg_size(Rpi::CameraJpegSize::P_320x240);
-
-    update_fifo_length();
 }
 
 void OV2640::set_jpeg_size(const Rpi::CameraJpegSize& size)

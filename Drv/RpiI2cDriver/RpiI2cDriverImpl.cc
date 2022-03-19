@@ -3,7 +3,10 @@
 
 namespace Drv
 {
-    RpiI2cDriverImpl::RpiI2cDriverImpl() = default;
+    RpiI2cDriverImpl::RpiI2cDriverImpl()
+    : m_tx(0), m_rx(0)
+    {
+    }
 
     void RpiI2cDriverImpl::init(NATIVE_INT_TYPE instance)
     {
@@ -19,22 +22,20 @@ namespace Drv
             return Drv::I2cStatus::I2C_ADDRESS_ERR;
         }
 
-        NATIVE_INT_TYPE status;
-        U32 total_read = 0;
-        do
-        {
-            status = kernel::i2c.Read(addr,
-                                       serBuffer.getData() + total_read,
-                                       serBuffer.getSize() - total_read);
-            total_read += status;
-        } while(status > 0 && total_read < serBuffer.getSize());
+        I32 status;
+        status = kernel::i2c.Read(addr,
+                                  serBuffer.getData(),
+                                  serBuffer.getSize());
 
+        // Handle I2C read failure
         if (status < 0)
         {
-            log_WARNING_HI_I2cReadError(static_cast<const RpiI2cStatus::t>(-status));
+            log_WARNING_HI_I2cReadError(static_cast<const RpiI2cStatus::t>(-status), addr);
             return Drv::I2cStatus::I2C_READ_ERR;
         }
 
+        m_rx += status;
+        tlmWrite_I2C_RxBytes(m_rx);
         return Drv::I2cStatus::I2C_OK;
     }
 
@@ -62,22 +63,20 @@ namespace Drv
             return Drv::I2cStatus::I2C_ADDRESS_ERR;
         }
 
-        NATIVE_INT_TYPE status;
-        U32 total_write = 0;
-        do
-        {
-            status = kernel::i2c.Write(addr,
-                                      serBuffer.getData() + total_write,
-                                      serBuffer.getSize() - total_write);
-            total_write += status;
-        } while(status > 0 && total_write < serBuffer.getSize());
+        I32 status;
+        status = kernel::i2c.Write(addr,
+                                   serBuffer.getData(),
+                                   serBuffer.getSize());
 
+        // Handle I2C write failure
         if (status < 0)
         {
-            log_WARNING_HI_I2cWriteError(static_cast<const RpiI2cStatus::t>(-status));
+            log_WARNING_HI_I2cWriteError(static_cast<const RpiI2cStatus::t>(-status), addr);
             return Drv::I2cStatus::I2C_WRITE_ERR;
         }
 
+        m_tx += status;
+        tlmWrite_I2C_TxBytes(m_tx);
         return Drv::I2cStatus::I2C_OK;
     }
 }

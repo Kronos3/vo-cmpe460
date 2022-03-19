@@ -1,6 +1,5 @@
 #include "Logger.h"
-#include <cstdio>
-#include <Rpi/Top/kernel.h>
+#include <circle/logger.h>
 
 void Rpi::Logger::log(
         const char* fmt,
@@ -15,29 +14,6 @@ void Rpi::Logger::log(
         POINTER_CAST a8,
         POINTER_CAST a9)
 {
-    // Put the time stamp
-    char timestamp[20];
-    U32 s, us;
-    kernel::tim.GetLocalTime(&s, &us);
-    F64 time_f = (F64)s + (F64)us / 1000000.0;
-    I32 len = snprintf(timestamp, sizeof timestamp, "%06.3f ", time_f);
-    U32 written = 0;
-    while (written < len)
-    {
-        written += kernel::serial.Write(timestamp + written, len - written);
-    }
-
-    char log_msg[160];
-    len = snprintf(log_msg, sizeof(log_msg), fmt, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9);
-
-    // Add a null terminator just in case
-    log_msg[sizeof (log_msg) - 1] = 0;
-
-    // Put the message
-    len = FW_MIN(sizeof(log_msg), len);
-    written = 0;
-    while (written < len)
-    {
-        written += kernel::serial.Write(log_msg + written, len - written);
-    }
+    CLogger::Get()->Write("fsw", LogNotice, fmt,
+                          a0, a1, a2, a3, a4, a5, a6, a7, a8, a9);
 }

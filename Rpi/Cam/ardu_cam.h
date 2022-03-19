@@ -29,8 +29,6 @@ protected:
      */
     explicit ArduCam(U8 addr);
 
-    virtual void init();
-
     // Camera hardware configuration
     U8 m_addr;              //!< I2C slave address
 
@@ -103,7 +101,7 @@ public:
      * Initialize the camera by setting up the
      * I2C, SPI and camera registers
      */
-    void init() override;
+//    void init() override;
 
     void set_special_effects(const Rpi::CameraSpecialEffect& effect);
     void set_contrast(I8 contrast);
@@ -243,7 +241,6 @@ public:
     };
 
     explicit OV5642(ImgType format = JPEG);
-    void init() override;
 
     void set_special_effects(SpecialEffects effect);
     void set_contrast(Calibration contrast);
