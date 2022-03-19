@@ -4,13 +4,17 @@
 #include <FprimeProtocol.hpp>
 #include <MallocAllocator.hpp>
 
-#define QUEUE_DEPTH (20)
-
 namespace Rpi
 {
+    enum
+    {
+        QUEUE_DEPTH = 32,
+        FILE_UPLINK_QUEUE_DEPTH = 4096
+    };
+
     enum {
-        UPLINK_BUFFER_STORE_SIZE = 3000,
-        UPLINK_BUFFER_QUEUE_SIZE = 30,
+        UPLINK_BUFFER_STORE_SIZE = 4096,
+        UPLINK_BUFFER_QUEUE_SIZE = 4096,
         UPLINK_BUFFER_MGR_ID = 200
     };
 
@@ -43,7 +47,7 @@ namespace Rpi
     Fw::MallocAllocator mallocator;
     Svc::BufferManagerComponentImpl fileUplinkBufferManager("fileUplinkBufferManager");
 
-//    Svc::FileManager fileManager("FILE_MGR");
+    Svc::FileManager fileManager("FILE_MGR");
     Svc::StaticMemoryComponentImpl staticMemory("STATIC_MEM");
 //    Svc::FatalHandlerComponentImpl fatalHandler("FATAL_HANDLER");
 
@@ -56,7 +60,8 @@ namespace Rpi
     Drv::RpiSpiDriverImpl spiDriver(cs_lines, FW_NUM_ARRAY_ELEMENTS(cs_lines));
     Svc::TestImpl test;
 
-    Rpi::CamImpl cam;
+    Rpi::CamImpl cam("CAM");
+    Rpi::MotImpl mot("MOT");
 
     void init()
     {
@@ -68,7 +73,7 @@ namespace Rpi
 
         // Connect to GDS
         static U8 hostIp[4] = {192, 168, 1, 220};
-        comm.init(0, CIPAddress(hostIp), 50000);
+        comm.init(0, CIPAddress(hostIp), 50000, SOCKET_SEND_UDP);
 
 //        cmdSeq.init(QUEUE_DEPTH, 0);
         cmdDisp.init(QUEUE_DEPTH, 0);
@@ -83,17 +88,17 @@ namespace Rpi
 
         downlink.setup(framing);
         uplink.setup(deframing);
-        fileUplink.init(QUEUE_DEPTH, 0);
+        fileUplink.init(FILE_UPLINK_QUEUE_DEPTH, 0);
         fileUplinkBufferManager.init(0);
 
         // set up BufferManager instances
         Svc::BufferManagerComponentImpl::BufferBins upBuffMgrBins;
-        memset(&upBuffMgrBins,0,sizeof(upBuffMgrBins));
+        memset(&upBuffMgrBins, 0, sizeof(upBuffMgrBins));
         upBuffMgrBins.bins[0].bufferSize = UPLINK_BUFFER_STORE_SIZE;
         upBuffMgrBins.bins[0].numBuffers = UPLINK_BUFFER_QUEUE_SIZE;
         fileUplinkBufferManager.setup(UPLINK_BUFFER_MGR_ID, 0, mallocator, upBuffMgrBins);
 
-//        fileManager.init(QUEUE_DEPTH, 0);
+        fileManager.init(QUEUE_DEPTH, 0);
 //        fatalHandler.init(0);
 
         systemTime.init(0);
@@ -103,6 +108,7 @@ namespace Rpi
 
         test.init(QUEUE_DEPTH, 0);
         cam.init(QUEUE_DEPTH, 0);
+        mot.init(0);
     }
 
     void start()
@@ -118,10 +124,13 @@ namespace Rpi
         prmDb.start();
 
         fileUplink.start();
+        fileManager.start();
 
-        comm.startSocketTask();
         cmdDisp.start();
         cam.start();
+
+        // Always start this last (or first, but not in the middle)
+        comm.startSocketTask();
     }
 
     void reg_commands()
@@ -132,6 +141,12 @@ namespace Rpi
         prmDb.regCommands();
         test.regCommands();
         cam.regCommands();
-//        fileManager.regCommands();
+        mot.regCommands();
+        fileManager.regCommands();
+    }
+
+    void loadParameters()
+    {
+        mot.loadParameters();
     }
 }

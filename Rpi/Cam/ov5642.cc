@@ -7,6 +7,7 @@ OV5642::OV5642(ImgType format)
 {
 }
 
+#if 0
 void OV5642::init()
 {
     ArduCam::init();
@@ -81,6 +82,7 @@ void OV5642::set_jpeg_size(JpegSize size)
 
     update_fifo_length();
 }
+#endif
 
 void OV5642::set_light_mode(LightMode light_mode)
 {

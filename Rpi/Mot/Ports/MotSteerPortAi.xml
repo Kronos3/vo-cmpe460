@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface name="MotSteer" namespace="Rpi">
+    <comment>Run the car's DC motors at a certain rate</comment>
+    <args>
+        <arg name="steer" type="F64">
+            <comment>Turn left or right (-1.0 full left, 1.0 full right)</comment>
+        </arg>
+    </args>
+</interface>

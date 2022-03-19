@@ -4,7 +4,7 @@
 void ArduCam::ws_8_8(const SensorReg regs[])
 {
     for(const SensorReg* iter = regs;
-        (iter->reg != 0xffff) | (iter->val != 0xff);
+        (iter->reg != 0xff) | (iter->val != 0xff);
         iter++)
     {
         ws_8_8(iter->reg, iter->val);
@@ -15,7 +15,7 @@ void ArduCam::ws_8_8(const SensorReg regs[])
 void ArduCam::ws_8_16(const SensorReg regs[])
 {
     for(const SensorReg* iter = regs;
-        (iter->reg != 0xffff) | (iter->val != 0xff);
+        (iter->reg != 0xff) | (iter->val != 0xffff);
         iter++)
     {
         ws_8_16(iter->reg, iter->val);
@@ -36,7 +36,7 @@ void ArduCam::ws_16_8(const SensorReg regs[])
 void ArduCam::ws_16_16(const SensorReg regs[])
 {
     for(const SensorReg* iter = regs;
-        (iter->reg != 0xffff) | (iter->val != 0xff);
+        (iter->reg != 0xffff) | (iter->val != 0xffff);
         iter++)
     {
         ws_16_16(iter->reg, iter->val);

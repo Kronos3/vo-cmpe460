@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface name="MotGet" namespace="Rpi">
+    <comment>Get the car's kinematic state</comment>
+    <args>
+        <arg name="steering" type="F64" pass_by="reference">
+            <comment>Steering direction (-1.0 LEFT - 1.0 RIGHT)</comment>
+        </arg>
+        <arg name="left" type="F64" pass_by="reference">
+            <comment>Left motor drive strength (-1.0 - 1.0)</comment>
+        </arg>
+        <arg name="right" type="F64" pass_by="reference">
+            <comment>Right motor drive strength (-1.0 - 1.0)</comment>
+        </arg>
+    </args>
+</interface>

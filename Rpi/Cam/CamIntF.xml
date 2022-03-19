@@ -1,0 +1,18 @@
+<internal_interfaces>
+    <internal_interface name="captureFinished" priority="1" full="drop">
+        <comment>
+            internal interface to send log messages to component thread
+        </comment>
+        <args>
+            <arg name="spiStatus" type="Drv::SpiStatus">
+                <comment>Status of the DMA transaction</comment>
+            </arg>
+<!--            <arg name="writeBuffer" type="Fw::Buffer" pass_by="reference">-->
+<!--                <comment>Master to slave buffer</comment>-->
+<!--            </arg>-->
+<!--            <arg name="readBuffer" type="Fw::Buffer" pass_by="reference">-->
+<!--                <comment>Slave to master buffer</comment>-->
+<!--            </arg>-->
+        </args>
+    </internal_interface>
+</internal_interfaces>

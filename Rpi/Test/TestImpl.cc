@@ -4,7 +4,7 @@
 namespace Svc
 {
     TestImpl::TestImpl()
-    : m_i(0), m_enabled(true)
+    : m_i(0), m_enabled(false)
     {
     }
 

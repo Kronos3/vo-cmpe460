@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<serializable namespace="Rpi" name="MSP432Pwm">
+    <comment>
+        I2C packet sent to control steering on MSP432
+    </comment>
+    <members>
+        <member name="value" type="U16"/>
+        <member name="run" type="bool"/>
+    </members>
+</serializable>

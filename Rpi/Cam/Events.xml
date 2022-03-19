@@ -103,4 +103,25 @@
             <arg name="length" type="U32"/>
         </args>
     </event>
+    <event id="18" name="CameraInitCPLD" severity="ACTIVITY_LO"
+            format_string="Resetting camera CPLD">
+    </event>
+    <event id="19" name="CameraInitEnableFifo" severity="ACTIVITY_LO"
+            format_string="Enabling camera FIFO mode">
+    </event>
+    <event id="20" name="CameraInitCheckModule" severity="ACTIVITY_LO"
+            format_string="Checking camera manufacturer ID">
+    </event>
+    <event id="21" name="CameraInitOV2640" severity="ACTIVITY_LO"
+            format_string="Enabling OV2640">
+    </event>
+    <event id="22" name="CameraInitJpegInit" severity="ACTIVITY_LO"
+            format_string="Initializing JPEG compression">
+    </event>
+    <event id="23" name="CameraInitYUV422" severity="ACTIVITY_LO"
+            format_string="Initializing YUV422 coloring mode">
+    </event>
+    <event id="24" name="CameraInitJpeg" severity="ACTIVITY_LO"
+            format_string="Setting camera to JPEG mode">
+    </event>
 </events>
