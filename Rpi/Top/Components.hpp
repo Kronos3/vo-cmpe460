@@ -17,6 +17,7 @@
 #include <Svc/StaticMemory/StaticMemoryComponentImpl.hpp>
 //#include <Svc/FatalHandler/FatalHandlerComponentImpl.hpp>
 #include <Svc/FileUplink/FileUplink.hpp>
+#include <Svc/FileDownlink/FileDownlink.hpp>
 
 #include <Drv/RpiSerialDriver/RpiSerialDriverImpl.h>
 #include <Drv/RpiI2cDriver/RpiI2cDriverImpl.h>
@@ -49,6 +50,7 @@ namespace Rpi
     extern Svc::FramerComponentImpl downlink;
     extern Svc::FileUplink fileUplink;
     extern Svc::BufferManagerComponentImpl fileUplinkBufferManager;
+    extern Svc::FileDownlink fileDownlink;
 
     extern Svc::FileManager fileManager;
     extern Svc::StaticMemoryComponentImpl staticMemory;

@@ -1,0 +1,7 @@
+<telemetry>
+    <channel id="0" name="FramesCaptured" data_type="U32">
+        <comment>
+            Number of captured framed
+        </comment>
+    </channel>
+</telemetry>

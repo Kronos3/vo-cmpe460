@@ -3,23 +3,21 @@
 
 namespace Drv
 {
-    RpiSpiDriverImpl::RpiSpiDriverImpl(
-            const U32 chipSelect[NUM_TRANSACTPOLLING_INPUT_PORTS],
-            U32 n
-            )
-    : m_chipSelect(), m_tlm_RxTx(0), m_busy(false)
+    RpiSpiDriverImpl::RpiSpiDriverImpl()
+    : m_tlm_RxTx(0),
+    m_tlm_SyncRxTx(0),
+    m_tlm_DmaRxTx(0),
+    m_tlm_SyncN(0),
+    m_tlm_DmaN(0),
+    m_tlm_SyncFailN(0),
+    m_tlm_DmaFailN(0),
+    m_busy(false)
     {
-        FW_ASSERT(n == NUM_TRANSACTPOLLING_INPUT_PORTS, n, NUM_TRANSACTPOLLING_INPUT_PORTS);
-        for(U32 i = 0; i < n; i++)
-        {
-            m_chipSelect[i] = chipSelect[i];
-        }
     }
 
     void RpiSpiDriverImpl::init(NATIVE_INT_TYPE instance)
     {
         RpiSpiDriverComponentBase::init(instance);
-        kernel::spi.SetCompletionRoutine(dmaCompletion_routine, this);
     }
 
     Drv::SpiStatus RpiSpiDriverImpl::transactDma_handler(
@@ -38,7 +36,7 @@ namespace Drv
 
         // The Raspberry Pi DMA requires 4-byte aligned DMA buffers
         if (((POINTER_CAST)writeBuffer.getData() & 0x3) != 0 ||
-            ((POINTER_CAST)writeBuffer.getData() & 0x3) != 0)
+            ((POINTER_CAST)readBuffer.getData() & 0x3) != 0)
         {
             log_WARNING_HI_SPI_DmaInvalidBuffer((POINTER_CAST)readBuffer.getData(),
                                                 (POINTER_CAST)writeBuffer.getData());
@@ -51,8 +49,15 @@ namespace Drv
         m_dma.readBuffer = &readBuffer;
         m_dma.writeBuffer = &writeBuffer;
 
-        // Perform the polling on the Raspberry Pi SPI
-        kernel::spi.StartWriteRead(m_chipSelect[portNum],
+        m_tlm_DmaN++;
+        tlmWrite_DmaTransfers(m_tlm_DmaN);
+
+        // A DMA reply will clear the completion routine
+        // We need to set this every time
+        kernel::spi.SetCompletionRoutine(dmaCompletion_routine, this);
+
+        // Send the DMA request for SPI transfer
+        kernel::spi.StartWriteRead(portNum,
                                    writeBuffer.getData(),
                                    readBuffer.getData(),
                                    writeBuffer.getSize());
@@ -77,9 +82,12 @@ namespace Drv
 
         m_busy = true;
 
+        m_tlm_SyncN++;
+        tlmWrite_SyncTransfers(m_tlm_SyncN);
+
         I32 num_bytes;
         // Perform the polling on the Raspberry Pi SPI
-        num_bytes = kernel::spi.WriteReadSync(m_chipSelect[portNum],
+        num_bytes = kernel::spi.WriteReadSync(portNum,
                                               writeBuffer.getData(),
                                               readBuffer.getData(),
                                               writeBuffer.getSize());
@@ -88,13 +96,17 @@ namespace Drv
 
         if (num_bytes < 0)
         {
+            m_tlm_SyncFailN++;
+            tlmWrite_SyncFailures(m_tlm_SyncFailN);
             log_WARNING_HI_SPI_PollingFailed();
             return Drv::SpiStatus::SPI_TRANSACT_POLLING_ERR;
         }
         else
         {
             m_tlm_RxTx += num_bytes;
-            tlmWrite_SPI_Bytes(m_tlm_RxTx);
+            m_tlm_SyncRxTx += num_bytes;
+            tlmWrite_Bytes(m_tlm_RxTx);
+            tlmWrite_SyncBytes(m_tlm_SyncRxTx);
         }
 
         return Drv::SpiStatus::SPI_OK;
@@ -132,23 +144,31 @@ namespace Drv
 
         m_busy = false;
 
+        // Save the request on the stack
         NATIVE_INT_TYPE portNum = m_dma.portNum;
         Fw::Buffer* readBuffer = m_dma.readBuffer;
         Fw::Buffer* writeBuffer = m_dma.writeBuffer;
 
+        // Clear the request from memory
         m_dma.portNum = 0;
         m_dma.readBuffer = nullptr;
         m_dma.writeBuffer = nullptr;
 
+        // Process the reply status
+        // Send out telemetry
         Drv::SpiStatus spi_status;
         if (status)
         {
             m_tlm_RxTx += readBuffer->getSize();
-            tlmWrite_SPI_Bytes(m_tlm_RxTx);
+            m_tlm_DmaRxTx += readBuffer->getSize();
+            tlmWrite_Bytes(m_tlm_RxTx);
+            tlmWrite_DmaBytes(m_tlm_DmaRxTx);
             spi_status = Drv::SpiStatus::SPI_OK;
         }
         else
         {
+            m_tlm_DmaFailN++;
+            tlmWrite_SyncFailures(m_tlm_SyncFailN);
             log_WARNING_HI_SPI_DmaFailed();
             spi_status = Drv::SpiStatus::SPI_TRANSACT_DMA_ERR;
         }

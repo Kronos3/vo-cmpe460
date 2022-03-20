@@ -39,6 +39,7 @@
     <import_component_type>Svc/StaticMemory/StaticMemoryComponentAi.xml</import_component_type>
     <import_component_type>Drv/ByteStreamDriverModel/ByteStreamDriverComponentAi.xml</import_component_type>
     <import_component_type>Svc/FileUplink/FileUplinkComponentAi.xml</import_component_type>
+    <import_component_type>Svc/FileDownlink/FileDownlinkComponentAi.xml</import_component_type>
     <import_component_type>Svc/BufferManager/BufferManagerComponentAi.xml</import_component_type>
 
     <instance namespace="Rpi" name="downlink" type="Framer" base_id="4000" base_id_window="100"/>
@@ -46,6 +47,7 @@
     <instance namespace="Rpi" name="comm" type="ByteStreamDriverModel" base_id="4200" base_id_window="100"/>
     <instance namespace="Svc" name="fileUplink" type="FileUplink" base_id="4300" base_id_window="100"/>
     <instance namespace="Svc" name="fileUplinkBufferManager" type="BufferManager" base_id="4400" base_id_window="100"/>
+    <instance namespace="Svc" name="fileDownlink" type="FileDownlink" base_id="4500" base_id_window="100"/>
 
     <!-- Peripheral drivers -->
     <import_component_type>Drv/RpiI2cDriver/RpiI2cDriverComponentAi.xml</import_component_type>
@@ -98,6 +100,12 @@
     <connection name="rg1hz__Test_cycle">
         <source component="rg1hz" port="RateGroupMemberOut" type="Sched" num="2"/>
         <target component="test" port="schedIn" type="Sched" num="0"/>
+    </connection>
+
+    <!-- 10Hz -->
+    <connection name="rg10Hz__fileDownlink">
+        <source component="rg10hz" port="RateGroupMemberOut" type="Sched" num="1"/>
+        <target component="fileDownlink" port="Run" type="Sched" num="0"/>
     </connection>
 
     <!-- 20Hz -->
@@ -193,18 +201,18 @@
         <source component="chanTlm" port="PktSend" type="Com" num="0"/>
         <target component="downlink" port="comIn" type="Com" num="0"/>
     </connection>
-    <!--    <connection name="fileDownlinkBufferSend">-->
-    <!--        <source component="fileDownlink" port="bufferSendOut" type="BufferSend" num="0"/>-->
-    <!--        <target component="downlink" port="bufferIn" type="BufferSend" num="0"/>-->
-    <!--    </connection>-->
-    <!--    <connection name="fileDownlinkBufferReturn">-->
-    <!--        <source component="downlink" port="bufferDeallocate" type="BufferSend" num="0"/>-->
-    <!--        <target component="fileDownlink" port="bufferReturn" type="BufferSend" num="0"/>-->
-    <!--    </connection>-->
-    <!--    <connection name="cmdDisp__uplink">-->
-    <!--        <source component="cmdDisp" port="seqCmdStatus" type="Com" num="0"/>-->
-    <!--        <target component="uplink" port="cmdResponseIn" type="Com" num="0"/>-->
-    <!--    </connection>-->
+    <connection name="fileDownlinkBufferSend">
+        <source component="fileDownlink" port="bufferSendOut" type="BufferSend" num="0"/>
+        <target component="downlink" port="bufferIn" type="BufferSend" num="0"/>
+    </connection>
+    <connection name="fileDownlinkBufferReturn">
+        <source component="downlink" port="bufferDeallocate" type="BufferSend" num="0"/>
+        <target component="fileDownlink" port="bufferReturn" type="BufferSend" num="0"/>
+    </connection>
+<!--    <connection name="cmdDisp__uplink">-->
+<!--        <source component="cmdDisp" port="seqCmdStatus" type="Com" num="0"/>-->
+<!--        <target component="uplink" port="cmdResponseIn" type="Com" num="0"/>-->
+<!--    </connection>-->
 
     <connection name="prmDbTime">
         <source component="prmDb" port="Time" type="Time" num="0"/>
@@ -266,6 +274,10 @@
         <source component="fileManager" port="timeCaller" type="Time" num="0"/>
         <target component="systemTime" port="timeGetPort" type="Time" num="0"/>
     </connection>
+    <connection name="fileDownlinkTime">
+        <source component="fileDownlink" port="timeCaller" type="Time" num="0"/>
+        <target component="systemTime" port="timeGetPort" type="Time" num="0"/>
+    </connection>
 
     <!-- EVR connections -->
     <connection name="test__eventLogger_LogRecv">
@@ -312,6 +324,10 @@
         <source component="fileManager" port="eventOut" type="Log" num="0"/>
         <target component="eventLogger" port="LogRecv" type="Log" num="0"/>
     </connection>
+    <connection name="fileDownlink__eventLogger_LogRecv">
+        <source component="fileDownlink" port="eventOut" type="Log" num="0"/>
+        <target component="eventLogger" port="LogRecv" type="Log" num="0"/>
+    </connection>
 
     <!-- Telemetry connections -->
     <connection name="rg1hz__chanTlm">
@@ -334,12 +350,20 @@
         <source component="spiDriver" port="Tlm" type="Tlm" num="0"/>
         <target component="chanTlm" port="TlmRecv" type="Time" num="0"/>
     </connection>
+    <connection name="cmdDisp__chanTlm">
+        <source component="cmdDisp" port="Tlm" type="Tlm" num="0"/>
+        <target component="chanTlm" port="TlmRecv" type="Time" num="0"/>
+    </connection>
     <connection name="i2c__chanTlm">
         <source component="i2cDriver" port="Tlm" type="Tlm" num="0"/>
         <target component="chanTlm" port="TlmRecv" type="Time" num="0"/>
     </connection>
     <connection name="test__chanTlm">
         <source component="test" port="Tlm" type="Tlm" num="0"/>
+        <target component="chanTlm" port="TlmRecv" type="Time" num="0"/>
+    </connection>
+    <connection name="cam__chanTlm">
+        <source component="cam" port="Tlm" type="Tlm" num="0"/>
         <target component="chanTlm" port="TlmRecv" type="Time" num="0"/>
     </connection>
     <connection name="fileUplinkBufferManager__chanTlm">
@@ -352,6 +376,10 @@
     </connection>
     <connection name="fileManager__chanTlm">
         <source component="fileManager" port="tlmOut" type="Tlm" num="0"/>
+        <target component="chanTlm" port="TlmRecv" type="Tlm" num="0"/>
+    </connection>
+    <connection name="fileDownlink__chanTlm">
+        <source component="fileDownlink" port="tlmOut" type="Tlm" num="0"/>
         <target component="chanTlm" port="TlmRecv" type="Tlm" num="0"/>
     </connection>
 
@@ -455,6 +483,19 @@
     </connection>
     <connection name="mot__cmdDisp_Reply">
         <source component="mot" port="CmdStatus" type="CmdResponse" num="0"/>
+        <target component="cmdDisp" port="compCmdStat" type="CmdResponse" num="0"/>
+    </connection>
+
+    <connection name="fileDownlink__cmdDisp_Reg">
+        <source component="fileDownlink" port="cmdRegOut" type="CmdReg" num="0"/>
+        <target component="cmdDisp" port="compCmdReg" type="CmdReg" num="7"/>
+    </connection>
+    <connection name="fileDownlink__cmdDisp_Disp">
+        <source component="cmdDisp" port="compCmdSend" type="Cmd" num="7"/>
+        <target component="fileDownlink" port="cmdIn" type="Cmd" num="0"/>
+    </connection>
+    <connection name="fileDownlink__cmdDisp_Reply">
+        <source component="fileDownlink" port="cmdResponseOut" type="CmdResponse" num="0"/>
         <target component="cmdDisp" port="compCmdStat" type="CmdResponse" num="0"/>
     </connection>
 </assembly>

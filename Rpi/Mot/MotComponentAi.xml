@@ -7,6 +7,11 @@
 
     <import_port_type>Drv/I2cDriverPorts/I2cPortAi.xml</import_port_type>
 
+    <import_dictionary>Rpi/Mot/Events.xml</import_dictionary>
+    <import_dictionary>Rpi/Mot/Commands.xml</import_dictionary>
+    <import_dictionary>Rpi/Mot/Parameters.xml</import_dictionary>
+<!--    <import_dictionary>Rpi/Mot/Telemetry.xml</import_dictionary>-->
+
     <ports>
         <port name="steer" data_type="Rpi::MotSteer" kind="sync_input" max_number="1" />
         <port name="throttle" data_type="Rpi::MotThrottle" kind="sync_input" max_number="1" />
@@ -15,75 +20,4 @@
         <port name="writeSteering" data_type="Drv::I2c" kind="output">
         </port>
     </ports>
-
-    <commands>
-        <command kind="sync" opcode="0x00" mnemonic="STEER">
-            <comment>Set the steering position</comment>
-            <args>
-                <arg name="position" type="F64"/>
-            </args>
-        </command>
-    </commands>
-
-    <events>
-        <event id="0" name="MotSteerOutOfRange" severity="WARNING_HI"
-               format_string="Steering input out of range %f">
-            <args>
-                <arg name="input" type="F64"/>
-            </args>
-        </event>
-        <event id="1" name="MotThrottleOutOfRange" severity="WARNING_HI"
-               format_string="Throttle input out of range left=%f right=%f">
-            <args>
-                <arg name="input_left" type="F64"/>
-                <arg name="input_right" type="F64"/>
-            </args>
-        </event>
-    </events>
-
-    <parameters>
-        <parameter id="0" set_opcode="1" save_opcode="2"
-            name="LEFT_DEADZONE_FORWARD" data_type="F32" default="0.2">
-            <comment>
-                Lowest PWM signal to begin moving the car forward
-                (between 0 and 1)
-            </comment>
-        </parameter>
-        <parameter id="1" set_opcode="3" save_opcode="4"
-            name="LEFT_DEADZONE_BACKWARD" data_type="F32" default="-0.2">
-            <comment>
-                Lowest PWM signal to begin moving the car backward
-                (between 0 and -1.0)
-            </comment>
-        </parameter>
-
-        <parameter id="2" set_opcode="5" save_opcode="6"
-            name="RIGHT_DEADZONE_FORWARD" data_type="F32" default="0.2">
-            <comment>
-                Lowest PWM signal to begin moving the car forward
-                (between 0 and 1)
-            </comment>
-        </parameter>
-        <parameter id="3" set_opcode="7" save_opcode="8"
-            name="RIGHT_DEADZONE_BACKWARD" data_type="F32" default="-0.2">
-            <comment>
-                Lowest PWM signal to begin moving the car backward
-                (between 0 and -1.0)
-            </comment>
-        </parameter>
-
-        <parameter id="4" set_opcode="9" save_opcode="10"
-            name="STEERING_LEFT_PWM" data_type="F32" default="0.03">
-            <comment>
-                Full left steering PWM level
-            </comment>
-        </parameter>
-        <parameter id="5" set_opcode="11" save_opcode="12"
-            name="STEERING_RIGHT_PWM" data_type="F32" default="0.11">
-            <comment>
-                Full right steering PWM level
-            </comment>
-        </parameter>
-    </parameters>
-
 </component>

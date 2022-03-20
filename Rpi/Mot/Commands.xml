@@ -1,0 +1,8 @@
+<commands>
+    <command kind="sync" opcode="0x00" mnemonic="STEER">
+        <comment>Set the steering position</comment>
+        <args>
+            <arg name="position" type="F64"/>
+        </args>
+    </command>
+</commands>

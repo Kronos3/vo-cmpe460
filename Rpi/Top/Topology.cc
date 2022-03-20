@@ -3,6 +3,7 @@
 #include <VoCarCfg.h>
 #include <FprimeProtocol.hpp>
 #include <MallocAllocator.hpp>
+#include <Logger.hpp>
 
 namespace Rpi
 {
@@ -46,6 +47,7 @@ namespace Rpi
     Svc::FileUplink fileUplink("fileUplink");
     Fw::MallocAllocator mallocator;
     Svc::BufferManagerComponentImpl fileUplinkBufferManager("fileUplinkBufferManager");
+    Svc::FileDownlink fileDownlink("fileDownlink");
 
     Svc::FileManager fileManager("FILE_MGR");
     Svc::StaticMemoryComponentImpl staticMemory("STATIC_MEM");
@@ -56,8 +58,7 @@ namespace Rpi
     Drv::RpiI2cDriverImpl i2cDriver;
     Drv::RpiSocketIpDriverComponentImpl comm("COMM");
 
-    static const U32 cs_lines[] = {CAM_0_CS, CAM_1_CS};
-    Drv::RpiSpiDriverImpl spiDriver(cs_lines, FW_NUM_ARRAY_ELEMENTS(cs_lines));
+    Drv::RpiSpiDriverImpl spiDriver;
     Svc::TestImpl test;
 
     Rpi::CamImpl cam("CAM");
@@ -98,6 +99,9 @@ namespace Rpi
         upBuffMgrBins.bins[0].numBuffers = UPLINK_BUFFER_QUEUE_SIZE;
         fileUplinkBufferManager.setup(UPLINK_BUFFER_MGR_ID, 0, mallocator, upBuffMgrBins);
 
+        fileDownlink.configure(1000, 200, 100, 10);
+        fileDownlink.init(QUEUE_DEPTH, 0);
+
         fileManager.init(QUEUE_DEPTH, 0);
 //        fatalHandler.init(0);
 
@@ -107,7 +111,11 @@ namespace Rpi
         spiDriver.init(0);
 
         test.init(QUEUE_DEPTH, 0);
+
+        Fw::Logger::logMsg("Initializing cam");
         cam.init(QUEUE_DEPTH, 0);
+
+        Fw::Logger::logMsg("Initializing mot");
         mot.init(0);
     }
 
@@ -125,6 +133,7 @@ namespace Rpi
 
         fileUplink.start();
         fileManager.start();
+        fileDownlink.start(0);
 
         cmdDisp.start();
         cam.start();
@@ -143,6 +152,7 @@ namespace Rpi
         cam.regCommands();
         mot.regCommands();
         fileManager.regCommands();
+        fileDownlink.regCommands();
     }
 
     void loadParameters()

@@ -1,0 +1,15 @@
+<events>
+    <event id="0" name="MotSteerOutOfRange" severity="WARNING_HI"
+           format_string="Steering input out of range %f">
+        <args>
+            <arg name="input" type="F64"/>
+        </args>
+    </event>
+    <event id="1" name="MotThrottleOutOfRange" severity="WARNING_HI"
+           format_string="Throttle input out of range left=%f right=%f">
+        <args>
+            <arg name="input_left" type="F64"/>
+            <arg name="input_right" type="F64"/>
+        </args>
+    </event>
+</events>

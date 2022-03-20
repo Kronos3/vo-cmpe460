@@ -1,7 +1,37 @@
 <telemetry>
-    <channel id="0" name="SPI_Bytes" data_type="U32">
+    <channel id="0" name="Bytes" data_type="U32">
         <comment>
             Bytes Sent/Received
+        </comment>
+    </channel>
+    <channel id="1" name="SyncBytes" data_type="U32">
+        <comment>
+            Bytes Sent/Received synchronously
+        </comment>
+    </channel>
+    <channel id="2" name="DmaBytes" data_type="U32">
+        <comment>
+            Bytes Sent/Received synchronously
+        </comment>
+    </channel>
+    <channel id="3" name="SyncTransfers" data_type="U32">
+        <comment>
+            Number of (requested) synchronous transfers made
+        </comment>
+    </channel>
+    <channel id="4" name="DmaTransfers" data_type="U32">
+        <comment>
+            Number of (requested) DMA transfers made
+        </comment>
+    </channel>
+    <channel id="5" name="SyncFailures" data_type="U32">
+        <comment>
+            Number of failed synchronous transfers
+        </comment>
+    </channel>
+    <channel id="6" name="DmaFailures" data_type="U32">
+        <comment>
+            Number of failed DMA transfers
         </comment>
     </channel>
 </telemetry>
