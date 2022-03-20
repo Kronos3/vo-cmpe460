@@ -1,0 +1,44 @@
+<parameters>
+    <parameter id="0" set_opcode="1" save_opcode="2"
+               name="LEFT_DEADZONE_FORWARD" data_type="F32" default="0.2">
+        <comment>
+            Lowest PWM signal to begin moving the car forward
+            (between 0 and 1)
+        </comment>
+    </parameter>
+    <parameter id="1" set_opcode="3" save_opcode="4"
+               name="LEFT_DEADZONE_BACKWARD" data_type="F32" default="-0.2">
+        <comment>
+            Lowest PWM signal to begin moving the car backward
+            (between 0 and -1.0)
+        </comment>
+    </parameter>
+
+    <parameter id="2" set_opcode="5" save_opcode="6"
+               name="RIGHT_DEADZONE_FORWARD" data_type="F32" default="0.2">
+        <comment>
+            Lowest PWM signal to begin moving the car forward
+            (between 0 and 1)
+        </comment>
+    </parameter>
+    <parameter id="3" set_opcode="7" save_opcode="8"
+               name="RIGHT_DEADZONE_BACKWARD" data_type="F32" default="-0.2">
+        <comment>
+            Lowest PWM signal to begin moving the car backward
+            (between 0 and -1.0)
+        </comment>
+    </parameter>
+
+    <parameter id="4" set_opcode="9" save_opcode="10"
+               name="STEERING_LEFT_PWM" data_type="F32" default="0.03">
+        <comment>
+            Full left steering PWM level
+        </comment>
+    </parameter>
+    <parameter id="5" set_opcode="11" save_opcode="12"
+               name="STEERING_RIGHT_PWM" data_type="F32" default="0.11">
+        <comment>
+            Full right steering PWM level
+        </comment>
+    </parameter>
+</parameters>

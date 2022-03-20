@@ -17,6 +17,7 @@
 
 <!--    <import_dictionary>Rpi/Cam/Telemetry.xml</import_dictionary>-->
     <import_dictionary>Rpi/Cam/Events.xml</import_dictionary>
+    <import_dictionary>Rpi/Cam/Telemetry.xml</import_dictionary>
     <import_dictionary>Rpi/Cam/Commands.xml</import_dictionary>
     <import_dictionary>Rpi/Cam/CamIntF.xml</import_dictionary>
 
@@ -28,6 +29,6 @@
 
         <port name="spiSync" data_type="Drv::SpiTransact" kind="output"/>
         <port name="spiDma" data_type="Drv::SpiTransact" kind="output"/>
-        <port name="spiDmaReply" data_type="Drv::SpiDmaReply" kind="sync_input"/>
+        <port name="spiDmaReply" data_type="Drv::SpiDmaReply" kind="async_input"/>
     </ports>
 </component>

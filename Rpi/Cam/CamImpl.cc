@@ -15,6 +15,7 @@ namespace Rpi
     m_tlm_img_n(0),
     m_tlm_hz(0.0)
     {
+        memset(m_write_buffer.getData(), 0, U16_MAX);
     }
 
     void CamImpl::init(NATIVE_INT_TYPE queueDepth, NATIVE_INT_TYPE instance)
@@ -103,8 +104,10 @@ namespace Rpi
                 return;
         }
 
-        if (m_state == CAM_STATE_READY)
+        // Make sure the camera hasn't entered panic mode
+        if (m_state == CAM_STATE_NOT_INITIALIZED)
         {
+            m_state = CAM_STATE_READY;
             cmdResponse_out(opCode, cmdSeq, Fw::COMMAND_OK);
         }
         else
@@ -351,10 +354,13 @@ namespace Rpi
         // Burst FIFO
         m_write_buffer.getData()[0] = 0x3C;
 
+        FW_ASSERT(!m_request, (POINTER_CAST)m_request);
         m_state = CAM_STATE_CAPTURE;
         m_request = new CommandRequest(this, opCode, cmdSeq, destination);
 
-        Drv::SpiStatus status = spiDma_out(0, m_write_buffer, m_request->get_read_block());
+        Fw::Buffer& next_block = m_request->get_read_block();
+        m_write_buffer.setSize(next_block.getSize());
+        Drv::SpiStatus status = spiDma_out(0, m_write_buffer, next_block);
 
         if (status != Drv::SpiStatus::SPI_OK)
         {
@@ -385,42 +391,42 @@ namespace Rpi
     void CamImpl::cam_i2c_init()
     {
         // Reset the CPLD
-        log_ACTIVITY_LO_CameraInitCPLD();
+        log_DIAGNOSTIC_CameraInitCPLD();
         w_spi_reg(0x07, 0x80);
         Os::Task::delay(100);
         w_spi_reg(0x07, 0x00);
         Os::Task::delay(100);
 
         // Enable FIFO mode
-        log_ACTIVITY_LO_CameraInitEnableFifo();
+        log_DIAGNOSTIC_CameraInitEnableFifo();
         w_spi_reg(0x03, 1 << 4);
         Os::Task::delay(100);
 
         // TODO Check SPI interface
 
         //Check if the camera module type is OV2640
-        log_ACTIVITY_LO_CameraInitCheckModule();
-        ws_8_8(0xff, 0x01);
-        U8 vid, pid;
-        rs_8_8(OV2640_CHIPID_HIGH, &vid);
-        rs_8_8(OV2640_CHIPID_LOW, &pid);
+//        log_DIAGNOSTIC_CameraInitCheckModule();
+//        ws_8_8(0xff, 0x01);
+//        U8 vid, pid;
+//        rs_8_8(OV2640_CHIPID_HIGH, &vid);
+//        rs_8_8(OV2640_CHIPID_LOW, &pid);
         // TODO
 
         // Initialize the OV2640
         // This camera only works with the JPEG imaging format
-        log_ACTIVITY_LO_CameraInitOV2640();
+        log_DIAGNOSTIC_CameraInitOV2640();
         ws_8_8(0xff, 0x01);
         ws_8_8(0x12, 0x80);
 
         Os::Task::delay(100);
 
-        log_ACTIVITY_LO_CameraInitJpegInit();
+        log_DIAGNOSTIC_CameraInitJpegInit();
         ws_8_8(OV2640_JPEG_INIT);
 
-        log_ACTIVITY_LO_CameraInitYUV422();
+        log_DIAGNOSTIC_CameraInitYUV422();
         ws_8_8(OV2640_YUV422);
 
-        log_ACTIVITY_LO_CameraInitJpeg();
+        log_DIAGNOSTIC_CameraInitJpeg();
         ws_8_8(OV2640_JPEG);
         ws_8_8(0xff, 0x01);
         ws_8_8(0x15, 0x00);
@@ -428,8 +434,6 @@ namespace Rpi
         set_jpeg_size(Rpi::CameraJpegSize::P_320x240);
 
         update_fifo_length();
-
-        m_state = CAM_STATE_READY;
     }
 
     void CamImpl::captureFinished_internalInterfaceHandler(Drv::SpiStatus &spiStatus)
@@ -440,6 +444,12 @@ namespace Rpi
 
         m_request->reply(spiStatus);
 
+        if (spiStatus == Drv::SpiStatus::SPI_OK)
+        {
+            m_tlm_img_n++;
+            tlmWrite_FramesCaptured(m_tlm_img_n);
+        }
+
         // Clear the request
         delete m_request;
         m_request = nullptr;
@@ -449,5 +459,8 @@ namespace Rpi
     {
         delete m_request;
         m_request = nullptr;
+
+        delete m_write_buffer.getData();
+        m_write_buffer.set(nullptr, 0);
     }
 }

@@ -30,6 +30,7 @@ namespace Rpi
                 writeBuffer.getData()[0] = 0x0;
 
                 Fw::Buffer& next_block = get_read_block();
+                writeBuffer.setSize(next_block.getSize());
                 status = m_cam->spiDma_out(0, writeBuffer, next_block);
             }
         }
@@ -103,7 +104,7 @@ namespace Rpi
 
             // Attempt to open the file
             // Truncate/create
-            file_status = fp.open(m_filename.toChar(), Os::File::Mode::OPEN_CREATE);
+            file_status = fp.open(m_filename.toChar(), Os::File::OPEN_WRITE);
             if (file_status != Os::File::OP_OK)
             {
                 // Failed to open
@@ -113,24 +114,25 @@ namespace Rpi
                 return;
             }
 
-            U32 size_written = m_image.getSize();
+            U32 size_written = 0;
             while (size_written < m_image.getSize())
             {
-                I32 block_size = (I32) (m_image.getSize() - size_written);
-                file_status = fp.write(m_image.getData() + size_written, block_size);
-                if (file_status != Os::File::Status::OP_OK)
+                U32 bytes_left = m_image.getSize() - size_written;
+                I32 write_size = FW_MIN(1024 * 2, bytes_left);
+                file_status = fp.write(m_image.getData() + size_written, write_size, true);
+                if (file_status != Os::File::OP_OK || write_size <= 0)
                 {
-                    m_cam->log_WARNING_LO_CameraFileWriteFailed(fn_arg, size_written);
                     fp.close();
+                    m_cam->log_WARNING_LO_CameraFileWriteFailed(fn_arg, size_written);
                     m_cam->cmdResponse_out(m_opCode, m_cmdSeq, Fw::COMMAND_EXECUTION_ERROR);
                     return;
                 }
 
-                size_written += block_size;
+                size_written += write_size;
             }
 
             fp.close();
-            m_cam->log_ACTIVITY_LO_CameraFileSuccess(fn_arg, size_written);
+            m_cam->log_ACTIVITY_LO_CameraFileSuccess(size_written, fn_arg);
             m_cam->cmdResponse_out(m_opCode, m_cmdSeq, Fw::COMMAND_OK);
         }
         else

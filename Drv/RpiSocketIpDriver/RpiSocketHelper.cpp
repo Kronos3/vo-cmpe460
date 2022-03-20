@@ -33,8 +33,7 @@ namespace Drv
 
     RpiSocketHelper::~RpiSocketHelper()
     {
-        delete m_socketInFd;
-        delete m_socketOutFd;
+        close();
     }
 
     SocketIpStatus RpiSocketHelper::configure(const CIPAddress& hostname,
@@ -55,9 +54,13 @@ namespace Drv
 
     void RpiSocketHelper::close()
     {
+        // TCP uses the same socket for recv/send
+        if (m_socketInFd != m_socketOutFd)
+        {
+            delete m_socketOutFd;
+        }
         delete m_socketInFd;
         m_socketInFd = nullptr;
-        delete m_socketOutFd;
         m_socketOutFd = nullptr;
     }
 

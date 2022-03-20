@@ -11,12 +11,15 @@ namespace Os
     {
         FIL fp;     //!< FatFS file structure
         bool in_use;
-    } file_handles[OS_FILE_MAX_HANDLE];
+    } file_handles[OS_FILE_MAX_HANDLE] = {0};
 
     File::File() : m_fd(0), m_mode(OPEN_NO_MODE), m_lastError(0)
     {}
 
-    File::~File() = default;
+    File::~File()
+    {
+        close();
+    }
 
     File::Status File::open(const char* fileName, File::Mode mode)
     {
@@ -30,15 +33,13 @@ namespace Os
                 FW_ASSERT(0);
                 break;
             case OPEN_READ:
-                fat_fs_mode = FA_READ;
+                fat_fs_mode = FA_READ | FA_OPEN_EXISTING;
                 break;
             case OPEN_SYNC_WRITE:
             case OPEN_WRITE:
             case OPEN_SYNC_DIRECT_WRITE:
-                fat_fs_mode = FA_WRITE | FA_OPEN_ALWAYS;
-                break;
-            case OPEN_CREATE:
-                fat_fs_mode = FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_NEW;
+            case OPEN_CREATE:               //!< Passing FA_CREATE_NEW will not write any data
+                fat_fs_mode = FA_WRITE | FA_CREATE_ALWAYS;
                 break;
             case OPEN_APPEND:
                 fat_fs_mode = FA_WRITE | FA_OPEN_ALWAYS | FA_OPEN_APPEND;
@@ -122,7 +123,6 @@ namespace Os
 
     File::Status File::write(const void* buffer, NATIVE_INT_TYPE &size, bool waitForDone)
     {
-        (void) waitForDone;
         if (!isOpen()) return NOT_OPENED;
         FW_ASSERT(m_fd < OS_FILE_MAX_HANDLE + 1);
 
@@ -130,6 +130,11 @@ namespace Os
         FRESULT result = f_write(&file_handles[m_fd - 1].fp, buffer, size, &actually_write);
         size = static_cast<NATIVE_INT_TYPE>(actually_write);
         m_lastError = result;
+
+        if (waitForDone)
+        {
+            f_sync(&file_handles[m_fd - 1].fp);
+        }
 
         return fatfs_to_file_status(result);
     }
@@ -139,6 +144,7 @@ namespace Os
         if (!isOpen()) return;
         FW_ASSERT(m_fd < OS_FILE_MAX_HANDLE + 1);
 
+        f_sync(&file_handles[m_fd - 1].fp); // flush the cache
         f_close(&file_handles[m_fd - 1].fp);
         file_handles[m_fd - 1].in_use = false;
         m_fd = 0;
