@@ -7,5 +7,9 @@
     <mapping directory="$PROJECT_DIR$/circle/addon/lvgl/lvgl" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/circle/addon/wlan/hostap" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/fprime" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/rpi-kernel/install/lib/modules/4.19.71-rt24-v8+/build" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/rpi-kernel/install/lib/modules/4.19.71-rt24-v8+/source" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/rpi-kernel/linux" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/rpi-kernel/tools" vcs="Git" />
   </component>
 </project>
