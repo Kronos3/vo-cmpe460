@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-model href="../../Autocoders/Python/schema/ISF/topology_schema.rng" type="application/xml" schematypens="https://relaxng.org/ns/structure/1.0"?>
-<assembly name="Rpi">
+<assembly name="RpiRTLinux">
     <!-- Import Core component declarations -->
     <import_component_type>Svc/RateGroupDriver/RateGroupDriverComponentAi.xml</import_component_type>
     <import_component_type>Svc/ActiveRateGroup/ActiveRateGroupComponentAi.xml</import_component_type>
@@ -8,17 +8,21 @@
     <import_component_type>Svc/TlmChan/TlmChanComponentAi.xml</import_component_type>
     <import_component_type>Svc/PrmDb/PrmDbComponentAi.xml</import_component_type>
     <import_component_type>Svc/CmdDispatcher/CommandDispatcherComponentAi.xml</import_component_type>
-    <import_component_type>Rpi/SystemTime/SystemTimeComponentAi.xml</import_component_type>
+    <!--    <import_component_type>Drv/RTLinuxTime/RTLinuxTimeComponentAi.xml</import_component_type>-->
     <!--    <import_component_type>Svc/CmdSequencer/CmdSequencerComponentAi.xml</import_component_type>-->
     <!--    <import_component_type>Svc/FatalHandler/FatalHandlerComponentAi.xml</import_component_type>-->
+    <import_component_type>Svc/LinuxTimer/LinuxTimerComponentAi.xml</import_component_type>
+    <import_component_type>Svc/Time/TimeComponentAi.xml</import_component_type>
     <import_component_type>Svc/FileManager/FileManagerComponentAi.xml</import_component_type>
+
 
     <!-- Declare component instances - must match names in Components.hpp -->
     <!-- Core C&DH Components -->
-    <instance namespace="Rpi" name="eventLogger" type="ActiveLogger" base_id="100" base_id_window="100"/>
-    <instance namespace="Rpi" name="cmdDisp" type="CommandDispatcher" base_id="200" base_id_window="100"/>
-    <instance namespace="Rpi" name="chanTlm" type="TlmChan" base_id="300" base_id_window="100"/>
-    <instance namespace="Rpi" name="systemTime" type="SystemTime" base_id="500" base_id_window="100"/>
+    <instance namespace="Rpi" name="linuxTimer" type="LinuxTimer" base_id="10" base_id_window="100"/>
+    <instance namespace="Rpi" name="systemTime" type="Time" base_id="200" base_id_window="100"/>
+    <instance namespace="Rpi" name="eventLogger" type="ActiveLogger" base_id="300" base_id_window="100"/>
+    <instance namespace="Rpi" name="cmdDisp" type="CommandDispatcher" base_id="400" base_id_window="100"/>
+    <instance namespace="Rpi" name="chanTlm" type="TlmChan" base_id="500" base_id_window="100"/>
     <instance namespace="Rpi" name="prmDb" type="PrmDb" base_id="600" base_id_window="100"/>
     <instance namespace="Rpi" name="fileManager" type="FileManager" base_id="700" base_id_window="100"/>
 
@@ -50,27 +54,27 @@
     <instance namespace="Svc" name="fileDownlink" type="FileDownlink" base_id="4500" base_id_window="100"/>
 
     <!-- Peripheral drivers -->
-    <import_component_type>Drv/RpiI2cDriver/RpiI2cDriverComponentAi.xml</import_component_type>
-    <import_component_type>Drv/RpiSpiDriver/RpiSpiDriverComponentAi.xml</import_component_type>
-    <import_component_type>Drv/RpiSerialDriver/RpiSerialDriverComponentAi.xml</import_component_type>
+    <import_component_type>Drv/LinuxI2cDriver/LinuxI2cDriverComponentAi.xml</import_component_type>
+<!--    <import_component_type>Drv/LinuxSpiDriver/LinuxSpiDriverComponentAi.xml</import_component_type>-->
+    <import_component_type>Drv/LinuxSerialDriver/LinuxSerialDriverComponentAi.xml</import_component_type>
 
-    <instance namespace="Rpi" name="serialDriver" type="RpiSerialDriver" base_id="5100" base_id_window="100"/>
-    <instance namespace="Rpi" name="i2cDriver" type="RpiI2cDriver" base_id="5200" base_id_window="100"/>
-    <instance namespace="Rpi" name="spiDriver" type="RpiSpiDriver" base_id="5300" base_id_window="100"/>
+    <instance namespace="Rpi" name="serialDriver" type="LinuxSerialDriver" base_id="5100" base_id_window="100"/>
+    <instance namespace="Rpi" name="i2cDriver" type="LinuxI2cDriver" base_id="5200" base_id_window="100"/>
+<!--    <instance namespace="Rpi" name="spiDriver" type="LinuxSpiDriver" base_id="5300" base_id_window="100"/>-->
 
     <!-- Car components -->
-    <import_component_type>Rpi/Cam/CamComponentAi.xml</import_component_type>
+    <!--    <import_component_type>Rpi/Cam/CamComponentAi.xml</import_component_type>-->
     <import_component_type>Rpi/Mot/MotComponentAi.xml</import_component_type>
     <import_component_type>Rpi/Test/TestComponentAi.xml</import_component_type>
 
-    <instance namespace="Rpi" name="cam" type="Cam" base_id="6000" base_id_window="100"/>
+    <!--    <instance namespace="Rpi" name="cam" type="Cam" base_id="6000" base_id_window="100"/>-->
     <instance namespace="Rpi" name="mot" type="Mot" base_id="6100" base_id_window="100"/>
 
     <instance namespace="Rpi" name="test" type="Test" base_id="10000" base_id_window="100"/>
 
     <!-- Rate group driver connections -->
-    <connection name="systemTime__rgDriver_isr">
-        <source component="systemTime" port="timerIsr" type="Cycle" num="0"/>
+    <connection name="linuxTimer__rgDriver_isr">
+        <source component="linuxTimer" port="CycleOut" type="Cycle" num="0"/>
         <target component="rgDriver" port="CycleIn" type="Cycle" num="0"/>
     </connection>
     <connection name="rgDriver__rg1hz_cycle">
@@ -85,10 +89,10 @@
         <source component="rgDriver" port="CycleOut" type="Cycle" num="2"/>
         <target component="rg20hz" port="CycleIn" type="Cycle" num="0"/>
     </connection>
-    <connection name="rgDriver__rg50hz_cycle">
-        <source component="rgDriver" port="CycleOut" type="Cycle" num="3"/>
-        <target component="rg50hz" port="CycleIn" type="Cycle" num="0"/>
-    </connection>
+<!--    <connection name="rgDriver__rg50hz_cycle">-->
+<!--        <source component="rgDriver" port="CycleOut" type="Cycle" num="3"/>-->
+<!--        <target component="rg50hz" port="CycleIn" type="Cycle" num="0"/>-->
+<!--    </connection>-->
 
     <!-- Rate group connects -->
 
@@ -115,32 +119,36 @@
     <!--    </connection>-->
 
     <!-- Camera connections -->
-    <connection name="cam__i2c_Read">
-        <source component="cam" port="i2cRead" type="Drv::I2c" num="0"/>
-        <target component="i2cDriver" port="read" type="Drv::I2c" num="0"/>
-    </connection>
-    <connection name="cam__i2c_Write">
-        <source component="cam" port="i2cWrite" type="Drv::I2c" num="0"/>
-        <target component="i2cDriver" port="write" type="Drv::I2c" num="0"/>
-    </connection>
-    <connection name="cam__spi_Sync">
-        <source component="cam" port="spiSync" type="Drv::SpiTransact" num="0"/>
-        <target component="spiDriver" port="transactPolling" type="Drv::SpiTransact" num="0"/>
-    </connection>
-    <connection name="cam__spi_Dma">
-        <source component="cam" port="spiDma" type="Drv::SpiTransact" num="0"/>
-        <target component="spiDriver" port="transactDma" type="Drv::SpiTransact" num="0"/>
-    </connection>
-    <connection name="cam__spi_DmaReply">
-        <source component="spiDriver" port="replyDma" type="Drv::SpiTransact" num="0"/>
-        <target component="cam" port="spiDmaReply" type="Drv::SpiTransact" num="0"/>
-    </connection>
+    <!--    <connection name="cam__i2c_Read">-->
+    <!--        <source component="cam" port="i2cRead" type="Drv::I2c" num="0"/>-->
+    <!--        <target component="i2cDriver" port="read" type="Drv::I2c" num="0"/>-->
+    <!--    </connection>-->
+    <!--    <connection name="cam__i2c_Write">-->
+    <!--        <source component="cam" port="i2cWrite" type="Drv::I2c" num="0"/>-->
+    <!--        <target component="i2cDriver" port="write" type="Drv::I2c" num="0"/>-->
+    <!--    </connection>-->
+    <!--    <connection name="cam__spi_Sync">-->
+    <!--        <source component="cam" port="spiSync" type="Drv::SpiTransact" num="0"/>-->
+    <!--        <target component="spiDriver" port="transactPolling" type="Drv::SpiTransact" num="0"/>-->
+    <!--    </connection>-->
+    <!--    <connection name="cam__spi_Dma">-->
+    <!--        <source component="cam" port="spiDma" type="Drv::SpiTransact" num="0"/>-->
+    <!--        <target component="spiDriver" port="transactDma" type="Drv::SpiTransact" num="0"/>-->
+    <!--    </connection>-->
+    <!--    <connection name="cam__spi_DmaReply">-->
+    <!--        <source component="spiDriver" port="replyDma" type="Drv::SpiTransact" num="0"/>-->
+    <!--        <target component="cam" port="spiDmaReply" type="Drv::SpiTransact" num="0"/>-->
+    <!--    </connection>-->
 
     <!-- Mot connections -->
-    <connection name="mot__i2c_steering">
-        <source component="mot" port="writeSteering" type="Drv::I2c" num="0"/>
+    <connection name="mot__i2c_commanding">
+        <source component="mot" port="command" type="Drv::I2c" num="0"/>
         <target component="i2cDriver" port="write" type="Drv::I2c" num="0"/>
     </connection>
+<!--    <connection name="mot__uart_commanding">-->
+<!--        <source component="mot" port="command" type="Drv::SerialWrite" num="0"/>-->
+<!--        <target component="serialDriver" port="serialSend" type="Drv::SerialWrite" num="0"/>-->
+<!--    </connection>-->
 
     <!-- Communications driver connections -->
     <connection name="UplinkDrvAllocate">
@@ -209,10 +217,10 @@
         <source component="downlink" port="bufferDeallocate" type="BufferSend" num="0"/>
         <target component="fileDownlink" port="bufferReturn" type="BufferSend" num="0"/>
     </connection>
-<!--    <connection name="cmdDisp__uplink">-->
-<!--        <source component="cmdDisp" port="seqCmdStatus" type="Com" num="0"/>-->
-<!--        <target component="uplink" port="cmdResponseIn" type="Com" num="0"/>-->
-<!--    </connection>-->
+    <!--    <connection name="cmdDisp__uplink">-->
+    <!--        <source component="cmdDisp" port="seqCmdStatus" type="Com" num="0"/>-->
+    <!--        <target component="uplink" port="cmdResponseIn" type="Com" num="0"/>-->
+    <!--    </connection>-->
 
     <connection name="prmDbTime">
         <source component="prmDb" port="Time" type="Time" num="0"/>
@@ -258,10 +266,6 @@
         <source component="mot" port="Time" type="Time" num="0"/>
         <target component="systemTime" port="timeGetPort" type="Time" num="0"/>
     </connection>
-    <connection name="i2cTime">
-        <source component="i2cDriver" port="Time" type="Time" num="0"/>
-        <target component="systemTime" port="timeGetPort" type="Time" num="0"/>
-    </connection>
     <connection name="uplinkTime">
         <source component="fileUplink" port="timeCaller" type="Time" num="0"/>
         <target component="systemTime" port="timeGetPort" type="Time" num="0"/>
@@ -300,8 +304,12 @@
         <source component="cmdDisp" port="Log" type="Log" num="0"/>
         <target component="eventLogger" port="LogRecv" type="Log" num="0"/>
     </connection>
-    <connection name="cam__eventLogger_LogRecv">
-        <source component="cam" port="Log" type="Log" num="0"/>
+<!--    <connection name="cam__eventLogger_LogRecv">-->
+<!--        <source component="cam" port="Log" type="Log" num="0"/>-->
+<!--        <target component="eventLogger" port="LogRecv" type="Log" num="0"/>-->
+<!--    </connection>-->
+    <connection name="serialDriver__eventLogger_LogRecv">
+        <source component="serialDriver" port="Log" type="Log" num="0"/>
         <target component="eventLogger" port="LogRecv" type="Log" num="0"/>
     </connection>
     <connection name="mot__eventLogger_LogRecv">
@@ -314,10 +322,6 @@
     </connection>
     <connection name="FileUplink__eventLogger">
         <source component="fileUplink" port="eventOut" type="Log" num="0"/>
-        <target component="eventLogger" port="LogRecv" type="Log" num="0"/>
-    </connection>
-    <connection name="i2cDriver__eventLogger_LogRecv">
-        <source component="i2cDriver" port="Log" type="Log" num="0"/>
         <target component="eventLogger" port="LogRecv" type="Log" num="0"/>
     </connection>
     <connection name="fileManager__eventLogger_LogRecv">
@@ -354,18 +358,14 @@
         <source component="cmdDisp" port="Tlm" type="Tlm" num="0"/>
         <target component="chanTlm" port="TlmRecv" type="Time" num="0"/>
     </connection>
-    <connection name="i2c__chanTlm">
-        <source component="i2cDriver" port="Tlm" type="Tlm" num="0"/>
-        <target component="chanTlm" port="TlmRecv" type="Time" num="0"/>
-    </connection>
     <connection name="test__chanTlm">
         <source component="test" port="Tlm" type="Tlm" num="0"/>
         <target component="chanTlm" port="TlmRecv" type="Time" num="0"/>
     </connection>
-    <connection name="cam__chanTlm">
-        <source component="cam" port="Tlm" type="Tlm" num="0"/>
-        <target component="chanTlm" port="TlmRecv" type="Time" num="0"/>
-    </connection>
+<!--    <connection name="cam__chanTlm">-->
+<!--        <source component="cam" port="Tlm" type="Tlm" num="0"/>-->
+<!--        <target component="chanTlm" port="TlmRecv" type="Time" num="0"/>-->
+<!--    </connection>-->
     <connection name="fileUplinkBufferManager__chanTlm">
         <source component="fileUplinkBufferManager" port="tlmOut" type="Tlm" num="0"/>
         <target component="chanTlm" port="TlmRecv" type="Tlm" num="0"/>
@@ -384,14 +384,14 @@
     </connection>
 
     <!-- Parameter connections -->
-    <connection name="mot__prmDb_Get">
-        <source component="mot" port="ParamGet" type="PrmGet" num="0"/>
-        <target component="prmDb" port="getPrm" type="PrmGet" num="0"/>
-    </connection>
-    <connection name="mot__prmDb_Set">
-        <source component="mot" port="ParamSet" type="PrmSet" num="0"/>
-        <target component="prmDb" port="setPrm" type="PrmSet" num="0"/>
-    </connection>
+<!--    <connection name="mot__prmDb_Get">-->
+<!--        <source component="mot" port="ParamGet" type="PrmGet" num="0"/>-->
+<!--        <target component="prmDb" port="getPrm" type="PrmGet" num="0"/>-->
+<!--    </connection>-->
+<!--    <connection name="mot__prmDb_Set">-->
+<!--        <source component="mot" port="ParamSet" type="PrmSet" num="0"/>-->
+<!--        <target component="prmDb" port="setPrm" type="PrmSet" num="0"/>-->
+<!--    </connection>-->
 
 
     <!-- Commanding connections -->
@@ -460,18 +460,18 @@
         <target component="cmdDisp" port="compCmdStat" type="CmdResponse" num="0"/>
     </connection>
 
-    <connection name="cam__cmdDisp_Reg">
-        <source component="cam" port="CmdReg" type="CmdReg" num="0"/>
-        <target component="cmdDisp" port="compCmdReg" type="CmdReg" num="5"/>
-    </connection>
-    <connection name="cmdDisp__cam_Disp">
-        <source component="cmdDisp" port="compCmdSend" type="Cmd" num="5"/>
-        <target component="cam" port="CmdDisp" type="Cmd" num="0"/>
-    </connection>
-    <connection name="cam__cmdDisp_Reply">
-        <source component="cam" port="CmdStatus" type="CmdResponse" num="0"/>
-        <target component="cmdDisp" port="compCmdStat" type="CmdResponse" num="0"/>
-    </connection>
+<!--    <connection name="cam__cmdDisp_Reg">-->
+<!--        <source component="cam" port="CmdReg" type="CmdReg" num="0"/>-->
+<!--        <target component="cmdDisp" port="compCmdReg" type="CmdReg" num="5"/>-->
+<!--    </connection>-->
+<!--    <connection name="cmdDisp__cam_Disp">-->
+<!--        <source component="cmdDisp" port="compCmdSend" type="Cmd" num="5"/>-->
+<!--        <target component="cam" port="CmdDisp" type="Cmd" num="0"/>-->
+<!--    </connection>-->
+<!--    <connection name="cam__cmdDisp_Reply">-->
+<!--        <source component="cam" port="CmdStatus" type="CmdResponse" num="0"/>-->
+<!--        <target component="cmdDisp" port="compCmdStat" type="CmdResponse" num="0"/>-->
+<!--    </connection>-->
 
     <connection name="mot__cmdDisp_Reg">
         <source component="mot" port="CmdReg" type="CmdReg" num="0"/>

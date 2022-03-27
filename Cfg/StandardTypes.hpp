@@ -1,6 +1,7 @@
 #ifndef VO_CMPE460_STANDARDTYPES_HPP
 #define VO_CMPE460_STANDARDTYPES_HPP
 
+#ifdef __circle__
 #define _GCC_STDINT_H
 #define _SYS__STDINT_H
 #include <stdint.h>
@@ -28,5 +29,9 @@ typedef int32_t NATIVE_INT_TYPE;
 typedef uint32_t NATIVE_UINT_TYPE;
 
 typedef int32_t TaskIdRepr;
+
+#else
+#include <stdint.h>
+#endif
 
 #endif //VO_CMPE460_STANDARDTYPES_HPP

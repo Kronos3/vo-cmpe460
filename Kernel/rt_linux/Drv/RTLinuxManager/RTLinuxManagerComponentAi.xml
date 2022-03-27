@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<component name="RTLinuxManager" kind="active" namespace="Svc">
+    <import_port_type>Svc/Sched/SchedPortAi.xml</import_port_type>
+    <import_port_type>Svc/Cycle/CyclePortAi.xml</import_port_type>
+    <comment>A rate group active component with input and output scheduler ports</comment>
+    <ports>
+        <!-- Input time cycle port -->
+<!--        <port name="schedIn" data_type="Sched" kind="async_input" max_number="1" full="drop">-->
+<!--            <comment>-->
+<!--                The rate group cycle input-->
+<!--            </comment>-->
+<!--        </port>-->
+
+        <!-- Stop the ISR generation to hang the system as quickly as possible -->
+        <port name="stop" data_type="CycleOut" kind="output" max_number="1">
+        </port>
+
+    </ports>
+    <telemetry>
+        <channel id="0" name="NumCycle" data_type="U32" update="on_change" format_string="%u cycles">
+            <comment>
+                Number of cycles run
+            </comment>
+        </channel>
+    </telemetry>
+    <events>
+        <event id="0" name="Assert" severity="FATAL" format_string="%s">
+            <comment>
+                Assertion tripped, hanging the system
+            </comment>
+            <args>
+                <arg name="assertMsg" type="string" size="180">
+                    <comment>The assert message</comment>
+                </arg>
+            </args>
+        </event>
+        <event id="1" name="Reboot" severity="ACTIVITY_HI" format_string="Rebooting...">
+            <comment>
+                Reboot FSW to run a new binary
+            </comment>
+        </event>
+    </events>
+    <commands>
+        <command kind="async" opcode="0x00" mnemonic="REBOOT">
+            <comment>
+                Reboot the system
+            </comment>
+        </command>
+    </commands>
+</component>
+

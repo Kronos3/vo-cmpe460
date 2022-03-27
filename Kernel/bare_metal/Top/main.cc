@@ -155,23 +155,7 @@ s32 main()
     kernel::net.GetConfig()->GetIPAddress()->Format(&ip_address);
     Fw::Logger::logMsg("Raspberry Pi IP: %s\r\n", (POINTER_CAST) (const char*) ip_address);
 
-    Fw::Logger::logMsg("Initializing components\r\n");
-    Rpi::init();
-
-    Fw::Logger::logMsg("Initializing port connections\r\n");
-    constructRpiArchitecture();
-
-    Fw::Logger::logMsg("Starting active tasks\r\n");
-    Rpi::start();
-
-    Fw::Logger::logMsg("Registering commands\r\n");
-    reg_commands();
-
-    Fw::Logger::logMsg("Load parameter database\r\n");
-    Rpi::prmDb.readParamFile();
-    loadParameters();
-
-    Fw::Logger::logMsg("Boot complete\r\n");
+    Rpi::fsw_start();
 
     while (TRUE)
     {

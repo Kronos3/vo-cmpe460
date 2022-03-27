@@ -1,0 +1,8 @@
+add_fprime_subdirectory("${CMAKE_CURRENT_LIST_DIR}/I2cMux")
+add_fprime_subdirectory("${CMAKE_CURRENT_LIST_DIR}/RpiGpioDriver")
+add_fprime_subdirectory("${CMAKE_CURRENT_LIST_DIR}/RpiI2cDriver")
+add_fprime_subdirectory("${CMAKE_CURRENT_LIST_DIR}/RpiSerialDriver")
+add_fprime_subdirectory("${CMAKE_CURRENT_LIST_DIR}/RpiSocketIpDriver")
+add_fprime_subdirectory("${CMAKE_CURRENT_LIST_DIR}/RpiSpiDriver")
+add_fprime_subdirectory("${CMAKE_CURRENT_LIST_DIR}/RpiTime")
+add_fprime_subdirectory("${CMAKE_CURRENT_LIST_DIR}/Logger")

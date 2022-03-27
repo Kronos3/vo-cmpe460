@@ -1,0 +1,8 @@
+<enum namespace="Rpi" name="MSP432PwmOpcode">
+    <item name="STOP" value="0"/>
+    <item name="SERVO" value="1"/>
+    <item name="DC0_FORWARD" value="2"/>
+    <item name="DC0_BACKWARD" value="3"/>
+    <item name="DC1_FORWARD" value="4"/>
+    <item name="DC1_BACKWARD" value="5"/>
+</enum>

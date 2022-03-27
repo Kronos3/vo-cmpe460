@@ -7,7 +7,7 @@
 
 # fprime framework is build with C++11 and C99 support, project may override these setting after the inclusion of
 # Fprime-Code.cmake.
-set(CMAKE_CXX_STANDARD 11)
+#set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 

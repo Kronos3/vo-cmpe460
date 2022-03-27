@@ -19,13 +19,14 @@
 #include <Svc/FileUplink/FileUplink.hpp>
 #include <Svc/FileDownlink/FileDownlink.hpp>
 
-#include <Drv/RpiSerialDriver/RpiSerialDriverImpl.h>
-#include <Drv/RpiI2cDriver/RpiI2cDriverImpl.h>
-#include <Drv/RpiSpiDriver/RpiSpiDriverImpl.h>
-#include <Drv/RpiSocketIpDriver/RpiSocketIpDriverComponentImpl.hpp>
+#include <Drv/LinuxSerialDriver/LinuxSerialDriverComponentImpl.hpp>
+#include <Drv/LinuxI2cDriver/LinuxI2cDriverComponentImpl.hpp>
+#include <Drv/LinuxSpiDriver/LinuxSpiDriverComponentImpl.hpp>
+#include <Drv/TcpClient/TcpClientComponentImpl.hpp>
+#include <Svc/LinuxTime/LinuxTimeImpl.hpp>
+#include <Svc/LinuxTimer/LinuxTimerComponentImpl.hpp>
 
-#include <Rpi/SystemTime/SystemTimeImpl.h>
-#include <Rpi/Cam/CamImpl.h>
+//#include <Rpi/Cam/CamImpl.h>
 #include <Rpi/Mot/MotImpl.h>
 
 #include <Rpi/Test/TestImpl.h>
@@ -56,17 +57,18 @@ namespace Rpi
     extern Svc::StaticMemoryComponentImpl staticMemory;
 //    extern Svc::FatalHandlerComponentImpl fatalHandler;
 
-    extern Rpi::SystemTimeImpl systemTime;
-    extern Drv::RpiSerialDriverImpl serialDriver;
-    extern Drv::RpiI2cDriverImpl i2cDriver;
-    extern Drv::RpiSpiDriverImpl spiDriver;
-    extern Drv::RpiSocketIpDriverComponentImpl comm;
+    extern Svc::LinuxTimerComponentImpl linuxTimer;
+    extern Svc::LinuxTimeImpl systemTime;
+    extern Drv::LinuxSerialDriverComponentImpl serialDriver;
+    extern Drv::LinuxI2cDriverComponentImpl i2cDriver;
+//    extern Drv::LinuxSpiDriverComponentImpl spiDriver;
+    extern Drv::TcpClientComponentImpl comm;
 
     extern Svc::TestImpl test;
 
 //    extern Rpi::CamImpl camL;
 //    extern Rpi::CamImpl camR;
-    extern Rpi::CamImpl cam;
+//    extern Rpi::CamImpl cam;
     extern Rpi::MotImpl mot;
 
     // FSW entry points
@@ -74,11 +76,16 @@ namespace Rpi
     void start();
     void reg_commands();
     void loadParameters();
+
+    // Main entry point of FSW
+    void fsw_start();
+    void fsw_run();
+    void fsw_exit();
 }
 
 using namespace Rpi;
 
 // Autocoded definition
-void constructRpiArchitecture();
+void constructRpiRTLinuxArchitecture();
 
 #endif //RPI_COMPONENTS_H

@@ -12,4 +12,12 @@
             <arg name="input_right" type="F64"/>
         </args>
     </event>
+
+    <event id="2" name="MotI2cFailure" severity="WARNING_HI"
+           format_string="Failed to command MSP432 via I2C opcode=%s, error: %s">
+        <args>
+            <arg name="opcode" type="Rpi::MSP432PwmOpcode"/>
+            <arg name="error" type="Drv::I2cStatus"/>
+        </args>
+    </event>
 </events>

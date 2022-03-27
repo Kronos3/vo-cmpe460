@@ -1,0 +1,10 @@
+<enum namespace="Rpi" name="CameraAwb">
+    <item name="AWB_AUTO" value="0"/>
+    <item name="AWB_INCANDESCENT" value="1"/>
+    <item name="AWB_TUNGSTEN" value="2"/>
+    <item name="AWB_FLUORESCENT" value="3"/>
+    <item name="AWB_INDOOR" value="4"/>
+    <item name="AWB_DAYLIGHT" value="5"/>
+    <item name="AWB_CLOUDY" value="6"/>
+<!--    <item name="AWB_CUSTOM" value="7"/>-->
+</enum>

@@ -5,9 +5,6 @@
 
 namespace Rpi
 {
-    // Make sure the pwm packet size is sane
-    FW_STATIC_ASSERT(MSP432Pwm::SERIALIZED_SIZE == 3);
-
     MotImpl::MotImpl(const char* name)
     : MotComponentBase(name),
       m_steering(0.0), m_left(0.0), m_right(0.0)
@@ -19,13 +16,13 @@ namespace Rpi
         MotComponentBase::init(instance);
     }
 
-    void MotImpl::parameterUpdated(FwPrmIdType id)
-    {
-        MotComponentBase::parameterUpdated(id);
-
-        // Update the current request given the parameter
-        send();
-    }
+//    void MotImpl::parameterUpdated(FwPrmIdType id)
+//    {
+//        MotComponentBase::parameterUpdated(id);
+//
+//        // Update the current request given the parameter
+//        send();
+//    }
 
     void MotImpl::get_handler(NATIVE_INT_TYPE portNum,
                               F64 & steering, F64 &left, F64 &right)
@@ -35,15 +32,8 @@ namespace Rpi
         right = m_right;
     }
 
-    void MotImpl::send()
-    {
-        // TODO(tumbar) Set the DC values
-
-    }
-
     void MotImpl::STEER_cmdHandler(U32 opCode, U32 cmdSeq, F64 position)
     {
-        // Scale -1.0 to 1.0
         bool status = set_steering(position);
         cmdResponse_out(opCode, cmdSeq, status ? Fw::COMMAND_OK : Fw::COMMAND_EXECUTION_ERROR);
     }
@@ -53,45 +43,65 @@ namespace Rpi
         FW_ASSERT(position >= -1.0 && position <= 1.0, position * 100);
 
         // Translate position to 0 for left and 1 for right
-        position = (position + 1) / 2.0;
-        FW_ASSERT(position >= 0.0 && position <= 1.0, position * 100);
+        F64 normal = (position + 1) / 2.0;
+        FW_ASSERT(normal >= 0.0 && normal <= 1.0, normal * 100);
 
-        // Grab the parameter that control the PWM limits
-        Fw::ParamValid valid;
-        F32 left_pwm = paramGet_STEERING_LEFT_PWM(valid);
-        F32 right_pwm = paramGet_STEERING_RIGHT_PWM(valid);
+        // Convert 0 - 1 (F64) position to 0 - 255 (U8)
+        MSP432Pwm pwm(MSP432PwmOpcode::SERVO, static_cast<U8>(normal * UINT8_MAX));
 
-        F64 duty_cycle;
+        // Send the packet via i2c
+        Drv::I2cStatus status = send_packet(pwm);
 
-        // Validate the duty cycle is between the limits
-        if (left_pwm < right_pwm)
+        if (status == Drv::I2cStatus::I2C_OK)
         {
-            duty_cycle = position * (right_pwm - left_pwm) + left_pwm;
-            FW_ASSERT(duty_cycle >= left_pwm && duty_cycle <= right_pwm,
-                      duty_cycle * 100,
-                      left_pwm * 100,
-                      right_pwm * 100);
+            m_steering = position;
+            return true;
         }
         else
         {
-            duty_cycle = position * (right_pwm - left_pwm) + right_pwm;
-            FW_ASSERT(duty_cycle <= left_pwm && duty_cycle >= right_pwm,
-                      duty_cycle * 100,
-                      left_pwm * 100,
-                      right_pwm * 100);
+            return false;
+        }
+    }
+
+    bool MotImpl::set_throttle(F64 left, F64 right)
+    {
+
+        MSP432PwmOpcode left_opcode = left >= 0 ?
+                                      MSP432PwmOpcode::DC0_FORWARD : MSP432PwmOpcode::DC0_BACKWARD;
+        MSP432PwmOpcode right_opcode = right >= 0 ?
+                                       MSP432PwmOpcode::DC1_FORWARD : MSP432PwmOpcode::DC1_BACKWARD;
+
+        // Clamp motors to max pwm
+        F64 left_norm = FW_MIN(FW_ABS(left), 1.0);
+        F64 right_norm = FW_MIN(FW_ABS(right), 1.0);
+
+        MSP432Pwm left_packet(left_opcode, static_cast<U8>(left_norm * UINT8_MAX));
+        MSP432Pwm right_packet(right_opcode, static_cast<U8>(right_norm * UINT8_MAX));
+
+        Drv::I2cStatus status;
+
+        status = send_packet(left_packet);
+        if (status == Drv::I2cStatus::I2C_OK)
+        {
+            m_left = left;
+        }
+        else
+        {
+            // Failed to set left motor
+            // Quit early and exit with failure
+            return false;
         }
 
-        // Normalize duty_cycle to 0 to UINT16_MAX
-        U16 normalized = static_cast<U16>(duty_cycle * __UINT16_MAX__);
-        steering_pwm.set(normalized, true);
-
-        U8 internal_buf[3];
-        Fw::ExternalSerializeBuffer steering_ser(internal_buf,  sizeof(internal_buf));
-        steering_pwm.serialize(steering_ser);
-        Fw::Buffer steering_send(internal_buf, sizeof(internal_buf));
-
-        Drv::I2cStatus status = writeSteering_out(0, MSP_SLAVE_ADDRESS, steering_send);
-        return status == Drv::I2cStatus::I2C_OK;
+        status = send_packet(right_packet);
+        if (status == Drv::I2cStatus::I2C_OK)
+        {
+            m_right = right;
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 
     void MotImpl::steer_handler(NATIVE_INT_TYPE portNum, F64 steer)
@@ -101,6 +111,34 @@ namespace Rpi
 
     void MotImpl::throttle_handler(NATIVE_INT_TYPE portNum, F64 left, F64 right)
     {
-        // TODO(tumbar) TODO
+        set_throttle(left, right);
+    }
+
+    Drv::I2cStatus MotImpl::send_packet(MSP432Pwm& packet)
+    {
+        BYTE serialized[2];
+        Fw::Buffer buf(serialized, sizeof serialized);
+        Fw::SerializeBufferBase& ser = buf.getSerializeRepr();
+
+        Fw::SerializeStatus status;
+        status = ser.serialize(static_cast<U8>(packet.getopcode().e));
+        FW_ASSERT(status == Fw::FW_SERIALIZE_OK, status);
+
+        status = ser.serialize(packet.getvalue());
+        FW_ASSERT(status == Fw::FW_SERIALIZE_OK, status);
+
+        Drv::I2cStatus i2c_status = command_out(0, MSP_SLAVE_ADDRESS, buf);
+        if (i2c_status != Drv::I2cStatus::I2C_OK)
+        {
+            log_WARNING_HI_MotI2cFailure(packet.getopcode(), i2c_status);
+        }
+
+        return i2c_status;
+    }
+
+    void MotImpl::THROTTLE_cmdHandler(U32 opCode, U32 cmdSeq, F64 left, F64 right)
+    {
+        bool status = set_throttle(left, right);
+        cmdResponse_out(opCode, cmdSeq, status ? Fw::COMMAND_OK : Fw::COMMAND_EXECUTION_ERROR);
     }
 }

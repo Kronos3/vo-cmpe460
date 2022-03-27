@@ -1,14 +1,14 @@
-#ifndef VO_CMPE460_SYSTEMTIMEIMPL_H
-#define VO_CMPE460_SYSTEMTIMEIMPL_H
+#ifndef VO_CMPE460_RPITIMEIMPL_H
+#define VO_CMPE460_RPITIMEIMPL_H
 
-#include <Rpi/SystemTime/SystemTimeComponentAc.hpp>
+#include <Rpi/RpiTime/RpiTimeComponentAc.hpp>
 
 namespace Rpi
 {
-    class SystemTimeImpl : public SystemTimeComponentBase
+    class RpiTimeImpl : public RpiTimeComponentBase
     {
     public:
-        SystemTimeImpl();
+        RpiTimeImpl();
         void init(
                 NATIVE_INT_TYPE instance = 0 /*!< The instance number*/
         );
@@ -19,4 +19,4 @@ namespace Rpi
     };
 }
 
-#endif //VO_CMPE460_SYSTEMTIMEIMPL_H
+#endif //VO_CMPE460_RPITIMEIMPL_H

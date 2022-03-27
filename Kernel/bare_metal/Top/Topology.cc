@@ -159,4 +159,25 @@ namespace Rpi
     {
         mot.loadParameters();
     }
+
+    void fsw_start()
+    {
+        Fw::Logger::logMsg("Initializing components\r\n");
+        Rpi::init();
+
+        Fw::Logger::logMsg("Initializing port connections\r\n");
+        constructRpiArchitecture();
+
+        Fw::Logger::logMsg("Starting active tasks\r\n");
+        Rpi::start();
+
+        Fw::Logger::logMsg("Registering commands\r\n");
+        reg_commands();
+
+        Fw::Logger::logMsg("Load parameter database\r\n");
+        Rpi::prmDb.readParamFile();
+        loadParameters();
+
+        Fw::Logger::logMsg("Boot complete\r\n");
+    }
 }

@@ -7,51 +7,6 @@
         </comment>
     </command>
 
-    <command kind="async" opcode="1" mnemonic="SET_CALIBRATION">
-        <comment>
-            Set one of the calibration settings on the camera
-        </comment>
-
-        <args>
-            <arg name="Selection" type="Rpi::CameraCalibration">
-                <comment>Which setting to change on the camera</comment>
-            </arg>
-            <arg name="Value" type="I8">
-                <comment>Calibration setting on the camera: -2, -1, 0, 1, 2</comment>
-            </arg>
-        </args>
-    </command>
-
-    <command kind="async" opcode="2" mnemonic="SET_SPECIAL_EFFECT">
-        <comment>
-            Take images with one of the OV2640 special effect settings
-        </comment>
-
-        <args>
-            <arg name="Value" type="Rpi::CameraSpecialEffect"/>
-        </args>
-    </command>
-
-    <command kind="async" opcode="3" mnemonic="SET_LIGHT_MODE">
-        <comment>
-            Take images with one of the OV2640 lighting modes
-        </comment>
-
-        <args>
-            <arg name="Value" type="Rpi::CameraLightMode"/>
-        </args>
-    </command>
-
-    <command kind="async" opcode="4" mnemonic="SET_JPEG_SIZE">
-        <comment>
-            Change the image size of the camera
-        </comment>
-
-        <args>
-            <arg name="Value" type="Rpi::CameraJpegSize"/>
-        </args>
-    </command>
-
     <command kind="async" opcode="5" mnemonic="CAPTURE">
         <comment>
             Capture a single image and save it to a file

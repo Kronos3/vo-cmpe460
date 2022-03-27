@@ -1,30 +1,29 @@
 cmake_minimum_required(VERSION 3.15)
 
 project(VO-CMPE460)
-enable_language(C CXX ASM)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_CXX_STANDARD 17)
+
+enable_language(C CXX ASM)
 
 set(AARCH 64)
 set(RASPPI 3)
 set(ARM_ALLOW_MULTI_CORE OFF)
 set(FLOAT_ABI "hard")
 
-add_compile_options(-funwind-tables)
+# 'bare_metal' will build Circle + FPrime layer
+# 'rt_linux' will run on Preempt RT Linux and build /sbin/init
+set(RPI_PLATFORM rt_linux)
 
 # Initialize the compiler toolchain
-include(toolchain.cmake)
-include(circle/circle.cmake)
+include(cmake/platform/${RPI_PLATFORM}-toolchain.cmake)
 
-# Add circle drivers
-add_subdirectory(circle/lib)
-add_subdirectory(circle/addon)
 add_subdirectory(opencv)
 
-target_include_directories(circle PUBLIC
-        ${CMAKE_CURRENT_LIST_DIR}/circle/include
-        ${CMAKE_CURRENT_LIST_DIR}/circle/addon
-)
+if (RPI_PLATFORM EQUAL "bare_metal")
+    add_subdirectory(circle)
+endif()
 
 add_compile_options(-pipe)
 
@@ -43,7 +42,12 @@ set(FPRIME_INSTALL_DEST ${PROJECT_SOURCE_DIR})
 set(FPRIME_LIBRARY_LOCATIONS
         ${FPRIME_FRAMEWORK_PATH}
         ${PROJECT_SOURCE_DIR}
+        ${PROJECT_SOURCE_DIR}/Kernel/${RPI_PLATFORM}
         )
+
+include_directories(
+        ${CMAKE_BINARY_DIR}/Kernel/${RPI_PLATFORM}
+)
 
 ##
 # FPrime instantiation
@@ -57,10 +61,7 @@ include(cmake/fprime_code.cmake)
 
 fprime_enter_root(${CMAKE_CURRENT_LIST_DIR})
 
-add_subdirectory(Drv)   # Raspberry Pi drivers
+add_subdirectory(Kernel)    # Deployment specific drivers
 add_subdirectory(Rpi)   # FSW
 
 cmake_policy(SET CMP0079 NEW)
-
-add_subdirectory(circle/sample/09-softserial)
-add_subdirectory(circle/sample/03-screentext)

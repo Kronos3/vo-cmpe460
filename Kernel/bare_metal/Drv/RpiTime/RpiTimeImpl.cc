@@ -1,31 +1,31 @@
 #include <circle/timer.h>
 #include <Rpi/Top/kernel.h>
-#include "SystemTimeImpl.h"
+#include "RpiTimeImpl.h"
 
 namespace Rpi
 {
-    static SystemTimeImpl* self = nullptr;
-    SystemTimeImpl::SystemTimeImpl()
+    static RpiTimeImpl* self = nullptr;
+    RpiTimeImpl::RpiTimeImpl()
     {
         FW_ASSERT(!self, (POINTER_CAST)self);
         self = this;
     }
 
-    void SystemTimeImpl::timeGetPort_handler(NATIVE_INT_TYPE portNum, Fw::Time &time)
+    void RpiTimeImpl::timeGetPort_handler(NATIVE_INT_TYPE portNum, Fw::Time &time)
     {
         unsigned seconds, useconds;
         CTimer::Get()->GetLocalTime(&seconds, &useconds);
         time.set(seconds, useconds);
     }
 
-    void SystemTimeImpl::init(NATIVE_INT_TYPE instance)
+    void RpiTimeImpl::init(NATIVE_INT_TYPE instance)
     {
-        SystemTimeComponentBase::init(instance);
+        RpiTimeComponentBase::init(instance);
 
         kernel::tim.RegisterPeriodicHandler(isrHandler);
     }
 
-    void SystemTimeImpl::isrHandler()
+    void RpiTimeImpl::isrHandler()
     {
         FW_ASSERT(self);
 
