@@ -16,7 +16,7 @@ message(STATUS "Searching for F prime modules in: ${FPRIME_BUILD_LOCATIONS}")
 message(STATUS "Autocoder constants file: ${FPRIME_AC_CONSTANTS_FILE}")
 message(STATUS "Configuration header directory: ${FPRIME_CONFIG_DIR}")
 
-include(platform/raspberry-pi)
+include(platform/${RPI_PLATFORM})
 
 include(utilities)
 include(module)

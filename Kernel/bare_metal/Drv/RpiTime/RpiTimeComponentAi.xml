@@ -1,4 +1,4 @@
-<component name="SystemTime" kind="passive" namespace="Rpi">
+<component name="RpiTime" kind="passive" namespace="Rpi">
     <import_port_type>Fw/Time/TimePortAi.xml</import_port_type>
     <import_port_type>Svc/Cycle/CyclePortAi.xml</import_port_type>
     <comment>

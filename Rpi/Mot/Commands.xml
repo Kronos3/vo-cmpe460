@@ -5,4 +5,11 @@
             <arg name="position" type="F64"/>
         </args>
     </command>
+    <command kind="sync" opcode="0x01" mnemonic="THROTTLE">
+        <comment>Set the throttle on both motors</comment>
+        <args>
+            <arg name="left" type="F64"/>
+            <arg name="right" type="F64"/>
+        </args>
+    </command>
 </commands>

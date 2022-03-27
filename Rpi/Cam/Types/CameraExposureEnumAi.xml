@@ -1,0 +1,6 @@
+<enum namespace="Rpi" name="CameraExposure">
+    <item name="EXPOSURE_NORMAL" value="0"/>
+    <item name="EXPOSURE_SHORT" value="1"/>
+    <item name="EXPOSURE_LONG" value="2"/>
+    <!--    <item name="EXPOSURE_CUSTOM" value="3"/>-->
+</enum>

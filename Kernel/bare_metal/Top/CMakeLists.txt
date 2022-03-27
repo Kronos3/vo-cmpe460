@@ -7,9 +7,8 @@
 # Note: using PROJECT_NAME as EXECUTABLE_NAME
 ####
 set(SOURCE_FILES
-        "${CMAKE_CURRENT_LIST_DIR}/RpiTopologyAppAi.xml"
+        "${CMAKE_CURRENT_LIST_DIR}/RpiBareMetalTopologyAppAi.xml"
         "${CMAKE_CURRENT_LIST_DIR}/Topology.cc"
-#        "${CMAKE_CURRENT_LIST_DIR}/backtrace.c"
         )
 # Note: supply non-explicit dependencies here
 set(MOD_DEPS

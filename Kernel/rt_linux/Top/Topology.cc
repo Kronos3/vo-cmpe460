@@ -1,0 +1,277 @@
+#include <Top/Components.hpp>
+#include <VoCarCfg.h>
+#include <FprimeProtocol.hpp>
+#include <MallocAllocator.hpp>
+#include <cstdlib>
+#include <Log.hpp>
+#include <cerrno>
+
+namespace Rpi
+{
+#define TIMER_HZ (100)
+
+    Os::Log osLogger;
+
+    enum
+    {
+        QUEUE_DEPTH = 32,
+        FILE_UPLINK_QUEUE_DEPTH = 4096
+    };
+
+    enum {
+        UPLINK_BUFFER_STORE_SIZE = 4096,
+        UPLINK_BUFFER_QUEUE_SIZE = 4096,
+        UPLINK_BUFFER_MGR_ID = 200
+    };
+
+    static NATIVE_INT_TYPE rgDivs[Svc::RateGroupDriverImpl::DIVIDER_SIZE] = {
+            TIMER_HZ / 1,
+            TIMER_HZ / 10,
+            TIMER_HZ / 20,
+//            TIMER_HZ / 50,
+    };
+    Svc::RateGroupDriverImpl rgDriver("RGDRV", rgDivs, FW_NUM_ARRAY_ELEMENTS(rgDivs));
+
+    U32 contexts[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    Svc::ActiveRateGroupImpl rg1hz("RG1HZ", contexts, FW_NUM_ARRAY_ELEMENTS(contexts));
+    Svc::ActiveRateGroupImpl rg10hz("RG10HZ", contexts, FW_NUM_ARRAY_ELEMENTS(contexts));
+    Svc::ActiveRateGroupImpl rg20hz("RG20HZ", contexts, FW_NUM_ARRAY_ELEMENTS(contexts));
+    Svc::ActiveRateGroupImpl rg50hz("RG50HZ", contexts, FW_NUM_ARRAY_ELEMENTS(contexts));
+
+//    Svc::CmdSequencerComponentImpl cmdSeq("SEQ");
+    Svc::CommandDispatcherImpl cmdDisp("DISP");
+
+    Svc::ActiveLoggerImpl eventLogger("LOG");
+    Svc::TlmChanImpl chanTlm("TLM");
+    Svc::PrmDbImpl prmDb("PRM", "/fsw/data/prm.dat");
+
+    Svc::DeframerComponentImpl uplink("UPLINK");
+    Svc::FramerComponentImpl downlink("DOWNLINK");
+    Svc::FprimeDeframing deframing;
+    Svc::FprimeFraming framing;
+    Svc::FileUplink fileUplink("fileUplink");
+    Fw::MallocAllocator mallocator;
+    Svc::BufferManagerComponentImpl fileUplinkBufferManager("fileUplinkBufferManager");
+    Svc::FileDownlink fileDownlink("fileDownlink");
+
+    Svc::FileManager fileManager("FILE_MGR");
+    Svc::StaticMemoryComponentImpl staticMemory("STATIC_MEM");
+//    Svc::FatalHandlerComponentImpl fatalHandler("FATAL_HANDLER");
+
+    Svc::LinuxTimerComponentImpl linuxTimer("LINUX_TIMER");
+    Svc::LinuxTimeImpl systemTime("TIME");
+    Drv::LinuxSerialDriverComponentImpl serialDriver("SERIAL");
+    Drv::LinuxI2cDriverComponentImpl i2cDriver("I2C");
+//    Drv::LinuxSpiDriverComponentImpl spiDriver("SPI");
+    Drv::TcpClientComponentImpl comm("COMM");
+    Svc::TestImpl test;
+
+//    Rpi::CamImpl cam("CAM");
+    Rpi::MotImpl mot("MOT");
+
+    void init()
+    {
+        linuxTimer.init(0);
+
+        rgDriver.init();
+        rg1hz.init(QUEUE_DEPTH, 0);
+        rg10hz.init(QUEUE_DEPTH, 1);
+        rg20hz.init(QUEUE_DEPTH, 1);
+        rg50hz.init(QUEUE_DEPTH, 3);
+
+        comm.init(0);
+
+//        cmdSeq.init(QUEUE_DEPTH, 0);
+        cmdDisp.init(QUEUE_DEPTH, 0);
+
+        eventLogger.init(QUEUE_DEPTH, 0);
+        chanTlm.init(QUEUE_DEPTH, 0);
+        prmDb.init(QUEUE_DEPTH, 0);
+
+        staticMemory.init(0);
+        uplink.init(0);
+        downlink.init(0);
+
+        downlink.setup(framing);
+        uplink.setup(deframing);
+        fileUplink.init(FILE_UPLINK_QUEUE_DEPTH, 0);
+        fileUplinkBufferManager.init(0);
+
+        // set up BufferManager instances
+        Svc::BufferManagerComponentImpl::BufferBins upBuffMgrBins;
+        memset(&upBuffMgrBins, 0, sizeof(upBuffMgrBins));
+        upBuffMgrBins.bins[0].bufferSize = UPLINK_BUFFER_STORE_SIZE;
+        upBuffMgrBins.bins[0].numBuffers = UPLINK_BUFFER_QUEUE_SIZE;
+        fileUplinkBufferManager.setup(UPLINK_BUFFER_MGR_ID, 0, mallocator, upBuffMgrBins);
+
+        fileDownlink.configure(1000, 200, 100, 10);
+        fileDownlink.init(QUEUE_DEPTH, 0);
+
+        fileManager.init(QUEUE_DEPTH, 0);
+//        fatalHandler.init(0);
+
+        systemTime.init(0);
+        serialDriver.init(0);
+
+        serialDriver.open("/dev/serial1",
+                          Drv::LinuxSerialDriverComponentImpl::BAUD_115K,
+                          Drv::LinuxSerialDriverComponentImpl::HW_FLOW,
+                          Drv::LinuxSerialDriverComponentImpl::PARITY_NONE,
+                          false);
+
+        i2cDriver.init(0);
+        bool opened = i2cDriver.open("/dev/i2c-1");
+        FW_ASSERT(opened && "I2C failed to open", errno);
+
+//        spiDriver.init(0);
+
+        test.init(QUEUE_DEPTH, 0);
+
+//        cam.init(QUEUE_DEPTH, 0);
+
+        mot.init(0);
+    }
+
+    void start()
+    {
+        rg1hz.start();
+        rg10hz.start();
+        rg20hz.start();
+        rg50hz.start();
+
+        test.start();
+
+        eventLogger.start();
+        chanTlm.start();
+        prmDb.start();
+
+        fileUplink.start();
+        fileManager.start();
+        fileDownlink.start(0);
+
+//        serialDriver.startReadThread();
+
+        cmdDisp.start();
+//        cam.start();
+
+        // Always start this last (or first, but not in the middle)
+        Os::File gds_cfg;
+        Os::File::Status status = gds_cfg.open("/fsw/cfg/gds.cfg", Os::File::OPEN_READ);
+        if (status != Os::File::OP_OK)
+        {
+            Fw::Logger::logMsg("Failed to load GDS configuration /fsw/cfg/gds.cfg\n");
+        }
+        else
+        {
+            static char gds_hostname_port[32];
+            NATIVE_INT_TYPE size = sizeof(gds_hostname_port);
+            gds_cfg.read(gds_hostname_port, size);
+            gds_hostname_port[size] = 0;
+
+            gds_cfg.close();
+
+            char* split = strchr(gds_hostname_port, ':');
+            if (!split)
+            {
+                Fw::Logger::logMsg("Failed to parse GDS configuration, missing ':'\n");
+            }
+            else
+            {
+                *split = 0;
+                U16 port = strtoul(split + 1, nullptr, 10);
+
+                Fw::Logger::logMsg("Connecting to GDS on %s:%d\n", (POINTER_CAST)gds_hostname_port, port);
+
+                Fw::String comm_name = "comm";
+                comm.configure(gds_hostname_port, port);
+                comm.startSocketTask(comm_name);
+            }
+        }
+    }
+
+    void reg_commands()
+    {
+//        cmdSeq.regCommands();
+        cmdDisp.regCommands();
+        eventLogger.regCommands();
+        prmDb.regCommands();
+        test.regCommands();
+//        cam.regCommands();
+        mot.regCommands();
+        fileManager.regCommands();
+        fileDownlink.regCommands();
+    }
+
+    void loadParameters()
+    {
+//        mot.loadParameters();
+    }
+
+    void fsw_start()
+    {
+        Fw::Logger::logMsg("Initializing components\n");
+        Rpi::init();
+
+        Fw::Logger::logMsg("Initializing port connections\n");
+        constructRpiRTLinuxArchitecture();
+
+        Fw::Logger::logMsg("Starting active tasks\n");
+        Rpi::start();
+
+        Fw::Logger::logMsg("Registering commands\n");
+        reg_commands();
+
+        Fw::Logger::logMsg("Load parameter database\n");
+        Rpi::prmDb.readParamFile();
+        loadParameters();
+
+        Fw::Logger::logMsg("Boot complete\n");
+    }
+
+    void fsw_run()
+    {
+        // Run the scheduled tasks
+        linuxTimer.startTimer(1000 / TIMER_HZ);
+    }
+
+    void fsw_exit()
+    {
+        linuxTimer.quit();
+
+        rg1hz.exit();
+        rg10hz.exit();
+        rg20hz.exit();
+        rg50hz.exit();
+
+        test.exit();
+        eventLogger.exit();
+        chanTlm.exit();
+        prmDb.exit();
+
+        fileUplink.exit();
+        fileDownlink.exit();
+        fileManager.exit();
+        cmdDisp.exit();
+
+//        serialDriver.quitReadThread();
+
+        rg1hz.join(nullptr);
+        rg10hz.join(nullptr);
+        rg20hz.join(nullptr);
+        rg50hz.join(nullptr);
+
+        test.join(nullptr);
+        eventLogger.join(nullptr);
+        chanTlm.join(nullptr);
+        prmDb.join(nullptr);
+
+        fileUplink.join(nullptr);
+        fileDownlink.join(nullptr);
+        fileManager.join(nullptr);
+        cmdDisp.join(nullptr);
+
+        comm.stopSocketTask();
+        comm.joinSocketTask(nullptr);
+        fileUplinkBufferManager.cleanup();
+    }
+}

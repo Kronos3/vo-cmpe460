@@ -360,6 +360,8 @@ enum TimeBase {
 #define FW_FIXED_LENGTH_STRING_SIZE   256 //!< Character array size for the filepath character type
 #endif
 
+#define FW_ABS(x_) ((x_) >= 0 ? (x_) : -(x_))
+
 // *** NOTE configuration checks are in Fw/Cfg/ConfigCheck.cpp in order to have
 // the type definitions in Fw/Types/BasicTypes available.
 

@@ -1,5 +1,7 @@
 #include "TestImpl.h"
+#ifdef __circle__
 #include <Rpi/Top/kernel.h>
+#endif
 
 namespace Svc
 {
@@ -19,12 +21,14 @@ namespace Svc
 
         switch(m_i++ % 2)
         {
+#ifdef __circle__
             case 0:
                 kernel::led.On();
                 break;
             case 1:
                 kernel::led.Off();
                 break;
+#endif
         }
 
         log_DIAGNOSTIC_TestCycle(m_i);

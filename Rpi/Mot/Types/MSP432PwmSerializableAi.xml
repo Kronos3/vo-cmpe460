@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <serializable namespace="Rpi" name="MSP432Pwm">
+    <import_enum_type>Rpi/Mot/Types/MSP432PwmOpcodeEnumAi.xml</import_enum_type>
+
     <comment>
-        I2C packet sent to control steering on MSP432
+        I2C packet sent to control motors on MSP432
     </comment>
     <members>
-        <member name="value" type="U16"/>
-        <member name="run" type="bool"/>
+        <member name="opcode" type="Rpi::MSP432PwmOpcode"/>
+        <member name="value" type="U8"/>
     </members>
 </serializable>

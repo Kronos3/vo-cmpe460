@@ -1,0 +1,501 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-model href="../../Autocoders/Python/schema/ISF/topology_schema.rng" type="application/xml" schematypens="https://relaxng.org/ns/structure/1.0"?>
+<assembly name="RpiBareMetal">
+    <!-- Import Core component declarations -->
+    <import_component_type>Svc/RateGroupDriver/RateGroupDriverComponentAi.xml</import_component_type>
+    <import_component_type>Svc/ActiveRateGroup/ActiveRateGroupComponentAi.xml</import_component_type>
+    <import_component_type>Svc/ActiveLogger/ActiveLoggerComponentAi.xml</import_component_type>
+    <import_component_type>Svc/TlmChan/TlmChanComponentAi.xml</import_component_type>
+    <import_component_type>Svc/PrmDb/PrmDbComponentAi.xml</import_component_type>
+    <import_component_type>Svc/CmdDispatcher/CommandDispatcherComponentAi.xml</import_component_type>
+    <import_component_type>Rpi/RpiTime/RpiTimeComponentAi.xml</import_component_type>
+    <!--    <import_component_type>Svc/CmdSequencer/CmdSequencerComponentAi.xml</import_component_type>-->
+    <!--    <import_component_type>Svc/FatalHandler/FatalHandlerComponentAi.xml</import_component_type>-->
+    <import_component_type>Svc/FileManager/FileManagerComponentAi.xml</import_component_type>
+
+    <!-- Declare component instances - must match names in Components.hpp -->
+    <!-- Core C&DH Components -->
+    <instance namespace="Rpi" name="eventLogger" type="ActiveLogger" base_id="100" base_id_window="100"/>
+    <instance namespace="Rpi" name="cmdDisp" type="CommandDispatcher" base_id="200" base_id_window="100"/>
+    <instance namespace="Rpi" name="chanTlm" type="TlmChan" base_id="300" base_id_window="100"/>
+    <instance namespace="Rpi" name="systemTime" type="RpiTime" base_id="500" base_id_window="100"/>
+    <instance namespace="Rpi" name="prmDb" type="PrmDb" base_id="600" base_id_window="100"/>
+    <instance namespace="Rpi" name="fileManager" type="FileManager" base_id="700" base_id_window="100"/>
+
+    <!-- Rate Group Components -->
+    <instance namespace="Rpi" name="rgDriver" type="RateGroupDriver" base_id="1100" base_id_window="100"/>
+    <instance namespace="Rpi" name="rg1hz" type="ActiveRateGroup" base_id="1200" base_id_window="100"/>
+    <instance namespace="Rpi" name="rg10hz" type="ActiveRateGroup" base_id="1300" base_id_window="100"/>
+    <instance namespace="Rpi" name="rg20hz" type="ActiveRateGroup" base_id="1400" base_id_window="100"/>
+    <instance namespace="Rpi" name="rg50hz" type="ActiveRateGroup" base_id="1500" base_id_window="100"/>
+
+    <!--    <instance namespace="Rpi" name="fatalHandler" type="FatalHandler" base_id="2100" base_id_window="100"/>-->
+    <instance namespace="Rpi" name="staticMemory" type="StaticMemory" base_id="2000" base_id_window="100"/>
+    <!--    <instance namespace="Rpi" name="cmdSeq" type="CmdSequencer" base_id="2200" base_id_window="100"/>-->
+
+    <!-- Communications -->
+    <import_component_type>Svc/Framer/FramerComponentAi.xml</import_component_type>
+    <import_component_type>Svc/Deframer/DeframerComponentAi.xml</import_component_type>
+    <import_component_type>Svc/StaticMemory/StaticMemoryComponentAi.xml</import_component_type>
+    <import_component_type>Drv/ByteStreamDriverModel/ByteStreamDriverComponentAi.xml</import_component_type>
+    <import_component_type>Svc/FileUplink/FileUplinkComponentAi.xml</import_component_type>
+    <import_component_type>Svc/FileDownlink/FileDownlinkComponentAi.xml</import_component_type>
+    <import_component_type>Svc/BufferManager/BufferManagerComponentAi.xml</import_component_type>
+
+    <instance namespace="Rpi" name="downlink" type="Framer" base_id="4000" base_id_window="100"/>
+    <instance namespace="Rpi" name="uplink" type="Deframer" base_id="4100" base_id_window="100"/>
+    <instance namespace="Rpi" name="comm" type="ByteStreamDriverModel" base_id="4200" base_id_window="100"/>
+    <instance namespace="Svc" name="fileUplink" type="FileUplink" base_id="4300" base_id_window="100"/>
+    <instance namespace="Svc" name="fileUplinkBufferManager" type="BufferManager" base_id="4400" base_id_window="100"/>
+    <instance namespace="Svc" name="fileDownlink" type="FileDownlink" base_id="4500" base_id_window="100"/>
+
+    <!-- Peripheral drivers -->
+    <import_component_type>Drv/RpiI2cDriver/RpiI2cDriverComponentAi.xml</import_component_type>
+    <import_component_type>Drv/RpiSpiDriver/RpiSpiDriverComponentAi.xml</import_component_type>
+    <import_component_type>Drv/RpiSerialDriver/RpiSerialDriverComponentAi.xml</import_component_type>
+
+    <instance namespace="Rpi" name="serialDriver" type="RpiSerialDriver" base_id="5100" base_id_window="100"/>
+    <instance namespace="Rpi" name="i2cDriver" type="RpiI2cDriver" base_id="5200" base_id_window="100"/>
+    <instance namespace="Rpi" name="spiDriver" type="RpiSpiDriver" base_id="5300" base_id_window="100"/>
+
+    <!-- Car components -->
+    <import_component_type>Rpi/Cam/CamComponentAi.xml</import_component_type>
+    <import_component_type>Rpi/Mot/MotComponentAi.xml</import_component_type>
+    <import_component_type>Rpi/Test/TestComponentAi.xml</import_component_type>
+
+    <instance namespace="Rpi" name="cam" type="Cam" base_id="6000" base_id_window="100"/>
+    <instance namespace="Rpi" name="mot" type="Mot" base_id="6100" base_id_window="100"/>
+
+    <instance namespace="Rpi" name="test" type="Test" base_id="10000" base_id_window="100"/>
+
+    <!-- Rate group driver connections -->
+    <connection name="systemTime__rgDriver_isr">
+        <source component="systemTime" port="timerIsr" type="Cycle" num="0"/>
+        <target component="rgDriver" port="CycleIn" type="Cycle" num="0"/>
+    </connection>
+    <connection name="rgDriver__rg1hz_cycle">
+        <source component="rgDriver" port="CycleOut" type="Cycle" num="0"/>
+        <target component="rg1hz" port="CycleIn" type="Cycle" num="0"/>
+    </connection>
+    <connection name="rgDriver__rg10hz_cycle">
+        <source component="rgDriver" port="CycleOut" type="Cycle" num="1"/>
+        <target component="rg10hz" port="CycleIn" type="Cycle" num="0"/>
+    </connection>
+    <connection name="rgDriver__rg20hz_cycle">
+        <source component="rgDriver" port="CycleOut" type="Cycle" num="2"/>
+        <target component="rg20hz" port="CycleIn" type="Cycle" num="0"/>
+    </connection>
+    <connection name="rgDriver__rg50hz_cycle">
+        <source component="rgDriver" port="CycleOut" type="Cycle" num="3"/>
+        <target component="rg50hz" port="CycleIn" type="Cycle" num="0"/>
+    </connection>
+
+    <!-- Rate group connects -->
+
+    <!-- 1Hz -->
+    <connection name="rg1hz__chanTlm_cycle">
+        <source component="rg1hz" port="RateGroupMemberOut" type="Sched" num="0"/>
+        <target component="chanTlm" port="Run" type="Sched" num="0"/>
+    </connection>
+    <connection name="rg1hz__Test_cycle">
+        <source component="rg1hz" port="RateGroupMemberOut" type="Sched" num="2"/>
+        <target component="test" port="schedIn" type="Sched" num="0"/>
+    </connection>
+
+    <!-- 10Hz -->
+    <connection name="rg10Hz__fileDownlink">
+        <source component="rg10hz" port="RateGroupMemberOut" type="Sched" num="1"/>
+        <target component="fileDownlink" port="Run" type="Sched" num="0"/>
+    </connection>
+
+    <!-- 20Hz -->
+    <!--    <connection name="rg20hz__cam_cycle">-->
+    <!--        <source component="rg20hz" port="RateGroupMemberOut" type="Sched" num="0"/>-->
+    <!--        <target component="cam" port="schedIn" type="Sched" num="0"/>-->
+    <!--    </connection>-->
+
+    <!-- Camera connections -->
+    <connection name="cam__i2c_Read">
+        <source component="cam" port="i2cRead" type="Drv::I2c" num="0"/>
+        <target component="i2cDriver" port="read" type="Drv::I2c" num="0"/>
+    </connection>
+    <connection name="cam__i2c_Write">
+        <source component="cam" port="i2cWrite" type="Drv::I2c" num="0"/>
+        <target component="i2cDriver" port="write" type="Drv::I2c" num="0"/>
+    </connection>
+    <connection name="cam__spi_Sync">
+        <source component="cam" port="spiSync" type="Drv::SpiTransact" num="0"/>
+        <target component="spiDriver" port="transactPolling" type="Drv::SpiTransact" num="0"/>
+    </connection>
+    <connection name="cam__spi_Dma">
+        <source component="cam" port="spiDma" type="Drv::SpiTransact" num="0"/>
+        <target component="spiDriver" port="transactDma" type="Drv::SpiTransact" num="0"/>
+    </connection>
+    <connection name="cam__spi_DmaReply">
+        <source component="spiDriver" port="replyDma" type="Drv::SpiTransact" num="0"/>
+        <target component="cam" port="spiDmaReply" type="Drv::SpiTransact" num="0"/>
+    </connection>
+
+    <!-- Mot connections -->
+    <connection name="mot__i2c_steering">
+        <source component="mot" port="writeSteering" type="Drv::I2c" num="0"/>
+        <target component="i2cDriver" port="write" type="Drv::I2c" num="0"/>
+    </connection>
+
+    <!-- Communications driver connections -->
+    <connection name="UplinkDrvAllocate">
+        <source component="comm" port="allocate" type="Fw::BufferGet" num="0"/>
+        <target component="staticMemory" port="bufferAllocate" type="Fw::BufferGet" num="0"/>
+    </connection>
+    <connection name="UplinkRecv">
+        <source component="comm" port="recv" type="Drv::ByteStreamSend" num="0"/>
+        <target component="uplink" port="framedIn" type="Drv::ByteStreamSend" num="0"/>
+    </connection>
+    <connection name="UplinkDeallocate">
+        <source component="uplink" port="framedDeallocate" type="Fw::BufferSend" num="0"/>
+        <target component="staticMemory" port="bufferDeallocate" type="Fw::BufferSend" num="0"/>
+    </connection>
+
+    <!-- Uplink data connections -->
+    <connection name="UplinkFileAllocate">
+        <source component="uplink" port="bufferAllocate" type="BufferGet" num="0"/>
+        <target component="fileUplinkBufferManager" port="bufferGetCallee" type="BufferGet" num="0"/>
+    </connection>
+    <connection name="UplinkCommands">
+        <source component="uplink" port="comOut" type="Com" num="0"/>
+        <target component="cmdDisp" port="seqCmdBuff" type="Com" num="0"/>
+    </connection>
+    <connection name="UplinkBuffers">
+        <source component="uplink" port="bufferOut" type="BufferSend" num="0"/>
+        <target component="fileUplink" port="bufferSendIn" type="BufferSend" num="0"/>
+    </connection>
+    <connection name="UplinkFileDeAllocate">
+        <source component="uplink" port="bufferDeallocate" type="BufferSend" num="0"/>
+        <target component="fileUplinkBufferManager" port="bufferSendIn" type="BufferSend" num="0"/>
+    </connection>
+    <connection name="fileUplinkBuffIn">
+        <source component="fileUplink" port="bufferSendOut" type="BufferSend" num="0"/>
+        <target component="fileUplinkBufferManager" port="bufferSendIn" type="BufferSend" num="0"/>
+    </connection>
+
+    <!-- Downlink ports -->
+    <connection name="DownlinkAllocate">
+        <source component="downlink" port="framedAllocate" type="Fw::BufferGet" num="0"/>
+        <target component="staticMemory" port="bufferAllocate" type="Drv::BufferGet" num="1"/>
+    </connection>
+    <connection name="DownlinkSend">
+        <source component="downlink" port="framedOut" type="Fw::BufferSend" num="0"/>
+        <target component="comm" port="send" type="Drv::ByteStreamSend" num="0"/>
+    </connection>
+    <connection name="DownlinkDeallocate">
+        <source component="comm" port="deallocate" type="Fw::BufferSend" num="0"/>
+        <target component="staticMemory" port="bufferDeallocate" type="Fw::BufferSend" num="1"/>
+    </connection>
+
+    <!-- Downlink data connections -->
+    <connection name="eventLoggerPkts">
+        <source component="eventLogger" port="PktSend" type="Com" num="0"/>
+        <target component="downlink" port="comIn" type="Com" num="0"/>
+    </connection>
+    <connection name="chanTlmPkts">
+        <source component="chanTlm" port="PktSend" type="Com" num="0"/>
+        <target component="downlink" port="comIn" type="Com" num="0"/>
+    </connection>
+    <connection name="fileDownlinkBufferSend">
+        <source component="fileDownlink" port="bufferSendOut" type="BufferSend" num="0"/>
+        <target component="downlink" port="bufferIn" type="BufferSend" num="0"/>
+    </connection>
+    <connection name="fileDownlinkBufferReturn">
+        <source component="downlink" port="bufferDeallocate" type="BufferSend" num="0"/>
+        <target component="fileDownlink" port="bufferReturn" type="BufferSend" num="0"/>
+    </connection>
+<!--    <connection name="cmdDisp__uplink">-->
+<!--        <source component="cmdDisp" port="seqCmdStatus" type="Com" num="0"/>-->
+<!--        <target component="uplink" port="cmdResponseIn" type="Com" num="0"/>-->
+<!--    </connection>-->
+
+    <connection name="prmDbTime">
+        <source component="prmDb" port="Time" type="Time" num="0"/>
+        <target component="systemTime" port="timeGetPort" type="Time" num="0"/>
+    </connection>
+    <connection name="eventLoggerTime">
+        <source component="eventLogger" port="Time" type="Time" num="0"/>
+        <target component="systemTime" port="timeGetPort" type="Time" num="0"/>
+    </connection>
+    <connection name="rg1Time">
+        <source component="rg1hz" port="Time" type="Time" num="0"/>
+        <target component="systemTime" port="timeGetPort" type="Time" num="0"/>
+    </connection>
+    <connection name="rg10Time">
+        <source component="rg10hz" port="Time" type="Time" num="0"/>
+        <target component="systemTime" port="timeGetPort" type="Time" num="0"/>
+    </connection>
+    <connection name="rg20Time">
+        <source component="rg20hz" port="Time" type="Time" num="0"/>
+        <target component="systemTime" port="timeGetPort" type="Time" num="0"/>
+    </connection>
+    <connection name="rg50Time">
+        <source component="rg50hz" port="Time" type="Time" num="0"/>
+        <target component="systemTime" port="timeGetPort" type="Time" num="0"/>
+    </connection>
+    <connection name="spiDriverTime">
+        <source component="spiDriver" port="Time" type="Time" num="0"/>
+        <target component="systemTime" port="timeGetPort" type="Time" num="0"/>
+    </connection>
+    <connection name="testTime">
+        <source component="test" port="Time" type="Time" num="0"/>
+        <target component="systemTime" port="timeGetPort" type="Time" num="0"/>
+    </connection>
+    <connection name="cmdDispTime">
+        <source component="cmdDisp" port="Time" type="Time" num="0"/>
+        <target component="systemTime" port="timeGetPort" type="Time" num="0"/>
+    </connection>
+    <connection name="camTime">
+        <source component="cam" port="Time" type="Time" num="0"/>
+        <target component="systemTime" port="timeGetPort" type="Time" num="0"/>
+    </connection>
+    <connection name="motTime">
+        <source component="mot" port="Time" type="Time" num="0"/>
+        <target component="systemTime" port="timeGetPort" type="Time" num="0"/>
+    </connection>
+    <connection name="i2cTime">
+        <source component="i2cDriver" port="Time" type="Time" num="0"/>
+        <target component="systemTime" port="timeGetPort" type="Time" num="0"/>
+    </connection>
+    <connection name="uplinkTime">
+        <source component="fileUplink" port="timeCaller" type="Time" num="0"/>
+        <target component="systemTime" port="timeGetPort" type="Time" num="0"/>
+    </connection>
+    <connection name="fileUplinkBufferManagerTime">
+        <source component="fileUplinkBufferManager" port="timeCaller" type="Time" num="0"/>
+        <target component="systemTime" port="timeGetPort" type="Time" num="0"/>
+    </connection>
+    <connection name="fileManagerTime">
+        <source component="fileManager" port="timeCaller" type="Time" num="0"/>
+        <target component="systemTime" port="timeGetPort" type="Time" num="0"/>
+    </connection>
+    <connection name="fileDownlinkTime">
+        <source component="fileDownlink" port="timeCaller" type="Time" num="0"/>
+        <target component="systemTime" port="timeGetPort" type="Time" num="0"/>
+    </connection>
+
+    <!-- EVR connections -->
+    <connection name="test__eventLogger_LogRecv">
+        <source component="test" port="Log" type="Log" num="0"/>
+        <target component="eventLogger" port="LogRecv" type="Log" num="0"/>
+    </connection>
+    <connection name="eventLogger__eventLogger_LogRecv">
+        <source component="eventLogger" port="Log" type="Log" num="0"/>
+        <target component="eventLogger" port="LogRecv" type="Log" num="0"/>
+    </connection>
+    <connection name="prmDb__eventLogger_LogRecv">
+        <source component="prmDb" port="Log" type="Log" num="0"/>
+        <target component="eventLogger" port="LogRecv" type="Log" num="0"/>
+    </connection>
+    <connection name="spiDriver__eventLogger_LogRecv">
+        <source component="spiDriver" port="Log" type="Log" num="0"/>
+        <target component="eventLogger" port="LogRecv" type="Log" num="0"/>
+    </connection>
+    <connection name="cmdDisp__eventLogger_LogRecv">
+        <source component="cmdDisp" port="Log" type="Log" num="0"/>
+        <target component="eventLogger" port="LogRecv" type="Log" num="0"/>
+    </connection>
+    <connection name="cam__eventLogger_LogRecv">
+        <source component="cam" port="Log" type="Log" num="0"/>
+        <target component="eventLogger" port="LogRecv" type="Log" num="0"/>
+    </connection>
+    <connection name="mot__eventLogger_LogRecv">
+        <source component="mot" port="Log" type="Log" num="0"/>
+        <target component="eventLogger" port="LogRecv" type="Log" num="0"/>
+    </connection>
+    <connection name="FileUplinkBufferManagerLog">
+        <source component="fileUplinkBufferManager" port="eventOut" type="Log" num="0"/>
+        <target component="eventLogger" port="LogRecv" type="Log" num="0"/>
+    </connection>
+    <connection name="FileUplink__eventLogger">
+        <source component="fileUplink" port="eventOut" type="Log" num="0"/>
+        <target component="eventLogger" port="LogRecv" type="Log" num="0"/>
+    </connection>
+    <connection name="i2cDriver__eventLogger_LogRecv">
+        <source component="i2cDriver" port="Log" type="Log" num="0"/>
+        <target component="eventLogger" port="LogRecv" type="Log" num="0"/>
+    </connection>
+    <connection name="fileManager__eventLogger_LogRecv">
+        <source component="fileManager" port="eventOut" type="Log" num="0"/>
+        <target component="eventLogger" port="LogRecv" type="Log" num="0"/>
+    </connection>
+    <connection name="fileDownlink__eventLogger_LogRecv">
+        <source component="fileDownlink" port="eventOut" type="Log" num="0"/>
+        <target component="eventLogger" port="LogRecv" type="Log" num="0"/>
+    </connection>
+
+    <!-- Telemetry connections -->
+    <connection name="rg1hz__chanTlm">
+        <source component="rg1hz" port="Tlm" type="Tlm" num="0"/>
+        <target component="chanTlm" port="TlmRecv" type="Time" num="0"/>
+    </connection>
+    <connection name="rg10hz__chanTlm">
+        <source component="rg10hz" port="Tlm" type="Tlm" num="0"/>
+        <target component="chanTlm" port="TlmRecv" type="Time" num="0"/>
+    </connection>
+    <connection name="rg20hz__chanTlm">
+        <source component="rg20hz" port="Tlm" type="Tlm" num="0"/>
+        <target component="chanTlm" port="TlmRecv" type="Time" num="0"/>
+    </connection>
+    <connection name="rg50hz__chanTlm">
+        <source component="rg50hz" port="Tlm" type="Tlm" num="0"/>
+        <target component="chanTlm" port="TlmRecv" type="Time" num="0"/>
+    </connection>
+    <connection name="spi__chanTlm">
+        <source component="spiDriver" port="Tlm" type="Tlm" num="0"/>
+        <target component="chanTlm" port="TlmRecv" type="Time" num="0"/>
+    </connection>
+    <connection name="cmdDisp__chanTlm">
+        <source component="cmdDisp" port="Tlm" type="Tlm" num="0"/>
+        <target component="chanTlm" port="TlmRecv" type="Time" num="0"/>
+    </connection>
+    <connection name="i2c__chanTlm">
+        <source component="i2cDriver" port="Tlm" type="Tlm" num="0"/>
+        <target component="chanTlm" port="TlmRecv" type="Time" num="0"/>
+    </connection>
+    <connection name="test__chanTlm">
+        <source component="test" port="Tlm" type="Tlm" num="0"/>
+        <target component="chanTlm" port="TlmRecv" type="Time" num="0"/>
+    </connection>
+    <connection name="cam__chanTlm">
+        <source component="cam" port="Tlm" type="Tlm" num="0"/>
+        <target component="chanTlm" port="TlmRecv" type="Time" num="0"/>
+    </connection>
+    <connection name="fileUplinkBufferManager__chanTlm">
+        <source component="fileUplinkBufferManager" port="tlmOut" type="Tlm" num="0"/>
+        <target component="chanTlm" port="TlmRecv" type="Tlm" num="0"/>
+    </connection>
+    <connection name="FileUplink__eventLogger">
+        <source component="fileUplink" port="tlmOut" type="Log" num="0"/>
+        <target component="chanTlm" port="TlmRecv" type="Log" num="0"/>
+    </connection>
+    <connection name="fileManager__chanTlm">
+        <source component="fileManager" port="tlmOut" type="Tlm" num="0"/>
+        <target component="chanTlm" port="TlmRecv" type="Tlm" num="0"/>
+    </connection>
+    <connection name="fileDownlink__chanTlm">
+        <source component="fileDownlink" port="tlmOut" type="Tlm" num="0"/>
+        <target component="chanTlm" port="TlmRecv" type="Tlm" num="0"/>
+    </connection>
+
+    <!-- Parameter connections -->
+    <connection name="mot__prmDb_Get">
+        <source component="mot" port="ParamGet" type="PrmGet" num="0"/>
+        <target component="prmDb" port="getPrm" type="PrmGet" num="0"/>
+    </connection>
+    <connection name="mot__prmDb_Set">
+        <source component="mot" port="ParamSet" type="PrmSet" num="0"/>
+        <target component="prmDb" port="setPrm" type="PrmSet" num="0"/>
+    </connection>
+
+
+    <!-- Commanding connections -->
+    <connection name="eventLogger__cmdDisp_Reg">
+        <source component="eventLogger" port="CmdReg" type="CmdReg" num="0"/>
+        <target component="cmdDisp" port="compCmdReg" type="CmdReg" num="0"/>
+    </connection>
+    <connection name="cmdDisp__eventLogger_Disp">
+        <source component="cmdDisp" port="compCmdSend" type="Cmd" num="0"/>
+        <target component="eventLogger" port="CmdDisp" type="Cmd" num="0"/>
+    </connection>
+    <connection name="eventLogger__cmdDisp_Reply">
+        <source component="eventLogger" port="CmdStatus" type="CmdResponse" num="0"/>
+        <target component="cmdDisp" port="compCmdStat" type="CmdResponse" num="0"/>
+    </connection>
+
+    <connection name="cmdDisp__cmdDisp_Reg">
+        <source component="cmdDisp" port="CmdReg" type="CmdReg" num="0"/>
+        <target component="cmdDisp" port="compCmdReg" type="CmdReg" num="1"/>
+    </connection>
+    <connection name="cmdDisp__cmdDisp_Disp">
+        <source component="cmdDisp" port="compCmdSend" type="Cmd" num="1"/>
+        <target component="cmdDisp" port="CmdDisp" type="Cmd" num="0"/>
+    </connection>
+    <connection name="cmdDisp__cmdDisp_Reply">
+        <source component="cmdDisp" port="CmdStatus" type="CmdResponse" num="0"/>
+        <target component="cmdDisp" port="compCmdStat" type="CmdResponse" num="0"/>
+    </connection>
+
+    <connection name="prmDb__cmdDisp_Reg">
+        <source component="prmDb" port="CmdReg" type="CmdReg" num="0"/>
+        <target component="cmdDisp" port="compCmdReg" type="CmdReg" num="2"/>
+    </connection>
+    <connection name="cmdDisp__prmDb_Disp">
+        <source component="cmdDisp" port="compCmdSend" type="Cmd" num="2"/>
+        <target component="prmDb" port="CmdDisp" type="Cmd" num="0"/>
+    </connection>
+    <connection name="prmDb__cmdDisp_Reply">
+        <source component="prmDb" port="CmdStatus" type="CmdResponse" num="0"/>
+        <target component="cmdDisp" port="compCmdStat" type="CmdResponse" num="0"/>
+    </connection>
+
+    <connection name="FileManagerReg">
+        <source component="fileManager" port="cmdRegOut" type="CmdReg" num="0"/>
+        <target component="cmdDisp" port="compCmdReg" type="CmdReg" num="3"/>
+    </connection>
+    <connection name="FileManagerDisp">
+        <source component="cmdDisp" port="compCmdSend" type="Cmd" num="3"/>
+        <target component="fileManager" port="cmdIn" type="Cmd" num="0"/>
+    </connection>
+    <connection name="FileManagerReply">
+        <source component="fileManager" port="cmdResponseOut" type="CmdResponse" num="0"/>
+        <target component="cmdDisp" port="compCmdStat" type="CmdResponse" num="0"/>
+    </connection>
+
+    <connection name="test__cmdDisp_Reg">
+        <source component="test" port="CmdReg" type="CmdReg" num="0"/>
+        <target component="cmdDisp" port="compCmdReg" type="CmdReg" num="4"/>
+    </connection>
+    <connection name="cmdDisp__test_Disp">
+        <source component="cmdDisp" port="compCmdSend" type="Cmd" num="4"/>
+        <target component="test" port="CmdDisp" type="Cmd" num="0"/>
+    </connection>
+    <connection name="test__cmdDisp_Reply">
+        <source component="test" port="CmdStatus" type="CmdResponse" num="0"/>
+        <target component="cmdDisp" port="compCmdStat" type="CmdResponse" num="0"/>
+    </connection>
+
+    <connection name="cam__cmdDisp_Reg">
+        <source component="cam" port="CmdReg" type="CmdReg" num="0"/>
+        <target component="cmdDisp" port="compCmdReg" type="CmdReg" num="5"/>
+    </connection>
+    <connection name="cmdDisp__cam_Disp">
+        <source component="cmdDisp" port="compCmdSend" type="Cmd" num="5"/>
+        <target component="cam" port="CmdDisp" type="Cmd" num="0"/>
+    </connection>
+    <connection name="cam__cmdDisp_Reply">
+        <source component="cam" port="CmdStatus" type="CmdResponse" num="0"/>
+        <target component="cmdDisp" port="compCmdStat" type="CmdResponse" num="0"/>
+    </connection>
+
+    <connection name="mot__cmdDisp_Reg">
+        <source component="mot" port="CmdReg" type="CmdReg" num="0"/>
+        <target component="cmdDisp" port="compCmdReg" type="CmdReg" num="6"/>
+    </connection>
+    <connection name="cmdDisp__mot_Disp">
+        <source component="cmdDisp" port="compCmdSend" type="Cmd" num="6"/>
+        <target component="mot" port="CmdDisp" type="Cmd" num="0"/>
+    </connection>
+    <connection name="mot__cmdDisp_Reply">
+        <source component="mot" port="CmdStatus" type="CmdResponse" num="0"/>
+        <target component="cmdDisp" port="compCmdStat" type="CmdResponse" num="0"/>
+    </connection>
+
+    <connection name="fileDownlink__cmdDisp_Reg">
+        <source component="fileDownlink" port="cmdRegOut" type="CmdReg" num="0"/>
+        <target component="cmdDisp" port="compCmdReg" type="CmdReg" num="7"/>
+    </connection>
+    <connection name="fileDownlink__cmdDisp_Disp">
+        <source component="cmdDisp" port="compCmdSend" type="Cmd" num="7"/>
+        <target component="fileDownlink" port="cmdIn" type="Cmd" num="0"/>
+    </connection>
+    <connection name="fileDownlink__cmdDisp_Reply">
+        <source component="fileDownlink" port="cmdResponseOut" type="CmdResponse" num="0"/>
+        <target component="cmdDisp" port="compCmdStat" type="CmdResponse" num="0"/>
+    </connection>
+</assembly>
