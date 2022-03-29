@@ -21,69 +21,81 @@
 
 #include <Drv/LinuxSerialDriver/LinuxSerialDriverComponentImpl.hpp>
 #include <Drv/LinuxI2cDriver/LinuxI2cDriverComponentImpl.hpp>
-#include <Drv/LinuxSpiDriver/LinuxSpiDriverComponentImpl.hpp>
+//#include <Drv/LinuxSpiDriver/LinuxSpiDriverComponentImpl.hpp>
 #include <Drv/TcpClient/TcpClientComponentImpl.hpp>
 #include <Svc/LinuxTime/LinuxTimeImpl.hpp>
 #include <Svc/LinuxTimer/LinuxTimerComponentImpl.hpp>
 
-//#include <Rpi/Cam/CamImpl.h>
+#include <Rpi/Cam/CamImpl.h>
+#include <Rpi/VideoStreamer/VideoStreamerImpl.h>
 #include <Rpi/Mot/MotImpl.h>
 
-#include <Rpi/Test/TestImpl.h>
 #include <Svc/BufferManager/BufferManagerComponentImpl.hpp>
+#include <FprimeProtocol.hpp>
+#include <MallocAllocator.hpp>
+#include <Log.hpp>
 
-namespace Rpi
+class Kernel
 {
-    extern Svc::RateGroupDriverImpl rgDriver;
-    extern Svc::ActiveRateGroupImpl rg1hz;
-    extern Svc::ActiveRateGroupImpl rg10hz;
-    extern Svc::ActiveRateGroupImpl rg20hz;
-    extern Svc::ActiveRateGroupImpl rg50hz;
+    Os::Log os_logger;
 
-//    extern Svc::CmdSequencerComponentImpl cmdSeq;
-    extern Svc::CommandDispatcherImpl cmdDisp;
+    Svc::RateGroupDriverImpl rgDriver;
+    Svc::ActiveRateGroupImpl rg1hz;
+    Svc::ActiveRateGroupImpl rg10hz;
+    Svc::ActiveRateGroupImpl rg20hz;
+    Svc::ActiveRateGroupImpl rg50hz;
 
-    extern Svc::ActiveLoggerImpl eventLogger;
-    extern Svc::TlmChanImpl chanTlm;
-    extern Svc::PrmDbImpl prmDb;
+//    Svc::CmdSequencerComponentImpl cmdSeq;
+    Svc::CommandDispatcherImpl cmdDisp;
 
-    extern Svc::DeframerComponentImpl uplink;
-    extern Svc::FramerComponentImpl downlink;
-    extern Svc::FileUplink fileUplink;
-    extern Svc::BufferManagerComponentImpl fileUplinkBufferManager;
-    extern Svc::FileDownlink fileDownlink;
+    Svc::ActiveLoggerImpl eventLogger;
+    Svc::TlmChanImpl chanTlm;
+    Svc::PrmDbImpl prmDb;
 
-    extern Svc::FileManager fileManager;
-    extern Svc::StaticMemoryComponentImpl staticMemory;
-//    extern Svc::FatalHandlerComponentImpl fatalHandler;
+    Svc::DeframerComponentImpl uplink;
+    Svc::FramerComponentImpl downlink;
+    Svc::FileUplink fileUplink;
+    Svc::BufferManagerComponentImpl fileUplinkBufferManager;
+    Svc::FileDownlink fileDownlink;
 
-    extern Svc::LinuxTimerComponentImpl linuxTimer;
-    extern Svc::LinuxTimeImpl systemTime;
-    extern Drv::LinuxSerialDriverComponentImpl serialDriver;
-    extern Drv::LinuxI2cDriverComponentImpl i2cDriver;
-//    extern Drv::LinuxSpiDriverComponentImpl spiDriver;
-    extern Drv::TcpClientComponentImpl comm;
+    Svc::FileManager fileManager;
+    Svc::StaticMemoryComponentImpl staticMemory;
+//    Svc::FatalHandlerComponentImpl fatalHandler;
 
-    extern Svc::TestImpl test;
+    Svc::LinuxTimerComponentImpl linuxTimer;
+    Svc::LinuxTimeImpl systemTime;
+    Drv::LinuxSerialDriverComponentImpl serialDriver;
+    Drv::LinuxI2cDriverComponentImpl i2cDriver;
+//    Drv::LinuxSpiDriverComponentImpl spiDriver;
+    Drv::TcpClientComponentImpl comm;
 
-//    extern Rpi::CamImpl camL;
-//    extern Rpi::CamImpl camR;
-//    extern Rpi::CamImpl cam;
-    extern Rpi::MotImpl mot;
+
+//    Rpi::CamImpl camL;
+//    Rpi::CamImpl camR;
+    Rpi::CamImpl cam;
+    Rpi::VideoStreamerImpl videoStreamer;
+    Rpi::MotImpl mot;
+
+    Svc::FprimeDeframing deframing;
+    Svc::FprimeFraming framing;
+    Fw::MallocAllocator mallocator;
 
     // FSW entry points
-    void init();
+    void prv_init();
+    void prv_start();
+    void prv_reg_commands();
+    void prv_loadParameters();
+
+    void setRpiRTLinuxIds();
+    void constructRpiRTLinuxArchitecture();
+
+public:
+    Kernel();
+
     void start();
-    void reg_commands();
-    void loadParameters();
-
-    // Main entry point of FSW
-    void fsw_start();
-    void fsw_run();
-    void fsw_exit();
-}
-
-using namespace Rpi;
+    void run();
+    void exit();
+};
 
 // Autocoded definition
 void constructRpiRTLinuxArchitecture();

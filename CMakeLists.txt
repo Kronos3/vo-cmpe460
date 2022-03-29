@@ -5,8 +5,6 @@ project(VO-CMPE460)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD 17)
 
-enable_language(C CXX ASM)
-
 set(AARCH 64)
 set(RASPPI 3)
 set(ARM_ALLOW_MULTI_CORE OFF)
@@ -16,10 +14,22 @@ set(FLOAT_ABI "hard")
 # 'rt_linux' will run on Preempt RT Linux and build /sbin/init
 set(RPI_PLATFORM rt_linux)
 
-# Initialize the compiler toolchain
-include(cmake/platform/${RPI_PLATFORM}-toolchain.cmake)
+enable_language(C CXX ASM)
 
-add_subdirectory(opencv)
+# Initialize the compiler toolchain
+#include(cmake/platform/${RPI_PLATFORM}-toolchain-clang.cmake)
+include(cmake/platform/${RPI_PLATFORM}-toolchain-gcc.cmake)
+
+find_package(OpenCV REQUIRED)
+include_directories(${OpenCV_INCLUDE_DIRS})
+
+find_library(LIBCAMERA_LIBRARY libcamera.so REQUIRED)
+find_library(LIBCAMERA_BASE_LIBRARY libcamera-base.so REQUIRED)
+message(STATUS ${CAMERA_INCLUDE_DIRS})
+message(STATUS ${LIBCAMERA_LIBRARY})
+message(STATUS ${LIBCAMERA_BASE_LIBRARY})
+
+#add_compile_options(-isystem /usr/include)
 
 if (RPI_PLATFORM EQUAL "bare_metal")
     add_subdirectory(circle)

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component name="VideoStreamer" kind="active" namespace="Rpi">
+
+    <import_port_type>Svc/Sched/SchedPortAi.xml</import_port_type>
+    <import_port_type>Rpi/Cam/Ports/CamFrameSendPortAi.xml</import_port_type>
+    <import_port_type>Rpi/Cam/Ports/CamFrameDeallocatePortAi.xml</import_port_type>
+
+    <ports>
+        <port name="rawVideo" data_type="Sched" kind="sync_input" max_number="1"/>
+        <port name="rawVideoCapture" data_type="Sched" kind="output" max_number="1"/>
+
+        <port name="frame" data_type="Rpi::CamFrameSend" kind="async_input" max_number="1"/>
+        <port name="frameDeallocate" data_type="Rpi::CamFrameDeallocate" kind="output" max_number="1"/>
+    </ports>
+
+    <parameters>
+        <parameter id="0" set_opcode="0" save_opcode="1"
+                   name="HOSTNAME" data_type="string" size="32" default="192.168.1.220"/>
+        <parameter id="1" set_opcode="2" save_opcode="3"
+                   name="PORT" data_type="U16" default="8000"/>
+
+        <parameter id="2" set_opcode="4" save_opcode="5"
+                   name="VIDEO_WIDTH" data_type="I32" default="1920"/>
+        <parameter id="3" set_opcode="6" save_opcode="7"
+                   name="VIDEO_HEIGHT" data_type="I32" default="1080"/>
+        <parameter id="4" set_opcode="8" save_opcode="9"
+                   name="VIDEO_QUALITY" data_type="I32" default="80"/>
+    </parameters>
+
+    <commands>
+        <command kind="async" opcode="10" mnemonic="START">
+            <comment>
+                Start a raw video stream
+                Runs at the rate of the rate group connected to raw_video
+            </comment>
+        </command>
+
+        <command kind="async" opcode="11" mnemonic="STOP">
+            <comment>Stop the raw video stream</comment>
+        </command>
+    </commands>
+
+    <telemetry>
+        <channel id="0" name="FramesPerSecond" data_type="F64">
+            <comment>Frame output rate</comment>
+        </channel>
+    </telemetry>
+
+</component>

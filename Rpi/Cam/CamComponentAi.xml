@@ -2,11 +2,25 @@
 <component name="Cam" kind="active" namespace="Rpi">
 
     <import_port_type>Svc/Sched/SchedPortAi.xml</import_port_type>
+
+    <import_port_type>Rpi/Cam/Ports/CamFrameSendPortAi.xml</import_port_type>
+    <import_port_type>Rpi/Cam/Ports/CamFrameDeallocatePortAi.xml</import_port_type>
+
     <import_dictionary>Rpi/Cam/Commands.xml</import_dictionary>
+    <import_dictionary>Rpi/Cam/Events.xml</import_dictionary>
 
     <ports>
-        <port name="start" data_type="Sched" kind="async_input"/>
-        <port name="stop" data_type="Sched" kind="async_input"/>
+        <!-- Video capture is signaled by VideoStreamer -->
+        <!--
+            Two people can ask for a frame
+            1. Nav              - Camera calibration and driving
+                    Nav may do some processing and send frames to video streamer
+            2. VideoStreamer    - Stream raw video
+         -->
+        <port name="capture" data_type="Sched" kind="async_input" max_number="2"/>
+        <port name="frame" data_type="Rpi::CamFrameSend" kind="output" max_number="2"/>
+
+        <port name="deallocate" data_type="Rpi::CamFrameDeallocate" kind="sync_input"/>
     </ports>
 
 </component>

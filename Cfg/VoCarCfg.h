@@ -19,6 +19,10 @@ enum
     SPI_SPEED = 8000000,        //!< 4Mhz, half of the maximum speed of the camera
     SPI_POL = 0,
     SPI_PHA = 1,
+
+    CAMERA_BUFFER_N = 4,           //!< Number of concurrent camera frame buffers
+    CAMERA_RAW_WIDTH = 1920,
+    CAMERA_RAW_HEIGHT = 1080,
 };
 
 #define DRIVE               "SD:"
