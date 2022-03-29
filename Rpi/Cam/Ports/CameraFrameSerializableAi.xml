@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<serializable namespace="Rpi" name="CameraFrame">
+    <comment>
+        Wraps a raw image pointer and buffer ID
+        in a serializable
+    </comment>
+
+    <members>
+        <member name="frame" type="U64" comment="Raw image bytes (pointer cast)"/>
+        <member name="width" type="I32" comment="Image width"/>
+        <member name="height" type="I32" comment="Image height"/>
+        <member name="encoding" type="I32" comment="Pixel color encoding"/>
+        <member name="buffer_id" type="U64" comment="Internal camera buffer id"/>
+    </members>
+</serializable>

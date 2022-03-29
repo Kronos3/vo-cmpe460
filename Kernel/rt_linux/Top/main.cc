@@ -4,28 +4,32 @@
 #include <csignal>
 #include "Components.hpp"
 
-volatile sig_atomic_t terminate = 0;
+Kernel* kernel_main = nullptr;
 
 static void sighandler(int signum)
 {
     (void) signum;
+    FW_ASSERT(kernel_main);
 
     Fw::Logger::logMsg("Exiting tasks\n");
-    fsw_exit();
-
-    terminate = 1;
+    kernel_main->exit();
 }
 
 I32 main()
 {
+    Kernel kernel;
+    kernel_main = &kernel;
+
     // register signal handlers to exit program
     signal(SIGINT, sighandler);
     signal(SIGTERM, sighandler);
 
     Fw::Logger::logMsg("Booting up\n");
 
-    fsw_start();
-    fsw_run();
+    kernel.start();
+
+    // Run all functions until a shutdown is invoked
+    kernel.run();
 
     Fw::Logger::logMsg("Shutting down\n");
     return 0;

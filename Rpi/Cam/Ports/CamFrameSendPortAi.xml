@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface name="CamFrameSend" namespace="Rpi">
+    <import_serializable_type>Rpi/Cam/Ports/CameraFrameSerializableAi.xml</import_serializable_type>
+    <comment>Send out a capture camera frame</comment>
+
+    <args>
+        <arg name="frame" type="CameraFrame">
+            <comment>Camera image</comment>
+        </arg>
+    </args>
+</interface>
