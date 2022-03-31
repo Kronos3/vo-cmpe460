@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<enum namespace = "Drv" name="RpiI2cStatus">
-    <comment>Raspberry Pi circle specific I2C errors</comment>
-    <item name="RPI_I2C_MASTER_INVALID_PARM" value="1" comment="Invalid parameter"/>
-    <item name="RPI_I2C_MASTER_ERROR_NACK" value="2" comment="Received a NACK"/>
-    <item name="RPI_I2C_MASTER_ERROR_CLKT" value="3" comment="Received clock stretch timeout"/>
-    <item name="RPI_I2C_MASTER_DATA_LEFT" value="4" comment="Not all data has been sent/received"/>
-</enum>

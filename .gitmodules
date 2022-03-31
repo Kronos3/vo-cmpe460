@@ -1,9 +1,3 @@
-[submodule "circle"]
-	path = circle
-	url = git@github.com:kronos3/circle.git
 [submodule "fprime"]
 	path = fprime
 	url = git@github.com:Kronos3/fprime.git
-[submodule "Rpi/Cam/libcamera-apps"]
-	path = Rpi/Cam/libcamera-apps
-	url = git@github.com:raspberrypi/libcamera-apps.git
