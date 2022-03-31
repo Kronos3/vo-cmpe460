@@ -31,6 +31,7 @@ link_directories(${STAGING_DIR}/lib)
 include_directories(
         ${STAGING_DIR}/include/libcamera/
         ${STAGING_DIR}/include/libdrm/
+        ${STAGING_DIR}/include/opencv4
 )
 
 #add_compile_options(-isystem /usr/include)
