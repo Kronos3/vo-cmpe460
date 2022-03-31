@@ -4,7 +4,7 @@
 
 #include <Rpi/VideoStreamer/VideoStreamerComponentAc.hpp>
 //#include <Rpi/VideoStreamer/PracticalSocket.h>
-#include <opencv4/opencv2/core/mat.hpp>
+#include <opencv2/core/mat.hpp>
 #include <vector>
 #include <preview/preview.hpp>
 

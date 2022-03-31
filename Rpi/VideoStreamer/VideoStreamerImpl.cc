@@ -1,8 +1,5 @@
 
 #include "VideoStreamerImpl.h"
-
-#include <Rpi/Cam/Frame.h>
-#include <opencv2/opencv.hpp>
 #include <preview/preview.hpp>
 
 namespace Rpi
