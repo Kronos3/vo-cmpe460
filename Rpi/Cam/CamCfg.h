@@ -4,7 +4,7 @@
 
 enum
 {
-    CAMERA_BUFFER_N = 32
+    CAMERA_BUFFER_N = 4 //!< We only actually need 2
 };
 
 #endif //VO_CMPE460_CAMCFG_H

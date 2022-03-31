@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<enum namespace="Rpi" name="VisListener" serialize_type="I32">
+    <comment>Named Vision listener, corresponds to frame output ports</comment>
+    <item name="NONE" value="-1"/>
+    <item name="VIDEO_STREAMER" value="0"/>
+    <item name="NAV" value="1"/>
+</enum>

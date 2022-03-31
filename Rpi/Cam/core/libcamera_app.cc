@@ -42,30 +42,6 @@ namespace Rpi
         exit(-1);
     }
 
-#if 0
-    static libcamera::PixelFormat mode_to_pixel_format(Mode const &mode)
-    {
-        // The saving grace here is that we can ignore the Bayer order and return anything -
-        // our pipeline handler will give us back the order that works, whilst respecting the
-        // bit depth and packing. We may get a "stream adjusted" message, which we can ignore.
-
-        static std::vector<std::pair<Mode, libcamera::PixelFormat>> table = {
-                { Mode(0, 0, 8, false), libcamera::formats::SBGGR8 },
-                { Mode(0, 0, 8, true), libcamera::formats::SBGGR8 },
-                { Mode(0, 0, 10, false), libcamera::formats::SBGGR10 },
-                { Mode(0, 0, 10, true), libcamera::formats::SBGGR10_CSI2P },
-                { Mode(0, 0, 12, false), libcamera::formats::SBGGR12 },
-                { Mode(0, 0, 12, true), libcamera::formats::SBGGR12_CSI2P },
-        };
-
-        auto it = std::find_if(table.begin(), table.end(), [&mode] (auto &m) { return mode.bit_depth == m.first.bit_depth && mode.packed == m.first.packed; });
-        if (it != table.end())
-            return it->second;
-
-        return libcamera::formats::SBGGR12_CSI2P;
-    }
-#endif
-
     LibcameraApp::LibcameraApp()
     : controls_(controls::controls), last_timestamp_(0)
     {
@@ -86,10 +62,6 @@ namespace Rpi
 
     void LibcameraApp::OpenCamera(U32 camera)
     {
-        // Make a preview window.
-//        preview_ = std::unique_ptr<Preview>(make_preview());
-//        preview_->SetDoneCallback(std::bind(&LibcameraApp::previewDoneCallback, this, std::placeholders::_1));
-
         camera_manager_ = std::make_unique<CameraManager>();
         int ret = camera_manager_->start();
         if (ret)
@@ -112,8 +84,6 @@ namespace Rpi
 
     void LibcameraApp::CloseCamera()
     {
-//        preview_.reset();
-
         if (camera_acquired_)
             camera_->release();
         camera_acquired_ = false;
@@ -173,8 +143,6 @@ namespace Rpi
 
     void LibcameraApp::Teardown()
     {
-        stopPreview();
-
         for (auto &iter: mapped_buffers_)
         {
             // assert(iter.first->planes().size() == iter.second.size());
@@ -347,7 +315,9 @@ namespace Rpi
     {
         auto item = mapped_buffers_.find(buffer);
         if (item == mapped_buffers_.end())
-            return {};
+        {
+            FW_ASSERT(0 && "Failed to find memmaped memory for DMA");
+        }
         return item->second;
     }
 
@@ -414,6 +384,7 @@ namespace Rpi
                     if (i == buffer->planes().size() - 1 || plane.fd.get() != buffer->planes()[i + 1].fd.get())
                     {
                         void* memory = mmap(NULL, buffer_size, PROT_READ | PROT_WRITE, MAP_SHARED, plane.fd.get(), 0);
+                        std::cout << "mmap(fd=" << plane.fd.get() << ") -> " << (POINTER_CAST) memory << "\n";
                         mapped_buffers_[buffer.get()].push_back(
                                 libcamera::Span<uint8_t>(static_cast<uint8_t*>(memory), buffer_size));
                         buffer_size = 0;
@@ -422,10 +393,6 @@ namespace Rpi
                 frame_buffers_[stream].push(buffer.get());
             }
         }
-
-        startPreview();
-
-        // The requests will be made when StartCamera() is called.
     }
 
     void LibcameraApp::makeRequests()
@@ -481,98 +448,4 @@ namespace Rpi
         msg_queue_.Post(Msg(MsgType::RequestComplete, payload));
     }
 
-    void LibcameraApp::previewDoneCallback(int fd)
-    {
-        std::lock_guard<std::mutex> lock(preview_mutex_);
-        auto it = preview_completed_requests_.find(fd);
-        if (it == preview_completed_requests_.end())
-            throw std::runtime_error("previewDoneCallback: missing fd " + std::to_string(fd));
-        preview_completed_requests_.erase(it); // drop shared_ptr reference
-    }
-
-    void LibcameraApp::startPreview()
-    {
-        preview_abort_ = false;
-        preview_thread_ = std::thread(&LibcameraApp::previewThread, this);
-    }
-
-    void LibcameraApp::stopPreview()
-    {
-        if (!preview_thread_.joinable()) // in case never started
-            return;
-
-        {
-            std::lock_guard<std::mutex> lock(preview_item_mutex_);
-            preview_abort_ = true;
-            preview_cond_var_.notify_one();
-        }
-        preview_thread_.join();
-        preview_item_ = PreviewItem();
-    }
-
-    void LibcameraApp::previewThread()
-    {
-        while (true)
-        {
-            PreviewItem item;
-            while (!item.stream)
-            {
-                std::unique_lock<std::mutex> lock(preview_item_mutex_);
-                if (preview_abort_)
-                {
-//                    preview_->Reset();
-                    return;
-                }
-                else if (preview_item_.stream)
-                    item = std::move(preview_item_); // re-use existing shared_ptr reference
-                else
-                    preview_cond_var_.wait(lock);
-            }
-
-            if (item.stream->configuration().pixelFormat != libcamera::formats::YUV420)
-                throw std::runtime_error("Preview windows only support YUV420");
-
-            StreamInfo info = GetStreamInfo(item.stream);
-            FrameBuffer* buffer = item.completed_request->buffers[item.stream];
-            libcamera::Span span = Mmap(buffer)[0];
-
-            // Fill the frame info with the ControlList items and ancillary bits.
-            FrameInfo frame_info(item.completed_request->metadata);
-            frame_info.fps = item.completed_request->framerate;
-            frame_info.sequence = item.completed_request->sequence;
-
-            int fd = buffer->planes()[0].fd.get();
-            {
-                std::lock_guard<std::mutex> lock(preview_mutex_);
-                // the reference to the shared_ptr moves to the map here
-                preview_completed_requests_[fd] = std::move(item.completed_request);
-            }
-//            if (preview_->Quit())
-//            {
-//                msg_queue_.Post(Msg(MsgType::Quit));
-//            }
-//            preview_frames_displayed_++;
-//            preview_->Show(fd, span, info);
-        }
-    }
-
-    void LibcameraApp::configureDenoise(const std::string &denoise_mode)
-    {
-        using namespace libcamera::controls::draft;
-
-        static const std::map<std::string, NoiseReductionModeEnum> denoise_table = {
-                {"off",      NoiseReductionModeOff},
-                {"cdn_off",  NoiseReductionModeMinimal},
-                {"cdn_fast", NoiseReductionModeFast},
-                {"cdn_hq",   NoiseReductionModeHighQuality}
-        };
-        NoiseReductionModeEnum denoise;
-
-        auto const mode = denoise_table.find(denoise_mode);
-        if (mode == denoise_table.end())
-            throw std::runtime_error("Invalid denoise mode " + denoise_mode);
-        denoise = mode->second;
-
-        controls_.set(NoiseReductionMode, denoise);
-    }
 }

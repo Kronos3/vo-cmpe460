@@ -89,14 +89,14 @@ function(build_elf NAME)
             "-Wl,-Map,${CMAKE_CURRENT_BINARY_DIR}/${NAME}.map")
 endfunction()
 
-add_link_options(
-        ${ARCH_CFLAGS}
-        -T ${LINKER_SCRIPT}
-        -static
-        --specs=nosys.specs
-        -nostartfiles
-        -ffreestanding
-        -Wl,--section-start=.init=${LOADADDR}
-)
+#add_link_options(
+#        ${ARCH_CFLAGS}
+#        -T ${LINKER_SCRIPT}
+#        -static
+#        --specs=nosys.specs
+#        -nostartfiles
+#        -ffreestanding
+#        -Wl,--section-start=.init=${LOADADDR}
+#)
 
 add_compile_options(-funwind-tables)

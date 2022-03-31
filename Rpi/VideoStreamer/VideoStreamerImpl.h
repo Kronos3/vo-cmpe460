@@ -25,9 +25,6 @@ namespace Rpi
         void preamble() override;
 
         void frame_handler(NATIVE_INT_TYPE portNum, Rpi::CamFrame* frame) override;
-
-        void START_cmdHandler(U32 opCode, U32 cmdSeq) override;
-        void STOP_cmdHandler(U32 opCode, U32 cmdSeq) override;
         void OPEN_cmdHandler(U32 opCode, U32 cmdSeq) override;
 
         void handle_done(I32 fd);

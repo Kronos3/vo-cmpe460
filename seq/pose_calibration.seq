@@ -1,0 +1,12 @@
+R00:00:00 cam.STOP
+
+; Set up the frame pathing
+R00:00:00 cam.STREAM VIS
+R00:00:00 vis.STREAM VIDEO_STREAMER
+
+; Set up the vision pipeline
+R00:00:00 vis.CLEAR
+R00:00:00 vis.PIPE POSE_CALIBRATION
+
+; Start the stream
+R00:00:00 cam.START

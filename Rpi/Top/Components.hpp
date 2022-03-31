@@ -6,6 +6,7 @@
 #include <Svc/RateGroupDriver/RateGroupDriverImpl.hpp>
 
 #include <Svc/CmdDispatcher/CommandDispatcherImpl.hpp>
+#include <Svc/CmdSequencer/CmdSequencerImpl.hpp>
 #include <Svc/Deframer/DeframerComponentImpl.hpp>
 #include <Svc/Framer/FramerComponentImpl.hpp>
 
@@ -29,6 +30,7 @@
 #include <Rpi/Cam/CamImpl.h>
 #include <Rpi/VideoStreamer/VideoStreamerImpl.h>
 #include <Rpi/Mot/MotImpl.h>
+#include <Rpi/Vis/VisImpl.h>
 
 #include <Svc/BufferManager/BufferManagerComponentImpl.hpp>
 #include <FprimeProtocol.hpp>
@@ -45,7 +47,8 @@ class Kernel
     Svc::ActiveRateGroupImpl rg20hz;
     Svc::ActiveRateGroupImpl rg50hz;
 
-//    Svc::CmdSequencerComponentImpl cmdSeq;
+    Fw::MallocAllocator mallocAllocator;
+    Svc::CmdSequencerComponentImpl cmdSeq;
     Svc::CommandDispatcherImpl cmdDisp;
 
     Svc::ActiveLoggerImpl eventLogger;
@@ -75,6 +78,7 @@ class Kernel
     Rpi::CamImpl cam;
     Rpi::VideoStreamerImpl videoStreamer;
     Rpi::MotImpl mot;
+    Rpi::VisImpl vis;
 
     Svc::FprimeDeframing deframing;
     Svc::FprimeFraming framing;

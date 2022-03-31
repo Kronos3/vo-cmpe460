@@ -4,6 +4,4 @@
              format_string="%d frames capture"/>
     <channel id="1" name="FramesDropped" data_type="U32" update="on_change"
              format_string="%d frames dropped"/>
-    <channel id="2" name="FramesDroppedInternal" data_type="U32" update="on_change"
-             format_string="%d frames dropped"/>
 </telemetry>

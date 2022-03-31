@@ -53,21 +53,16 @@ namespace Rpi
         frameDeallocate_out(portNum, frame);
 #endif
 
+        // Calculate frame rate
+        Fw::Time current_time = getTime();
+        Fw::Time delta = Fw::Time::sub(current_time, m_last_frame);
+
+        F64 period = delta.getSeconds() + 1e-6 * delta.getUSeconds();
+        tlmWrite_FramesPerSecond(1.0 / period);
+
         I32 fd = frame->buffer->planes()[0].fd.get();
         m_showing_frames.emplace(fd, frame);
         m_preview->Show(fd, frame->span, frame->info);
-    }
-
-    void VideoStreamerImpl::START_cmdHandler(U32 opCode, U32 cmdSeq)
-    {
-        startRaw_out(0, 0);
-        cmdResponse_out(opCode, cmdSeq, Fw::COMMAND_OK);
-    }
-
-    void VideoStreamerImpl::STOP_cmdHandler(U32 opCode, U32 cmdSeq)
-    {
-        stopRaw_out(0, 0);
-        cmdResponse_out(opCode, cmdSeq, Fw::COMMAND_OK);
     }
 
     void VideoStreamerImpl::OPEN_cmdHandler(U32 opCode, U32 cmdSeq)

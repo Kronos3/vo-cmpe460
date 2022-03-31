@@ -28,18 +28,7 @@
     </parameters>
 
     <commands>
-        <command kind="sync" opcode="10" mnemonic="START">
-            <comment>
-                Start a raw video stream
-                Runs at the rate of the rate group connected to raw_video
-            </comment>
-        </command>
-
-        <command kind="sync" opcode="11" mnemonic="STOP">
-            <comment>Stop the raw video stream</comment>
-        </command>
-
-        <command kind="sync" opcode="12" mnemonic="OPEN">
+        <command kind="sync" opcode="10" mnemonic="OPEN">
             <comment>Open UDP connection to start sending frames</comment>
         </command>
     </commands>

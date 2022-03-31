@@ -18,8 +18,20 @@ static void sighandler(int signum)
     kernel->exit();
 }
 
+struct Test
+{
+    Test()
+    {
+//        printf("This should print\n");
+    }
+};
+
+static Test t;
+
+//extern "C" int __libc_init_array();
 I32 main()
 {
+//    __libc_init_array();
     kernel = new Kernel();
 
     // register signal handlers to exit program

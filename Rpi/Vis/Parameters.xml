@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<parameters opcode_base="10">
+    <parameter id="0" set_opcode="1" save_opcode="2"
+               name="POSE_CALIB_COL" data_type="I32" default="9">
+        <comment>
+            Number of inner corner columns for chessboard calibration
+        </comment>
+    </parameter>
+    <parameter id="1" set_opcode="3" save_opcode="4"
+               name="POSE_CALIB_ROW" data_type="I32" default="6">
+        <comment>
+            Number of inner corner rows for chessboard calibration
+        </comment>
+    </parameter>
+</parameters>

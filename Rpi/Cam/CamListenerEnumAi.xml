@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<enum namespace="Rpi" name="CamListener" serialize_type="I32">
+    <comment>Named camera listener, corresponds to frame output ports</comment>
+    <item name="NONE" value="-1"/>
+    <item name="VIDEO_STREAMER" value="0"/>
+    <item name="VIS" value="1"/>
+</enum>

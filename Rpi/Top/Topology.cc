@@ -35,7 +35,7 @@ Kernel::Kernel()
         rg10hz("RG10HZ", contexts, FW_NUM_ARRAY_ELEMENTS(contexts)),
         rg20hz("RG20HZ", contexts, FW_NUM_ARRAY_ELEMENTS(contexts)),
         rg50hz("RG50HZ", contexts, FW_NUM_ARRAY_ELEMENTS(contexts)),
-        //cmdSeq("SEQ"),
+        cmdSeq("SEQ"),
         cmdDisp("DISP"),
 
         eventLogger("LOG"),
@@ -61,7 +61,8 @@ Kernel::Kernel()
 
         cam("CAM"),
         videoStreamer("VIDEO_STREAMER"),
-        mot("MOT")
+        mot("MOT"),
+        vis("VIS")
 {
 }
 
@@ -77,7 +78,8 @@ void Kernel::prv_init()
 
     comm.init(0);
 
-//        cmdSeq.init(QUEUE_DEPTH, 0);
+    cmdSeq.init(QUEUE_DEPTH, 0);
+    cmdSeq.allocateBuffer(0, mallocAllocator, 500 * 1024);
     cmdDisp.init(QUEUE_DEPTH, 0);
 
     eventLogger.init(QUEUE_DEPTH, 0);
@@ -127,6 +129,7 @@ void Kernel::prv_init()
     videoStreamer.init(QUEUE_DEPTH, 0);
 
     mot.init(0);
+    vis.init(QUEUE_DEPTH, 0);
 }
 
 void Kernel::prv_start()
@@ -146,11 +149,13 @@ void Kernel::prv_start()
 
 //        serialDriver.startReadThread();
 
+    cmdSeq.start();
     cmdDisp.start();
 
     Fw::String s("cam");
     cam.startStreamThread(s);
     videoStreamer.start(19);
+    vis.start();
 
     // Always start this last (or first, but not in the middle)
     Os::File gds_cfg;
@@ -189,13 +194,14 @@ void Kernel::prv_start()
 
 void Kernel::prv_reg_commands()
 {
-//        cmdSeq.regCommands();
+    cmdSeq.regCommands();
     cmdDisp.regCommands();
     eventLogger.regCommands();
     prmDb.regCommands();
     cam.regCommands();
     videoStreamer.regCommands();
     mot.regCommands();
+    vis.regCommands();
     fileManager.regCommands();
     fileDownlink.regCommands();
 }
@@ -204,6 +210,8 @@ void Kernel::prv_loadParameters()
 {
 //        mot.loadParameters();
     videoStreamer.loadParameters();
+    cam.loadParameters();
+    vis.loadParameters();
 }
 
 void Kernel::start()
@@ -249,10 +257,13 @@ void Kernel::exit()
     fileUplink.exit();
     fileDownlink.exit();
     fileManager.exit();
+    cmdSeq.exit();
+    cmdSeq.deallocateBuffer(mallocAllocator);
     cmdDisp.exit();
 
     cam.quitStreamThread();
     videoStreamer.exit();
+    vis.exit();
 
 //        serialDriver.quitReadThread();
 
@@ -268,9 +279,11 @@ void Kernel::exit()
     fileUplink.join(nullptr);
     fileDownlink.join(nullptr);
     fileManager.join(nullptr);
+    cmdSeq.join(nullptr);
     cmdDisp.join(nullptr);
 
     videoStreamer.join(nullptr);
+    vis.join(nullptr);
 
     comm.stopSocketTask();
     comm.joinSocketTask(nullptr);

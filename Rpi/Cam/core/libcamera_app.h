@@ -31,7 +31,7 @@
 #include <libcamera/property_ids.h>
 
 #include <core/completed_request.hpp>
-#include <core/post_processor.hpp>
+//#include <core/post_processor.hpp>
 #include <core/stream_info.hpp>
 #include <CameraConfig.h>
 
@@ -205,16 +205,6 @@ namespace Rpi
     private:
 
         void requestComplete(Request* request);
-
-        void previewDoneCallback(int fd);
-
-        void startPreview();
-
-        void stopPreview();
-
-        void previewThread();
-
-        void configureDenoise(const std::string &denoise_mode);
 
         std::unique_ptr<CameraManager> camera_manager_;
         std::shared_ptr<Camera> camera_;

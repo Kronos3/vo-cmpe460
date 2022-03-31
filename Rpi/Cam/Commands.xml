@@ -26,4 +26,12 @@
             Start the camera thread
         </comment>
     </command>
+    <command kind="sync" opcode="4" mnemonic="STREAM">
+        <comment>
+            Set the listener the camera should send frames to
+        </comment>
+        <args>
+            <arg name="listener" type="Rpi::CamListener"/>
+        </args>
+    </command>
 </commands>

@@ -32,15 +32,13 @@ namespace Rpi
 
     PRIVATE:
         void get_config(CameraConfig& config);
-
         void deallocate_handler(NATIVE_INT_TYPE portNum, CamFrame* frame) override;
-        void start_handler(NATIVE_INT_TYPE portNum, NATIVE_UINT_TYPE context) override;
-        void stop_handler(NATIVE_INT_TYPE portNum, NATIVE_UINT_TYPE context) override;
 
         void CAPTURE_cmdHandler(U32 opCode, U32 cmdSeq, const Fw::CmdStringArg &destination) override;
         void CONFIGURE_cmdHandler(U32 opCode, U32 cmdSeq) override;
         void STOP_cmdHandler(U32 opCode, U32 cmdSeq) override;
         void START_cmdHandler(U32 opCode, U32 cmdSeq) override;
+        void STREAM_cmdHandler(U32 opCode, U32 cmdSeq, CamListener listener) override;
 
         CamFrame* get_buffer();
 
@@ -50,13 +48,12 @@ namespace Rpi
     PRIVATE:
         CamFrame m_buffers[CAMERA_BUFFER_N];
 
-        I32 m_streaming_to;
+        CamListener m_streaming_to;
 
         LibcameraApp* m_camera;
         Os::Task m_task;
 
         U32 tlm_dropped;
-        U32 tlm_dropped_internal;
         U32 tlm_captured;
     };
 }

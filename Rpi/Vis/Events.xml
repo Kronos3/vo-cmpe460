@@ -1,0 +1,23 @@
+<events>
+    <event id="0" name="VisStreaming" severity="ACTIVITY_LO"
+           format_string="Vision is now streaming to %s">
+        <args>
+            <arg name="port_number" type="Rpi::VisListener"/>
+        </args>
+    </event>
+    <event id="1" name="VisStopping" severity="ACTIVITY_LO"
+           format_string="Vision stopped streaming to %s">
+        <args>
+            <arg name="port_number" type="Rpi::VisListener"/>
+        </args>
+    </event>
+    <event id="2" name="VisCleared" severity="ACTIVITY_LO"
+           format_string="Vision pipeline has been cleared">
+    </event>
+    <event id="3" name="VisPipe" severity="ACTIVITY_LO"
+           format_string="Added %s to vision pipeline">
+        <args>
+            <arg name="pipe" type="Rpi::VisPipe"/>
+        </args>
+    </event>
+</events>
