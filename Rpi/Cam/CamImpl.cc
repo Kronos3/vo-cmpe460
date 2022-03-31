@@ -228,4 +228,18 @@ namespace Rpi
 
         m_camera->StopCamera();
     }
+
+    void CamImpl::STOP_cmdHandler(U32 opCode, U32 cmdSeq)
+    {
+        log_ACTIVITY_HI_CameraStopping();
+        m_camera->StopCamera();
+        cmdResponse_out(opCode, cmdSeq, Fw::COMMAND_OK);
+    }
+
+    void CamImpl::START_cmdHandler(U32 opCode, U32 cmdSeq)
+    {
+        log_ACTIVITY_HI_CameraStarting();
+        m_camera->StartCamera();
+        cmdResponse_out(opCode, cmdSeq, Fw::COMMAND_OK);
+    }
 }

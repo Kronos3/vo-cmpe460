@@ -15,4 +15,15 @@
             This will restart the camera stream
         </comment>
     </command>
+    <command kind="sync" opcode="2" mnemonic="STOP">
+        <comment>
+            Stop the libcamera thread. This lower power
+            usage as the camera will not be actively streaming
+        </comment>
+    </command>
+    <command kind="sync" opcode="3" mnemonic="START">
+        <comment>
+            Start the camera thread
+        </comment>
+    </command>
 </commands>
