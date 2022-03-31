@@ -8,5 +8,3 @@ set(SOURCE_FILES
         )
 
 register_fprime_module()
-target_link_libraries(Rpi_VideoStreamer PUBLIC
-        /usr/aarch64-linux-gnu/lib/libdrm.so.2)
