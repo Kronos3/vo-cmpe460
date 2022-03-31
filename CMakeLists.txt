@@ -27,7 +27,7 @@ include(cmake/platform/${RPI_PLATFORM}-toolchain-gcc.cmake)
 #include_directories(${OpenCV_INCLUDE_DIRS})
 
 set(STAGING_DIR ${CMAKE_CURRENT_LIST_DIR}/staging)
-link_directories(${STAGING_DIR}/lib)
+link_directories(${STAGING_DIR}/lib/)
 include_directories(
         ${STAGING_DIR}/include/
         ${STAGING_DIR}/include/libcamera/
