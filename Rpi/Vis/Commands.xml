@@ -1,0 +1,25 @@
+<commands>
+    <command kind="sync" opcode="0" mnemonic="STREAM">
+        <comment>
+            Start a raw video stream
+            Runs at the rate of the rate group connected to raw_video
+        </comment>
+        <args>
+            <arg name="listener" type="Rpi::VisListener"/>
+        </args>
+    </command>
+    <command kind="sync" opcode="1" mnemonic="CLEAR">
+        <comment>
+            Clear the vision pipeline to make way for
+            a new pipe
+        </comment>
+    </command>
+    <command kind="sync" opcode="2" mnemonic="PIPE">
+        <comment>
+            Add a stage to the vision pipeline
+        </comment>
+        <args>
+            <arg name="stage" type="Rpi::VisPipe"/>
+        </args>
+    </command>
+</commands>

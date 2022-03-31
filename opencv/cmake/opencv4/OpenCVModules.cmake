@@ -16,7 +16,7 @@ set(CMAKE_IMPORT_FILE_VERSION 1)
 set(_targetsDefined)
 set(_targetsNotDefined)
 set(_expectedTargets)
-foreach(_expectedTarget zlib libjpeg-turbo libpng opencv_core opencv_flann opencv_imgproc opencv_photo opencv_features2d opencv_imgcodecs ocv.3rdparty.v4l opencv_videoio opencv_calib3d opencv_video)
+foreach(_expectedTarget zlib opencv_core opencv_flann opencv_imgproc opencv_photo opencv_features2d opencv_imgcodecs opencv_calib3d)
   list(APPEND _expectedTargets ${_expectedTarget})
   if(NOT TARGET ${_expectedTarget})
     list(APPEND _targetsNotDefined ${_expectedTarget})
@@ -52,16 +52,6 @@ endif()
 
 # Create imported target zlib
 add_library(zlib STATIC IMPORTED)
-
-# Create imported target libjpeg-turbo
-add_library(libjpeg-turbo STATIC IMPORTED)
-
-# Create imported target libpng
-add_library(libpng STATIC IMPORTED)
-
-set_target_properties(libpng PROPERTIES
-  INTERFACE_LINK_LIBRARIES "zlib"
-)
 
 # Create imported target opencv_core
 add_library(opencv_core STATIC IMPORTED)
@@ -103,21 +93,7 @@ set_target_properties(opencv_features2d PROPERTIES
 add_library(opencv_imgcodecs STATIC IMPORTED)
 
 set_target_properties(opencv_imgcodecs PROPERTIES
-  INTERFACE_LINK_LIBRARIES "opencv_core;opencv_imgproc;opencv_core;opencv_imgproc;\$<LINK_ONLY:dl>;\$<LINK_ONLY:m>;\$<LINK_ONLY:rt>;\$<LINK_ONLY:libjpeg-turbo>;\$<LINK_ONLY:libpng>;\$<LINK_ONLY:zlib>"
-)
-
-# Create imported target ocv.3rdparty.v4l
-add_library(ocv.3rdparty.v4l INTERFACE IMPORTED)
-
-set_target_properties(ocv.3rdparty.v4l PROPERTIES
-  INTERFACE_COMPILE_DEFINITIONS "HAVE_CAMV4L2"
-)
-
-# Create imported target opencv_videoio
-add_library(opencv_videoio STATIC IMPORTED)
-
-set_target_properties(opencv_videoio PROPERTIES
-  INTERFACE_LINK_LIBRARIES "opencv_core;opencv_imgproc;opencv_imgcodecs;opencv_core;opencv_imgproc;opencv_imgcodecs;\$<LINK_ONLY:dl>;\$<LINK_ONLY:m>;\$<LINK_ONLY:rt>;\$<LINK_ONLY:ocv.3rdparty.v4l>"
+  INTERFACE_LINK_LIBRARIES "opencv_core;opencv_imgproc;opencv_core;opencv_imgproc;\$<LINK_ONLY:dl>;\$<LINK_ONLY:m>;\$<LINK_ONLY:rt>"
 )
 
 # Create imported target opencv_calib3d
@@ -127,15 +103,8 @@ set_target_properties(opencv_calib3d PROPERTIES
   INTERFACE_LINK_LIBRARIES "opencv_core;opencv_flann;opencv_imgproc;opencv_features2d;opencv_core;opencv_flann;opencv_imgproc;opencv_features2d;\$<LINK_ONLY:dl>;\$<LINK_ONLY:m>;\$<LINK_ONLY:rt>"
 )
 
-# Create imported target opencv_video
-add_library(opencv_video STATIC IMPORTED)
-
-set_target_properties(opencv_video PROPERTIES
-  INTERFACE_LINK_LIBRARIES "opencv_core;opencv_flann;opencv_imgproc;opencv_features2d;opencv_calib3d;opencv_core;opencv_flann;opencv_imgproc;opencv_features2d;opencv_calib3d;\$<LINK_ONLY:dl>;\$<LINK_ONLY:m>;\$<LINK_ONLY:rt>"
-)
-
-if(CMAKE_VERSION VERSION_LESS 3.0.0)
-  message(FATAL_ERROR "This file relies on consumers using CMake 3.0.0 or greater.")
+if(CMAKE_VERSION VERSION_LESS 2.8.12)
+  message(FATAL_ERROR "This file relies on consumers using CMake 2.8.12 or greater.")
 endif()
 
 # Load information for each installed configuration.

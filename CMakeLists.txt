@@ -16,25 +16,21 @@ set(RPI_PLATFORM rt_linux)
 
 enable_language(C CXX ASM)
 
-#add_compile_options(-fsanitize=address -fno-omit-frame-pointer -O1)
-#add_link_options(-fsanitize=address)
-
 # Initialize the compiler toolchain
 #include(cmake/platform/${RPI_PLATFORM}-toolchain-clang.cmake)
 include(cmake/platform/${RPI_PLATFORM}-toolchain-gcc.cmake)
 
-find_package(OpenCV REQUIRED)
-include_directories(${OpenCV_INCLUDE_DIRS})
+#add_compile_options(-fsanitize=addressss -fno-omit-frame-pointer -O1)
+#add_link_options(-fsanitize=address)
 
-find_library(LIBCAMERA_LIBRARY libcamera.so REQUIRED)
-find_library(LIBCAMERA_BASE_LIBRARY libcamera-base.so REQUIRED)
-message(STATUS ${CAMERA_INCLUDE_DIRS})
-message(STATUS ${LIBCAMERA_LIBRARY})
-message(STATUS ${LIBCAMERA_BASE_LIBRARY})
+#find_package(OpenCV REQUIRED)
+#include_directories(${OpenCV_INCLUDE_DIRS})
 
+set(STAGING_DIR ${CMAKE_CURRENT_LIST_DIR}/staging)
+link_directories(${STAGING_DIR}/lib)
 include_directories(
-        /usr/aarch64-linux-gnu/include/libcamera/
-        /usr/aarch64-linux-gnu/include/drm/
+        ${STAGING_DIR}/include/libcamera/
+        ${STAGING_DIR}/include/libdrm/
 )
 
 #add_compile_options(-isystem /usr/include)

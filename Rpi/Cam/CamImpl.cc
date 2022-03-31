@@ -7,9 +7,9 @@ namespace Rpi
 
     CamImpl::CamImpl(const char* compName)
             : CamComponentBase(compName),
-              m_streaming_to(-1),
+              m_streaming_to(CamListener::NONE),
               m_camera(new LibcameraApp()),
-              tlm_dropped(0), tlm_dropped_internal(0),
+              tlm_dropped(0),
               tlm_captured(0)
     {
     }
@@ -38,9 +38,6 @@ namespace Rpi
 
     void CamImpl::streaming_thread()
     {
-        log_ACTIVITY_HI_CameraStarting();
-        m_camera->StartCamera();
-
         while (true)
         {
             LibcameraApp::Msg msg = m_camera->Wait();
@@ -55,7 +52,7 @@ namespace Rpi
             tlmWrite_FramesCapture(tlm_captured);
 
             // Check if anyone is listening to our stream
-            if (m_streaming_to == -1)
+            if (m_streaming_to == CamListener::NONE)
             {
                 // Nobody is listening
                 // Drop the frame
@@ -69,8 +66,8 @@ namespace Rpi
             if (!buffer)
             {
                 // Ran out of frame buffers
-                tlm_dropped_internal++;
-                tlmWrite_FramesDroppedInternal(tlm_dropped_internal);
+                tlm_dropped++;
+                tlmWrite_FramesDropped(tlm_dropped);
                 return;
             }
 
@@ -85,7 +82,7 @@ namespace Rpi
             buffer->info = m_camera->GetStreamInfo(m_camera->RawStream());
 
             // Send the frame to the requester on the same port
-            frame_out(m_streaming_to, buffer);
+            frame_out(m_streaming_to.e, buffer);
         }
 
         log_ACTIVITY_HI_CameraStopping();
@@ -103,28 +100,6 @@ namespace Rpi
     {
         // Capture an image and save it to a file
         cmdResponse_out(opCode, cmdSeq, Fw::COMMAND_EXECUTION_ERROR);
-        return;
-
-//        Frame frame;
-//        bool valid = m_camera->read_frame(frame);
-
-        // Make sure we have enough buffers
-//        if (!valid)
-        {
-            log_WARNING_LO_CaptureFailed();
-            cmdResponse_out(opCode, cmdSeq, Fw::COMMAND_EXECUTION_ERROR);
-            return;
-        }
-
-        // Save it to a file
-        Fw::LogStringArg dest = destination;
-        log_ACTIVITY_LO_ImageSaving(dest);
-
-//        cv::Mat mat(m_height, m_width, CV_8UC3, frame.data);
-//        cv::imwrite(destination.toChar(), mat);
-
-        // Deallocate the buffer
-//        m_camera->return_buffer(frame.request);
     }
 
     void CamImpl::CONFIGURE_cmdHandler(U32 opCode, U32 cmdSeq)
@@ -187,28 +162,6 @@ namespace Rpi
         GET_PARAM(F32, SHARPNESS, sharpness);
     }
 
-    void CamImpl::start_handler(NATIVE_INT_TYPE portNum,
-                                NATIVE_UINT_TYPE context)
-    {
-        if (m_streaming_to != -1)
-        {
-            log_ACTIVITY_LO_CameraStreamStopping(portNum);
-        }
-
-        m_streaming_to = portNum;
-        log_ACTIVITY_LO_CameraStreamStarting(portNum);
-    }
-
-    void CamImpl::stop_handler(NATIVE_INT_TYPE portNum,
-                               NATIVE_UINT_TYPE context)
-    {
-        if (m_streaming_to != -1)
-        {
-            log_ACTIVITY_LO_CameraStreamStopping(portNum);
-            m_streaming_to = -1;
-        }
-    }
-
     void
     CamImpl::startStreamThread(const Fw::StringBase &name)
     {
@@ -240,6 +193,22 @@ namespace Rpi
     {
         log_ACTIVITY_HI_CameraStarting();
         m_camera->StartCamera();
+        cmdResponse_out(opCode, cmdSeq, Fw::COMMAND_OK);
+    }
+
+    void CamImpl::STREAM_cmdHandler(U32 opCode, U32 cmdSeq, CamListener listener)
+    {
+        if (m_streaming_to != CamListener::NONE)
+        {
+            log_ACTIVITY_LO_CameraStreamStopping(m_streaming_to);
+        }
+
+        if (listener != CamListener::NONE)
+        {
+            log_ACTIVITY_LO_CameraStreamStarting(listener);
+        }
+
+        m_streaming_to = listener;
         cmdResponse_out(opCode, cmdSeq, Fw::COMMAND_OK);
     }
 }

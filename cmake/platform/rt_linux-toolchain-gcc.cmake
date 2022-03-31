@@ -11,11 +11,13 @@ else()
     set(PREFIX aarch64-linux-gnu-)
 endif()
 
+set(VERSION -10)
+
 set(CMAKE_CROSSCOMPILING ON)
 set(CROSS_COMPILE ${PREFIX})
-set(CMAKE_C_COMPILER ${COMPILER_PATH}/${PREFIX}gcc)
-set(CMAKE_CXX_COMPILER ${COMPILER_PATH}/${PREFIX}g++)
-set(CMAKE_ASM_COMPILER  ${COMPILER_PATH}/${PREFIX}gcc)
+set(CMAKE_C_COMPILER ${COMPILER_PATH}/${PREFIX}gcc${VERSION})
+set(CMAKE_CXX_COMPILER ${COMPILER_PATH}/${PREFIX}g++${VERSION})
+set(CMAKE_ASM_COMPILER  ${COMPILER_PATH}/${PREFIX}gcc${VERSION})
 set(CMAKE_AR ${COMPILER_PATH}/${PREFIX}ar)
 set(CMAKE_AS ${COMPILER_PATH}/${PREFIX}as)
 set(CMAKE_OBJCOPY ${COMPILER_PATH}/${PREFIX}objcopy)
@@ -58,8 +60,10 @@ message(STATUS "Building for ${AARCH}-bit Raspberry Pi ${RASPPI}")
 # Set CFLAGS and CXXFLAGS
 message(STATUS "Architecture flags: ${ARCH_CFLAGS}")
 add_compile_options("${ARCH_CFLAGS}")
-add_compile_options(-O2 -Wall -fsigned-char
-        -isystem /usr/${GNU_MACHINE}/include/)
+add_compile_options(
+        -O2 -Wall -fsigned-char
+#        -isystem /usr/${GNU_MACHINE}/include/
+)
 #add_link_options(-static)
 add_compile_definitions(
         __unix__ __linux__
@@ -68,14 +72,14 @@ add_compile_definitions(
         )
 
 #include("${CMAKE_CURRENT_LIST_DIR}/arm.toolchain.cmake")
-#add_link_options(-static)
-include_directories(
+#add_link_options(-static-libgcc -static-libstdc++)
+#include_directories(
 #        /usr/${GNU_MACHINE}/include/linux
-        /usr/${GNU_MACHINE}/include/c++/10
+#        /usr/${GNU_MACHINE}/include/c++/10
 #        /usr/${GNU_MACHINE}/include/c++/10/tr1
-        /usr/${GNU_MACHINE}/include/${GNU_MACHINE}
-        /usr/${GNU_MACHINE}/include/${GNU_MACHINE}/c++/10
-)
+#        /usr/${GNU_MACHINE}/include/${GNU_MACHINE}
+#        /usr/${GNU_MACHINE}/include/${GNU_MACHINE}/c++/10
+#)
 add_compile_definitions(__STDCPP_WANT_MATH_SPEC_FUNCS__=0)
 
 set(CMAKE_SYSTEM_NAME Linux)

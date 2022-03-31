@@ -1,0 +1,11 @@
+*
+!Cfg/*
+!cmake/*
+!fpp/*
+!fprime/*
+!opencv/*
+!Rpi/*
+!CMakeLists.txt
+!opencv.cmake
+!settings.ini
+!staging/*

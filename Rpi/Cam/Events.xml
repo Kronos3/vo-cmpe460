@@ -16,15 +16,15 @@
            format_string="Configuration sending to camera"/>
 
     <event id="5" name="CameraStreamStarting" severity="ACTIVITY_LO"
-           format_string="Camera is now streaming to port %d">
+           format_string="Camera is now streaming to %s">
         <args>
-            <arg name="port_number" type="I32"/>
+            <arg name="port_number" type="Rpi::CamListener"/>
         </args>
     </event>
     <event id="6" name="CameraStreamStopping" severity="ACTIVITY_LO"
-           format_string="Camera stopped streaming to port %d">
+           format_string="Camera stopped streaming to %s">
         <args>
-            <arg name="port_number" type="I32"/>
+            <arg name="port_number" type="Rpi::CamListener"/>
         </args>
     </event>
 </events>

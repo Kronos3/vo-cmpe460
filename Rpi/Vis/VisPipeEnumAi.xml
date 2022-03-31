@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<enum namespace="Rpi" name="VisPipe" serialize_type="I32">
+    <comment>Vision pipeline stage</comment>
+    <item name="POSE_CALIBRATION" value="0"/>
+</enum>

@@ -28,6 +28,8 @@ namespace Rpi
             in_use = false;
             request = nullptr;
             buffer = nullptr;
+            size_t s = 0;
+            span = libcamera::Span<U8>(nullptr, s);
         }
     };
 }
