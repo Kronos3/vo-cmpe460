@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <commands>
-    <command kind="async" opcode="0" mnemonic="CAPTURE">
+    <command kind="sync" opcode="0" mnemonic="CAPTURE">
         <comment>
             Capture a single image and save it to a file
         </comment>
@@ -8,5 +8,11 @@
         <args>
             <arg name="destination" type="string" size="80"/>
         </args>
+    </command>
+    <command kind="sync" opcode="1" mnemonic="CONFIGURE">
+        <comment>
+            Load all changes to camera parameters into the camera
+            This will restart the camera stream
+        </comment>
     </command>
 </commands>

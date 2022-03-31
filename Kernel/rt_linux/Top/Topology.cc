@@ -121,10 +121,9 @@ void Kernel::prv_init()
 
 //        spiDriver.init(0);
 
-    cam.init(QUEUE_DEPTH, 0,
+    cam.init(0,
              CAMERA_RAW_WIDTH, CAMERA_RAW_HEIGHT,
-             CAMERA_BUFFER_N,
-             0);
+             false, false, false);
     videoStreamer.init(QUEUE_DEPTH, 0);
 
     mot.init(0);
@@ -148,8 +147,10 @@ void Kernel::prv_start()
 //        serialDriver.startReadThread();
 
     cmdDisp.start();
-    cam.start();
-    videoStreamer.start();
+
+    Fw::String s("cam");
+    cam.startStreamThread(s);
+    videoStreamer.start(19);
 
     // Always start this last (or first, but not in the middle)
     Os::File gds_cfg;
@@ -250,6 +251,9 @@ void Kernel::exit()
     fileManager.exit();
     cmdDisp.exit();
 
+    cam.quitStreamThread();
+    videoStreamer.exit();
+
 //        serialDriver.quitReadThread();
 
     rg1hz.join(nullptr);
@@ -265,6 +269,8 @@ void Kernel::exit()
     fileDownlink.join(nullptr);
     fileManager.join(nullptr);
     cmdDisp.join(nullptr);
+
+    videoStreamer.join(nullptr);
 
     comm.stopSocketTask();
     comm.joinSocketTask(nullptr);

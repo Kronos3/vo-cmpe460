@@ -108,15 +108,23 @@
     </connection>
 
     <!-- 20Hz -->
-    <connection name="rg20hz__cam_cycle">
-        <source component="rg20hz" port="RateGroupMemberOut" type="Sched" num="0"/>
-        <target component="videoStreamer" port="rawVideo" type="Sched" num="0"/>
-    </connection>
+<!--    <connection name="rg20hz__cam_cycle">-->
+<!--        <source component="rg20hz" port="RateGroupMemberOut" type="Sched" num="0"/>-->
+<!--        <target component="videoStreamer" port="rawVideo" type="Sched" num="0"/>-->
+<!--    </connection>-->
 
     <!-- Camera connections -->
-    <connection name="videoStreamer__cam_RawVideo">
-        <source component="videoStreamer" port="rawVideoCapture" type="Sched" num="0"/>
-        <target component="cam" port="capture" type="Sched" num="0"/>
+    <connection name="cam_videoStreamer_frame">
+        <source component="cam" port="frame" type="Rpi::CamFrameSend" num="0"/>
+        <target component="videoStreamer" port="frame" type="Rpi::CamFrameSend" num="0"/>
+    </connection>
+    <connection name="videoStreamer__cam_start">
+        <source component="videoStreamer" port="startRaw" type="Sched" num="0"/>
+        <target component="cam" port="start" type="Sched" num="0"/>
+    </connection>
+    <connection name="videoStreamer__cam_stop">
+        <source component="videoStreamer" port="stopRaw" type="Sched" num="0"/>
+        <target component="cam" port="stop" type="Sched" num="0"/>
     </connection>
     <connection name="cam_videoStreamer_frame">
         <source component="cam" port="frame" type="Rpi::CamFrameSend" num="0"/>
@@ -249,6 +257,10 @@
         <source component="cam" port="Time" type="Time" num="0"/>
         <target component="systemTime" port="timeGetPort" type="Time" num="0"/>
     </connection>
+    <connection name="videoStreamerTime">
+        <source component="videoStreamer" port="Time" type="Time" num="0"/>
+        <target component="systemTime" port="timeGetPort" type="Time" num="0"/>
+    </connection>
     <connection name="motTime">
         <source component="mot" port="Time" type="Time" num="0"/>
         <target component="systemTime" port="timeGetPort" type="Time" num="0"/>
@@ -363,6 +375,14 @@
     </connection>
     <connection name="fileDownlink__chanTlm">
         <source component="fileDownlink" port="tlmOut" type="Tlm" num="0"/>
+        <target component="chanTlm" port="TlmRecv" type="Tlm" num="0"/>
+    </connection>
+    <connection name="cam__chanTlm">
+        <source component="cam" port="Tlm" type="Tlm" num="0"/>
+        <target component="chanTlm" port="TlmRecv" type="Tlm" num="0"/>
+    </connection>
+    <connection name="videoStreamer__chanTlm">
+        <source component="videoStreamer" port="Tlm" type="Tlm" num="0"/>
         <target component="chanTlm" port="TlmRecv" type="Tlm" num="0"/>
     </connection>
 

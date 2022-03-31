@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<parameters opcode_base="10">
+    <parameter id="0" set_opcode="1" save_opcode="2"
+               name="FRAME_RATE" data_type="U32" default="30">
+    </parameter>
+    <parameter id="1" set_opcode="3" save_opcode="4"
+               name="EXPOSURE_TIME" data_type="U32" default="0">
+    </parameter>
+    <parameter id="2" set_opcode="5" save_opcode="6"
+               name="GAIN" data_type="F32" default="10.0">
+    </parameter>
+    <parameter id="3" set_opcode="7" save_opcode="8"
+               name="METERING_MODE" data_type="ENUM" default="METERING_CENTRE_WEIGHTED">
+        <enum name="MeteringMode">
+            <item name="METERING_CENTRE_WEIGHTED"/>
+            <item name="METERING_SPOT"/>
+            <item name="METERING_MATRIX"/>
+            <item name="METERING_CUSTOM"/>
+        </enum>
+    </parameter>
+    <parameter id="4" set_opcode="9" save_opcode="10"
+               name="EXPOSURE_MODE" data_type="ENUM" default="EXPOSURE_NORMAL">
+        <enum name="ExposureMode">
+            <item name="EXPOSURE_NORMAL"/>
+            <item name="EXPOSURE_SHORT"/>
+            <item name="EXPOSURE_LONG"/>
+            <item name="EXPOSURE_CUSTOM"/>
+        </enum>
+    </parameter>
+    <parameter id="5" set_opcode="11" save_opcode="12"
+               name="AWB" data_type="ENUM" default="AWB_AUTO">
+        <enum name="AutoWhiteBalance">
+            <item name="AWB_AUTO"/>
+            <item name="AWB_INCANDESCENT"/>
+            <item name="AWB_TUNGSTEN"/>
+            <item name="AWB_FLUORESCENT"/>
+            <item name="AWB_INDOOR"/>
+            <item name="AWB_DAYLIGHT"/>
+            <item name="AWB_CLOUDY"/>
+            <item name="AWB_CUSTOM"/>
+        </enum>
+    </parameter>
+    <parameter id="6" set_opcode="13" save_opcode="14"
+               name="EV" data_type="F32" default="0.0">
+    </parameter>
+    <parameter id="7" set_opcode="15" save_opcode="16"
+               name="AWB_GAIN_R" data_type="F32" default="0.0">
+    </parameter>
+    <parameter id="8" set_opcode="17" save_opcode="18"
+               name="AWB_GAIN_B" data_type="F32" default="0.0">
+    </parameter>
+    <parameter id="9" set_opcode="19" save_opcode="20"
+               name="BRIGHTNESS" data_type="F32" default="0.0">
+    </parameter>
+    <parameter id="10" set_opcode="21" save_opcode="22"
+               name="CONTRAST" data_type="F32" default="1.0">
+    </parameter>
+    <parameter id="11" set_opcode="23" save_opcode="24"
+               name="SATURATION" data_type="F32" default="1.0">
+    </parameter>
+    <parameter id="12" set_opcode="25" save_opcode="26"
+               name="SHARPNESS" data_type="F32" default="1.0">
+    </parameter>
+    <parameter id="13" set_opcode="27" save_opcode="28"
+               name="DENOISE" data_type="ENUM" default="DENOISE_FAST">
+        <enum name="DenoiseAlgorithm">
+            <item name="DENOISE_OFF"/>
+            <item name="DENOISE_FAST"/>
+            <item name="DENOISE_HIGH_QUALITY"/>
+            <item name="DENOISE_MINIMAL"/>
+            <item name="DENOISE_ZSL"/>
+        </enum>
+    </parameter>
+</parameters>

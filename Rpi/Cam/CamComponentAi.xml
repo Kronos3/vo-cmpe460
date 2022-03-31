@@ -1,13 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<component name="Cam" kind="active" namespace="Rpi">
+<component name="Cam" kind="passive" namespace="Rpi">
 
     <import_port_type>Svc/Sched/SchedPortAi.xml</import_port_type>
 
     <import_port_type>Rpi/Cam/Ports/CamFrameSendPortAi.xml</import_port_type>
     <import_port_type>Rpi/Cam/Ports/CamFrameDeallocatePortAi.xml</import_port_type>
+<!--    <import_port_type>Rpi/Cam/Ports/CamListenerPortAi.xml</import_port_type>-->
 
     <import_dictionary>Rpi/Cam/Commands.xml</import_dictionary>
     <import_dictionary>Rpi/Cam/Events.xml</import_dictionary>
+    <import_dictionary>Rpi/Cam/Telemetry.xml</import_dictionary>
+    <import_dictionary>Rpi/Cam/Parameters.xml</import_dictionary>
 
     <ports>
         <!-- Video capture is signaled by VideoStreamer -->
@@ -17,7 +20,10 @@
                     Nav may do some processing and send frames to video streamer
             2. VideoStreamer    - Stream raw video
          -->
-        <port name="capture" data_type="Sched" kind="async_input" max_number="2"/>
+<!--        <port name="capture" data_type="Sched" kind="async_input" max_number="2"/>-->
+<!--        <port name="start" data_type="Sched" kind="sync_input" max_number="2"/>-->
+        <port name="start" data_type="Sched" kind="guarded_input" max_number="2"/>
+        <port name="stop" data_type="Sched" kind="guarded_input" max_number="2"/>
         <port name="frame" data_type="Rpi::CamFrameSend" kind="output" max_number="2"/>
 
         <port name="deallocate" data_type="Rpi::CamFrameDeallocate" kind="sync_input"/>
