@@ -29,6 +29,7 @@ include(cmake/platform/${RPI_PLATFORM}-toolchain-gcc.cmake)
 set(STAGING_DIR ${CMAKE_CURRENT_LIST_DIR}/staging)
 link_directories(${STAGING_DIR}/lib)
 include_directories(
+        ${STAGING_DIR}/include/
         ${STAGING_DIR}/include/libcamera/
         ${STAGING_DIR}/include/libdrm/
         ${STAGING_DIR}/include/opencv4
