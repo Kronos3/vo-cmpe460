@@ -26,12 +26,16 @@ register_fprime_executable()
 target_link_libraries(car_exe PUBLIC
         pthread
         ${PROJECT_SOURCE_DIR}/opencv/libopencv_imgcodecs.a
-        ${PROJECT_SOURCE_DIR}/opencv/libopencv_imgproc.a
-        ${PROJECT_SOURCE_DIR}/opencv/libopencv_calib3d.a
-        ${PROJECT_SOURCE_DIR}/opencv/libopencv_core.a
+#        ${PROJECT_SOURCE_DIR}/opencv/libopencv_imgproc.a
+#        ${PROJECT_SOURCE_DIR}/opencv/libopencv_calib3d.a
+#        ${PROJECT_SOURCE_DIR}/opencv/libopencv_core.a
         ${PROJECT_SOURCE_DIR}/opencv/opencv4/3rdparty/liblibpng.a
         ${PROJECT_SOURCE_DIR}/opencv/opencv4/3rdparty/liblibjpeg-turbo.a
         ${PROJECT_SOURCE_DIR}/opencv/opencv4/3rdparty/libzlib.a
+#        opencv_imgcodecs
+        opencv_imgproc
+        opencv_calib3d
+        opencv_core
         "${LIBCAMERA_LIBRARY}"
         "${LIBCAMERA_BASE_LIBRARY}"
 )

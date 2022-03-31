@@ -3,43 +3,59 @@
 #define VO_CMPE460_CAMIMPL_H
 
 #include <Rpi/Cam/CamComponentAc.hpp>
+#include "CamCfg.h"
+#include "CameraConfig.h"
+#include <core/completed_request.hpp>
+#include <queue>
+#include <mutex>
 
 namespace Rpi
 {
-    class LibCamera;
+    class LibcameraApp;
     class CamImpl : public CamComponentBase
     {
-        friend LibCamera;
+//        friend LibcameraApp;
 
     public:
         explicit CamImpl(const char* compName);
         ~CamImpl() override;
 
         void init(
-                NATIVE_INT_TYPE queueDepth, /*!< The queue depth*/
                 NATIVE_INT_TYPE instance, /*!< The instance number*/
                 I32 width, I32 height,
-                U32 buffer_count,
-                I32 rotation
+                I32 rotation,
+                bool vflip, bool hflip
         );
 
-    PRIVATE:
-        void preamble() override;
+        void startStreamThread(const Fw::StringBase &name);
+        void quitStreamThread();
 
-        void capture_handler(NATIVE_INT_TYPE portNum, NATIVE_UINT_TYPE context) override;
-        void deallocate_handler(NATIVE_INT_TYPE portNum, CameraFrame &frame) override;
+    PRIVATE:
+        void get_config(CameraConfig& config);
+
+        void deallocate_handler(NATIVE_INT_TYPE portNum, CamFrame* frame) override;
+        void start_handler(NATIVE_INT_TYPE portNum, NATIVE_UINT_TYPE context) override;
+        void stop_handler(NATIVE_INT_TYPE portNum, NATIVE_UINT_TYPE context) override;
 
         void CAPTURE_cmdHandler(U32 opCode, U32 cmdSeq, const Fw::CmdStringArg &destination) override;
+        void CONFIGURE_cmdHandler(U32 opCode, U32 cmdSeq) override;
+
+        CamFrame* get_buffer();
+
+        static void streaming_thread_entry(void* this_);
+        void streaming_thread();
 
     PRIVATE:
+        CamFrame m_buffers[CAMERA_BUFFER_N];
 
-        LibCamera* m_camera;
+        I32 m_streaming_to;
 
-        I32 m_width;
-        I32 m_height;
+        LibcameraApp* m_camera;
+        Os::Task m_task;
 
-//        cv::Mat m_buffers[CAMERA_BUFFER_N];   //!< Frame buffers available to camera
-//        bool m_in_use[CAMERA_BUFFER_N];       //!< Buffers currently in use
+        U32 tlm_dropped;
+        U32 tlm_dropped_internal;
+        U32 tlm_captured;
     };
 }
 

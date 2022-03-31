@@ -16,6 +16,9 @@ set(RPI_PLATFORM rt_linux)
 
 enable_language(C CXX ASM)
 
+add_compile_options(-fsanitize=address -fno-omit-frame-pointer -O1)
+add_link_options(-fsanitize=address)
+
 # Initialize the compiler toolchain
 #include(cmake/platform/${RPI_PLATFORM}-toolchain-clang.cmake)
 include(cmake/platform/${RPI_PLATFORM}-toolchain-gcc.cmake)
@@ -28,6 +31,11 @@ find_library(LIBCAMERA_BASE_LIBRARY libcamera-base.so REQUIRED)
 message(STATUS ${CAMERA_INCLUDE_DIRS})
 message(STATUS ${LIBCAMERA_LIBRARY})
 message(STATUS ${LIBCAMERA_BASE_LIBRARY})
+
+include_directories(
+        /usr/aarch64-linux-gnu/include/libcamera/
+        /usr/aarch64-linux-gnu/include/drm/
+)
 
 #add_compile_options(-isystem /usr/include)
 

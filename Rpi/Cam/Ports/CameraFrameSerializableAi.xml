@@ -10,6 +10,6 @@
         <member name="width" type="I32" comment="Image width"/>
         <member name="height" type="I32" comment="Image height"/>
         <member name="encoding" type="I32" comment="Pixel color encoding"/>
-        <member name="buffer_id" type="U64" comment="Internal camera buffer id"/>
+        <member name="buffer_id" type="U32" comment="Internal camera buffer id"/>
     </members>
 </serializable>

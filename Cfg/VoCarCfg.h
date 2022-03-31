@@ -20,7 +20,7 @@ enum
     SPI_POL = 0,
     SPI_PHA = 1,
 
-    CAMERA_BUFFER_N = 4,           //!< Number of concurrent camera frame buffers
+    CAMERA_LIBCAMERA_BUFFER_N = 4,           //!< Internal libcamera buffers
     CAMERA_RAW_WIDTH = 1920,
     CAMERA_RAW_HEIGHT = 1080,
 };

@@ -6,8 +6,8 @@
     <import_port_type>Rpi/Cam/Ports/CamFrameDeallocatePortAi.xml</import_port_type>
 
     <ports>
-        <port name="rawVideo" data_type="Sched" kind="sync_input" max_number="1"/>
-        <port name="rawVideoCapture" data_type="Sched" kind="output" max_number="1"/>
+        <port name="startRaw" data_type="Sched" kind="output" max_number="1"/>
+        <port name="stopRaw" data_type="Sched" kind="output" max_number="1"/>
 
         <port name="frame" data_type="Rpi::CamFrameSend" kind="async_input" max_number="1"/>
         <port name="frameDeallocate" data_type="Rpi::CamFrameDeallocate" kind="output" max_number="1"/>
@@ -28,21 +28,28 @@
     </parameters>
 
     <commands>
-        <command kind="async" opcode="10" mnemonic="START">
+        <command kind="sync" opcode="10" mnemonic="START">
             <comment>
                 Start a raw video stream
                 Runs at the rate of the rate group connected to raw_video
             </comment>
         </command>
 
-        <command kind="async" opcode="11" mnemonic="STOP">
+        <command kind="sync" opcode="11" mnemonic="STOP">
             <comment>Stop the raw video stream</comment>
+        </command>
+
+        <command kind="sync" opcode="12" mnemonic="OPEN">
+            <comment>Open UDP connection to start sending frames</comment>
         </command>
     </commands>
 
     <telemetry>
         <channel id="0" name="FramesPerSecond" data_type="F64">
             <comment>Frame output rate</comment>
+        </channel>
+        <channel id="1" name="PacketsSent" data_type="U32">
+            <comment>Number of UDP packets send to server</comment>
         </channel>
     </telemetry>
 

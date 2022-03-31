@@ -41,7 +41,7 @@ namespace Rpi
         m_acquired = true;
 
         std::unique_ptr<libcamera::CameraConfiguration> config;
-        config = m_camera->generateConfiguration({libcamera::StreamRole::Viewfinder});
+        config = m_camera->generateConfiguration({libcamera::StreamRole::Raw});
         libcamera::Size size(width, height);
         config->at(0).pixelFormat = format;
         config->at(0).size = size;
@@ -301,6 +301,7 @@ namespace Rpi
 
     LibCamera::~LibCamera()
     {
+        stop();
         close();
     }
 }

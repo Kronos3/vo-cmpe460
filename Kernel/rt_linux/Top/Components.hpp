@@ -97,7 +97,4 @@ public:
     void exit();
 };
 
-// Autocoded definition
-void constructRpiRTLinuxArchitecture();
-
 #endif //RPI_COMPONENTS_H

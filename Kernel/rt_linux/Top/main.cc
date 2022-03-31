@@ -4,21 +4,23 @@
 #include <csignal>
 #include "Components.hpp"
 
-Kernel* kernel_main = nullptr;
+Kernel* kernel = nullptr;
 
 static void sighandler(int signum)
 {
     (void) signum;
-    FW_ASSERT(kernel_main);
+    if (!kernel)
+    {
+        return;
+    }
 
     Fw::Logger::logMsg("Exiting tasks\n");
-    kernel_main->exit();
+    kernel->exit();
 }
 
 I32 main()
 {
-    Kernel kernel;
-    kernel_main = &kernel;
+    kernel = new Kernel();
 
     // register signal handlers to exit program
     signal(SIGINT, sighandler);
@@ -26,11 +28,14 @@ I32 main()
 
     Fw::Logger::logMsg("Booting up\n");
 
-    kernel.start();
+    kernel->start();
 
     // Run all functions until a shutdown is invoked
-    kernel.run();
+    kernel->run();
 
     Fw::Logger::logMsg("Shutting down\n");
+    delete kernel;
+    kernel = nullptr;
+
     return 0;
 }
