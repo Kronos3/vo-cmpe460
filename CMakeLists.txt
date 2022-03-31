@@ -16,8 +16,8 @@ set(RPI_PLATFORM rt_linux)
 
 enable_language(C CXX ASM)
 
-add_compile_options(-fsanitize=address -fno-omit-frame-pointer -O1)
-add_link_options(-fsanitize=address)
+#add_compile_options(-fsanitize=address -fno-omit-frame-pointer -O1)
+#add_link_options(-fsanitize=address)
 
 # Initialize the compiler toolchain
 #include(cmake/platform/${RPI_PLATFORM}-toolchain-clang.cmake)
@@ -60,12 +60,12 @@ set(FPRIME_INSTALL_DEST ${PROJECT_SOURCE_DIR})
 set(FPRIME_LIBRARY_LOCATIONS
         ${FPRIME_FRAMEWORK_PATH}
         ${PROJECT_SOURCE_DIR}
-        ${PROJECT_SOURCE_DIR}/Kernel/${RPI_PLATFORM}
+#        ${PROJECT_SOURCE_DIR}/Kernel/${RPI_PLATFORM}
         )
 
-include_directories(
-        ${CMAKE_BINARY_DIR}/Kernel/${RPI_PLATFORM}
-)
+#include_directories(
+#        ${CMAKE_BINARY_DIR}/Kernel/${RPI_PLATFORM}
+#)
 
 ##
 # FPrime instantiation
@@ -79,7 +79,7 @@ include(cmake/fprime_code.cmake)
 
 fprime_enter_root(${CMAKE_CURRENT_LIST_DIR})
 
-add_subdirectory(Kernel)    # Deployment specific drivers
+#add_subdirectory(Kernel)    # Deployment specific drivers
 add_subdirectory(Rpi)   # FSW
 
 cmake_policy(SET CMP0079 NEW)
