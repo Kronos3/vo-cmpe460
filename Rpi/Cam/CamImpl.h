@@ -46,6 +46,7 @@ namespace Rpi
         void streaming_thread();
 
     PRIVATE:
+        std::mutex m_buffer_mutex;
         CamFrame m_buffers[CAMERA_BUFFER_N];
 
         CamListener m_streaming_to;

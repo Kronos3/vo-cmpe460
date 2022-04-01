@@ -31,6 +31,7 @@
 #include <Rpi/VideoStreamer/VideoStreamerImpl.h>
 #include <Rpi/Mot/MotImpl.h>
 #include <Rpi/Vis/VisImpl.h>
+#include <Rpi/FramePipe/FramePipeImpl.h>
 
 #include <Svc/BufferManager/BufferManagerComponentImpl.hpp>
 #include <FprimeProtocol.hpp>
@@ -79,6 +80,7 @@ class Kernel
     Rpi::VideoStreamerImpl videoStreamer;
     Rpi::MotImpl mot;
     Rpi::VisImpl vis;
+    Rpi::FramePipeImpl framePipe;
 
     Svc::FprimeDeframing deframing;
     Svc::FprimeFraming framing;

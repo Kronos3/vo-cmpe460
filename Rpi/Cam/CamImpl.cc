@@ -61,20 +61,20 @@ namespace Rpi
             }
 
             // Get an internal frame buffer
-            auto completed_request = msg.payload;
             CamFrame* buffer = get_buffer();
             if (!buffer)
             {
                 // Ran out of frame buffers
                 tlm_dropped++;
                 tlmWrite_FramesDropped(tlm_dropped);
+                m_camera->queueRequest(msg.payload);
                 return;
             }
 
-            buffer->request = completed_request;
+            buffer->request = msg.payload;
 
             // Get the DMA buffer
-            buffer->buffer = completed_request->buffers[m_camera->RawStream()];
+            buffer->buffer = msg.payload->buffers[m_camera->RawStream()];
             FW_ASSERT(m_buffers->buffer);
 
             // Get the userland pointer
@@ -91,9 +91,30 @@ namespace Rpi
 
     void CamImpl::deallocate_handler(NATIVE_INT_TYPE portNum, CamFrame* frame)
     {
+        m_buffer_mutex.lock();
+
         // Return the buffer back to the camera to request another frame
         m_camera->queueRequest(frame->request);
         frame->clear();
+
+        m_buffer_mutex.unlock();
+    }
+
+    CamFrame* CamImpl::get_buffer()
+    {
+        m_buffer_mutex.lock();
+        for (auto &m_buffer : m_buffers)
+        {
+            if (!m_buffer.in_use)
+            {
+                m_buffer.in_use = true;
+                m_buffer_mutex.unlock();
+                return &m_buffer;
+            }
+        }
+
+        m_buffer_mutex.unlock();
+        return nullptr;
     }
 
     void CamImpl::CAPTURE_cmdHandler(U32 opCode, U32 cmdSeq, const Fw::CmdStringArg &destination)
@@ -118,20 +139,6 @@ namespace Rpi
         m_camera->StartCamera();
 
         cmdResponse_out(opCode, cmdSeq, Fw::COMMAND_OK);
-    }
-
-    CamFrame* CamImpl::get_buffer()
-    {
-        for (auto &m_buffer : m_buffers)
-        {
-            if (!m_buffer.in_use)
-            {
-                m_buffers->in_use = true;
-                return &m_buffer;
-            }
-        }
-
-        return nullptr;
     }
 
     void CamImpl::get_config(CameraConfig &config)

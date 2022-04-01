@@ -23,6 +23,7 @@ namespace Rpi
         if (m_listener == VisListener::NONE)
         {
             frameDeallocate_out(0, frame);
+            ready_out(0, 0);
             return;
         }
 
@@ -30,10 +31,11 @@ namespace Rpi
         if (!m_pipeline)
         {
             frameOut_out(m_listener.e, frame);
+
+            // Tell the frame pipe we are ready for another frame
+            ready_out(0, 0);
             return;
         }
-
-        Fw::Logger::logMsg("vis got frame 0x%x\n", (POINTER_CAST) frame->span.data());
 
         // Build an OpenCV Matrix with the userland memory mapped pointer
         // This memory is MemMapped to the DMA buffer
@@ -49,6 +51,9 @@ namespace Rpi
         // The image should now have our pipeline changes written to it
         // Send it to the listener
         frameOut_out(m_listener.e, frame);
+
+        // Tell the frame pipe we are ready for another frame
+        ready_out(0, 0);
     }
 
     void VisImpl::STREAM_cmdHandler(U32 opCode, U32 cmdSeq, VisListener listener)
@@ -71,6 +76,7 @@ namespace Rpi
     {
         delete m_pipeline;
         m_pipeline = nullptr;
+        m_pipeline_last = nullptr;
         log_ACTIVITY_LO_VisCleared();
         cmdResponse_out(opCode, cmdSeq, Fw::COMMAND_OK);
     }

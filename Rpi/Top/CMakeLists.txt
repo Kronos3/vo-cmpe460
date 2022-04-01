@@ -56,6 +56,7 @@ target_link_libraries(car_exe PUBLIC
         udev
         dw
         unwind
+        unwind-aarch64
         ffi
         camera
         camera-base

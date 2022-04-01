@@ -62,7 +62,8 @@ Kernel::Kernel()
         cam("CAM"),
         videoStreamer("VIDEO_STREAMER"),
         mot("MOT"),
-        vis("VIS")
+        vis("VIS"),
+        framePipe("F-PIPE")
 {
 }
 
@@ -130,6 +131,7 @@ void Kernel::prv_init()
 
     mot.init(0);
     vis.init(QUEUE_DEPTH, 0);
+    framePipe.init(0);
 }
 
 void Kernel::prv_start()
@@ -188,6 +190,7 @@ void Kernel::prv_start()
             Fw::String comm_name = "comm";
             comm.configure(gds_hostname_port, port);
             comm.startSocketTask(comm_name);
+            Os::Task::delay(1000);
         }
     }
 }

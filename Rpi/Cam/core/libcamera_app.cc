@@ -9,6 +9,7 @@
 
 #include "core/frame_info.hpp"
 #include "libcamera_app.h"
+#include "Rpi/VideoStreamer/preview/preview.hpp"
 //#include "core/options.hpp"
 
 #include <fcntl.h>
@@ -114,17 +115,14 @@ namespace Rpi
 //        }
 
         // Finally trim the image size to the largest that the preview can handle.
-//        Size max_size;
-//        preview_->MaxImageSize(max_size.width, max_size.height);
-//        if (max_size.width && max_size.height)
-//        {
-//            size.boundTo(max_size.boundedToAspectRatio(size)).alignDownTo(2, 2);
-//            if (options.verbose)
-//                std::cerr << "Final viewfinder size is " << size.toString() << std::endl;
-//        }
+        Size size(width, height);
+        Size max_size = get_screen_size();
+        if (max_size.width && max_size.height)
+        {
+            size.boundTo(max_size.boundedToAspectRatio(size)).alignDownTo(2, 2);
+        }
 
         // Now we get to override any of the default settings from the options.
-        Size size(width, height);
         configuration_->at(0).pixelFormat = libcamera::formats::YUV420;
         configuration_->at(0).size = size;
 
@@ -135,6 +133,8 @@ namespace Rpi
             configuration_->transform = libcamera::Transform::HFlip * configuration_->transform;
         if (vflip)
             configuration_->transform = libcamera::Transform::VFlip * configuration_->transform;
+
+        configuration_->at(0).bufferCount = 4;
 
         setupCapture();
 
@@ -195,7 +195,10 @@ namespace Rpi
 
     void LibcameraApp::StartCamera()
     {
-        FW_ASSERT(!camera_started_);
+        if (camera_started_)
+        {
+            return;
+        }
 
         // This makes all the Request objects that we shall need.
         makeRequests();

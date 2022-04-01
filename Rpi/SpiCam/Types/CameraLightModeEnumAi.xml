@@ -1,7 +1,0 @@
-<enum namespace="Rpi" name="CameraLightMode">
-    <item name="AUTO" value="0"/>
-    <item name="SUNNY" value="1"/>
-    <item name="CLOUDY" value="2"/>
-    <item name="OFFICE" value="3"/>
-    <item name="HOME" value="4"/>
-</enum>

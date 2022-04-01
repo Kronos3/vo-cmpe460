@@ -5,7 +5,7 @@
 namespace Rpi
 {
     VisPipelineStage::VisPipelineStage()
-    : m_next(nullptr)
+            : m_next(nullptr)
     {
     }
 
@@ -14,7 +14,7 @@ namespace Rpi
         m_next = next;
     }
 
-    void VisPipelineStage::run(cv::Mat& image)
+    void VisPipelineStage::run(cv::Mat &image)
     {
         process(image);
 
@@ -31,14 +31,39 @@ namespace Rpi
     }
 
     VisPoseCalibration::VisPoseCalibration(cv::Size patternSize)
-    : m_patternSize(patternSize)
+            : m_patternSize(patternSize)
     {
     }
 
     void VisPoseCalibration::process(cv::Mat &image)
     {
         std::vector<cv::Point2f> corners;
-        bool patternFound = cv::findChessboardCorners(image, m_patternSize, corners);
-        cv::drawChessboardCorners(image, m_patternSize, corners, patternFound);
+
+        // Downscaling the image will GREATLY improve the frame rate
+        // findChessboardCorners has a convolution step in which the entire
+        // image is scanned meaning it cannot be split into sub-tasks run by
+        // multiple threads
+        cv::Mat resized;
+        cv::Size down_scaled_size = cv::Size(image.cols / 6, image.rows / 6);
+        cv::resize(image, resized, down_scaled_size);
+
+        bool patternFound = cv::findChessboardCorners(resized, m_patternSize, corners);
+
+        if (patternFound)
+        {
+            F32 x_original_center = (resized.cols - 1) / 2.0;
+            F32 y_original_center = (resized.rows - 1) / 2.0;
+
+            F32 x_scaled_center = (image.cols - 1) / 2.0;
+            F32 y_scaled_center = (image.rows - 1) / 2.0;
+
+            // Scale the corners back up the original size frame position
+            for (auto &c: corners)
+            {
+                c.x = (c.x - x_original_center) * 6 + x_scaled_center;
+                c.y = (c.y - y_original_center) * 6 + y_scaled_center;
+            }
+            cv::drawChessboardCorners(image, m_patternSize, corners, patternFound);
+        }
     }
 }

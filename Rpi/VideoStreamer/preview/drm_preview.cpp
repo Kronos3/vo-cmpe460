@@ -72,6 +72,8 @@ private:
 	bool first_time_;
 };
 
+static DrmPreview* this_preview = nullptr;
+
 #define ERRSTR strerror(errno)
 
 void DrmPreview::findCrtc()
@@ -225,6 +227,7 @@ void DrmPreview::findPlane()
 
 DrmPreview::DrmPreview() : Preview(), last_fd_(-1), first_time_(true)
 {
+    this_preview = this;
 	drmfd_ = drmOpen("vc4", NULL);
 	if (drmfd_ < 0)
 		throw std::runtime_error("drmOpen failed: " + std::string(ERRSTR));
@@ -396,6 +399,13 @@ void DrmPreview::Reset()
 	buffers_.clear();
 	last_fd_ = -1;
 	first_time_ = true;
+}
+
+libcamera::Size get_screen_size()
+{
+    libcamera::Size s;
+    this_preview->MaxImageSize(s.width, s.height);
+    return s;
 }
 
 Preview *make_drm_preview()
