@@ -123,15 +123,11 @@ namespace Rpi
         Msg Wait();
         void Quit();
 
-        void PostMessage(MsgType &t, MsgPayload &p);
-
         Stream* GetStream(std::string const &name, StreamInfo* info = nullptr) const;
 
         Stream* RawStream(StreamInfo* info = nullptr) const;
 
         std::vector<libcamera::Span<uint8_t>> Mmap(FrameBuffer* buffer) const;
-
-        void ShowPreview(CompletedRequestPtr &completed_request, Stream* stream);
 
         void SetControls(ControlList &controls);
 
@@ -183,7 +179,7 @@ namespace Rpi
             PreviewItem(CompletedRequestPtr &b, Stream* s) : completed_request(b), stream(s)
             {}
 
-            PreviewItem &operator=(PreviewItem &&other)
+            PreviewItem &operator=(PreviewItem &&other) noexcept
             {
                 completed_request = std::move(other.completed_request);
                 stream = other.stream;

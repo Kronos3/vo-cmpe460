@@ -2,4 +2,5 @@
 <enum namespace="Rpi" name="VisPipe" serialize_type="I32">
     <comment>Vision pipeline stage</comment>
     <item name="POSE_CALIBRATION" value="0"/>
+    <item name="FISHEYE_CALIBRATION" value="1"/>
 </enum>

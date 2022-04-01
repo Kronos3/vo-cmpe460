@@ -31,6 +31,8 @@ namespace Rpi
         void quitStreamThread();
 
     PRIVATE:
+        void parametersLoaded() override;
+
         void get_config(CameraConfig& config);
         void deallocate_handler(NATIVE_INT_TYPE portNum, CamFrame* frame) override;
 

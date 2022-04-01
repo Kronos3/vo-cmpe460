@@ -122,4 +122,11 @@ namespace Rpi
         m_pipeline_last = stage_ptr;
         cmdResponse_out(opCode, cmdSeq, Fw::COMMAND_OK);
     }
+
+    void VisImpl::RECORD_cmdHandler(U32 opCode, U32 cmdSeq, U32 frame_count, const Fw::CmdStringArg &filename)
+    {
+
+
+        cmdResponse_out(opCode, cmdSeq, Fw::COMMAND_OK);
+    }
 }

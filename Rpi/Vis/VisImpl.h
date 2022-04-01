@@ -19,6 +19,7 @@ namespace Rpi
         void STREAM_cmdHandler(U32 opCode, U32 cmdSeq, VisListener listener) override;
         void CLEAR_cmdHandler(U32 opCode, U32 cmdSeq) override;
         void PIPE_cmdHandler(U32 opCode, U32 cmdSeq, Rpi::VisPipe stage) override;
+        void RECORD_cmdHandler(U32 opCode, U32 cmdSeq, U32 frame_count, const Fw::CmdStringArg &filename) override;
 
     PRIVATE:
         VisListener m_listener;

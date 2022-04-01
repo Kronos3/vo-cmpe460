@@ -32,11 +32,11 @@ namespace Rpi
         if (fd < 0)
             return;
 
-        v4l2_capability caps;
+        v4l2_capability caps{};
         int ret = ioctl(fd, VIDIOC_QUERYCAP, &caps);
         close(fd);
 
-        if (ret < 0 || strcmp((char*) caps.driver, "bm2835 mmal"))
+        if (ret < 0 || strcmp((char*) caps.driver, "bm2835 mmal") != 0)
             return;
 
         fprintf(stderr, "ERROR: the system appears to be configured for the legacy camera stack\n");
@@ -294,11 +294,6 @@ namespace Rpi
             throw std::runtime_error("failed to queue request");
     }
 
-    void LibcameraApp::PostMessage(MsgType &t, MsgPayload &p)
-    {
-        msg_queue_.Post(Msg(t, std::move(p)));
-    }
-
     libcamera::Stream* LibcameraApp::GetStream(std::string const &name, StreamInfo* info) const
     {
         auto it = streams_.find(name);
@@ -322,16 +317,6 @@ namespace Rpi
             FW_ASSERT(0 && "Failed to find memmaped memory for DMA");
         }
         return item->second;
-    }
-
-    void LibcameraApp::ShowPreview(CompletedRequestPtr &completed_request, Stream* stream)
-    {
-        std::lock_guard<std::mutex> lock(preview_item_mutex_);
-        if (!preview_item_.stream)
-            preview_item_ = PreviewItem(completed_request, stream); // copy the shared_ptr here
-        else
-            preview_frames_dropped_++;
-        preview_cond_var_.notify_one();
     }
 
     void LibcameraApp::SetControls(ControlList &controls)
@@ -386,7 +371,7 @@ namespace Rpi
                     buffer_size += plane.length;
                     if (i == buffer->planes().size() - 1 || plane.fd.get() != buffer->planes()[i + 1].fd.get())
                     {
-                        void* memory = mmap(NULL, buffer_size, PROT_READ | PROT_WRITE, MAP_SHARED, plane.fd.get(), 0);
+                        void* memory = mmap(nullptr, buffer_size, PROT_READ | PROT_WRITE, MAP_SHARED, plane.fd.get(), 0);
                         std::cout << "mmap(fd=" << plane.fd.get() << ") -> " << (POINTER_CAST) memory << "\n";
                         mapped_buffers_[buffer.get()].push_back(
                                 libcamera::Span<uint8_t>(static_cast<uint8_t*>(memory), buffer_size));
@@ -433,7 +418,7 @@ namespace Rpi
         if (request->status() == Request::RequestCancelled)
             return;
 
-        CompletedRequest* payload = new CompletedRequest(sequence_++, request);
+        auto* payload = new CompletedRequest(sequence_++, request);
         {
             std::lock_guard<std::mutex> lock(completed_requests_mutex_);
             completed_requests_.insert(payload);
