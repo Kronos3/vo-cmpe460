@@ -59,6 +59,7 @@ namespace Rpi
 
         F64 period = delta.getSeconds() + 1e-6 * delta.getUSeconds();
         tlmWrite_FramesPerSecond(1.0 / period);
+        m_last_frame = current_time;
 
         I32 fd = frame->buffer->planes()[0].fd.get();
         m_showing_frames.emplace(fd, frame);

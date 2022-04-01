@@ -218,4 +218,15 @@ namespace Rpi
         m_streaming_to = listener;
         cmdResponse_out(opCode, cmdSeq, Fw::COMMAND_OK);
     }
+
+    void CamImpl::parametersLoaded()
+    {
+        CamComponentBase::parametersLoaded();
+
+        CameraConfig config;
+        get_config(config);
+        log_ACTIVITY_HI_CameraConfiguring();
+        m_camera->ConfigureCamera(config);
+
+    }
 }

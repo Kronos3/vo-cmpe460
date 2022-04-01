@@ -20,4 +20,11 @@
             <arg name="pipe" type="Rpi::VisPipe"/>
         </args>
     </event>
+    <event id="4" name="VisRecord" severity="ACTIVITY_LO"
+           format_string="Recording vision DP from %s to %s">
+        <args>
+            <arg name="stage" type="Rpi::VisPipe"/>
+            <arg name="filename" type="string" size="80"/>
+        </args>
+    </event>
 </events>

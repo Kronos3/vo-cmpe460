@@ -51,11 +51,11 @@ namespace Rpi
 
         if (patternFound)
         {
-            F32 x_original_center = (resized.cols - 1) / 2.0;
-            F32 y_original_center = (resized.rows - 1) / 2.0;
+            F32 x_original_center = (F32)(resized.cols - 1) / (F32)2.0;
+            F32 y_original_center = (F32)(resized.rows - 1) / (F32)2.0;
 
-            F32 x_scaled_center = (image.cols - 1) / 2.0;
-            F32 y_scaled_center = (image.rows - 1) / 2.0;
+            F32 x_scaled_center = (F32)(image.cols - 1) / (F32)2.0;
+            F32 y_scaled_center = (F32)(image.rows - 1) / (F32)2.0;
 
             // Scale the corners back up the original size frame position
             for (auto &c: corners)

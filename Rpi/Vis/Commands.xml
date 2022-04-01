@@ -22,4 +22,21 @@
             <arg name="stage" type="Rpi::VisPipe"/>
         </args>
     </command>
+    <command kind="sync" opcode="3" mnemonic="RECORD">
+        <comment>
+            Record pipeline metadata over a certain period of time
+        </comment>
+        <args>
+            <arg name="frame_count" type="U32">
+                <comment>
+                    Number of frames to record metadata product over
+                </comment>
+            </arg>
+            <arg name="filename" type="string" size="80">
+                <comment>
+                    File to write the data product down to
+                </comment>
+            </arg>
+        </args>
+    </command>
 </commands>
