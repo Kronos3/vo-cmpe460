@@ -29,6 +29,9 @@ namespace Rpi
 
     void VideoStreamerImpl::frame_handler(NATIVE_INT_TYPE portNum, CamFrame* frame)
     {
+        FW_ASSERT(frame);
+        FW_ASSERT(frame->in_use);
+
 #if 0
         cv::Mat& cv_frame = frame.get_image();
 
@@ -84,6 +87,7 @@ namespace Rpi
         }
         else
         {
+            m_showing_frames.erase(f);
             frameDeallocate_out(0, f->second);
         }
     }

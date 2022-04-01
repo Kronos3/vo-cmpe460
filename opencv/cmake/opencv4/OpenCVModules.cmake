@@ -16,7 +16,7 @@ set(CMAKE_IMPORT_FILE_VERSION 1)
 set(_targetsDefined)
 set(_targetsNotDefined)
 set(_expectedTargets)
-foreach(_expectedTarget zlib opencv_core opencv_flann opencv_imgproc opencv_photo opencv_features2d opencv_imgcodecs opencv_calib3d)
+foreach(_expectedTarget zlib opencv_core opencv_flann opencv_imgproc opencv_features2d opencv_imgcodecs opencv_calib3d)
   list(APPEND _expectedTargets ${_expectedTarget})
   if(NOT TARGET ${_expectedTarget})
     list(APPEND _targetsNotDefined ${_expectedTarget})
@@ -72,13 +72,6 @@ add_library(opencv_imgproc STATIC IMPORTED)
 
 set_target_properties(opencv_imgproc PROPERTIES
   INTERFACE_LINK_LIBRARIES "opencv_core;opencv_core;\$<LINK_ONLY:dl>;\$<LINK_ONLY:m>;\$<LINK_ONLY:pthread>;\$<LINK_ONLY:rt>"
-)
-
-# Create imported target opencv_photo
-add_library(opencv_photo STATIC IMPORTED)
-
-set_target_properties(opencv_photo PROPERTIES
-  INTERFACE_LINK_LIBRARIES "opencv_core;opencv_imgproc;opencv_core;opencv_imgproc;\$<LINK_ONLY:dl>;\$<LINK_ONLY:m>;\$<LINK_ONLY:pthread>;\$<LINK_ONLY:rt>"
 )
 
 # Create imported target opencv_features2d

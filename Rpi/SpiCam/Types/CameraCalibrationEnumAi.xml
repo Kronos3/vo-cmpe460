@@ -1,5 +1,0 @@
-<enum namespace="Rpi" name="CameraCalibration">
-    <item name="CONTRAST" value="0"/>
-    <item name="BRIGHTNESS" value="1"/>
-    <item name="COLOR_SATURATION" value="2"/>
-</enum>

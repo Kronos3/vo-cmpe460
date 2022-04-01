@@ -1,0 +1,7 @@
+R00:00:00 cam.STOP
+
+; Set up the frame pathing
+R00:00:00 cam.STREAM VIDEO_STREAMER
+
+; Start the stream
+R00:00:00 cam.START

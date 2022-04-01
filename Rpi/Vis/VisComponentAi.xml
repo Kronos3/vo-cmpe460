@@ -13,9 +13,11 @@
     <import_dictionary>Rpi/Vis/Parameters.xml</import_dictionary>
 
     <ports>
-        <port name="frame" data_type="Rpi::CamFrameSend" kind="async_input" max_number="1"/>
+        <port name="ready" data_type="Sched" kind="output"/>
+
+        <port name="frame" data_type="Rpi::CamFrameSend" kind="async_input"/>
         <port name="frameOut" data_type="Rpi::CamFrameSend" kind="output" max_number="2"/>
-        <port name="frameDeallocate" data_type="Rpi::CamFrameDeallocate" kind="output" max_number="1"/>
+        <port name="frameDeallocate" data_type="Rpi::CamFrameDeallocate" kind="output"/>
     </ports>
 
 </component>

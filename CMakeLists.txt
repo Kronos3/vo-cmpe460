@@ -20,7 +20,7 @@ enable_language(C CXX ASM)
 #include(cmake/platform/${RPI_PLATFORM}-toolchain-clang.cmake)
 include(cmake/platform/${RPI_PLATFORM}-toolchain-gcc.cmake)
 
-#add_compile_options(-fsanitize=addressss -fno-omit-frame-pointer -O1)
+#add_compile_options(-fsanitize=address -fno-omit-frame-pointer -O1)
 #add_link_options(-fsanitize=address)
 
 #find_package(OpenCV REQUIRED)

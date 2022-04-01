@@ -13,6 +13,7 @@
 #include <libcamera/base/span.h>
 
 #include "Rpi/Cam/core/stream_info.hpp"
+#include "libcamera/geometry.h"
 
 class Preview
 {
@@ -39,5 +40,7 @@ public:
 protected:
 	DoneCallback done_callback_;
 };
+
+libcamera::Size get_screen_size();
 
 Preview *make_drm_preview();
