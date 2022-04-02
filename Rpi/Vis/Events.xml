@@ -41,4 +41,16 @@
             <arg name="filename" type="string" size="80"/>
         </args>
     </event>
+    <event id="8" name="VisCalibrationLoaded" severity="ACTIVITY_LO"
+           format_string="Vis loaded calibration file %s">
+        <args>
+            <arg name="filename" type="string" size="80"/>
+        </args>
+    </event>
+    <event id="9" name="VisCalibrationFailed" severity="WARNING_HI"
+           format_string="Vis failed to load calibration file %s">
+        <args>
+            <arg name="filename" type="string" size="80"/>
+        </args>
+    </event>
 </events>

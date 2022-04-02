@@ -21,9 +21,19 @@ namespace Rpi
 
     void VisImpl::frame_handler(NATIVE_INT_TYPE portNum, CamFrame* frame)
     {
+        // We need to extract this atomically because recording requests
+        // may be cancelled asynchronously by commanding
+        m_state_mutex.lock();
+        VisListener listener = m_listener;
+        Fw::String target_file = m_recording_file;
+        bool recording_is_file = m_is_file_recording;
+        auto pipe_start = m_pipeline;           // hold a reference while we are using it
+        auto recording = m_recording;
+        m_state_mutex.unLock();
+
         // If we don't have a listener we need to drop the frame
         // It is up to us to return the frame to the camera
-        if (m_listener == VisListener::NONE)
+        if (listener == VisListener::NONE)
         {
             frameDeallocate_out(0, frame);
             ready_out(0, 0);
@@ -31,9 +41,9 @@ namespace Rpi
         }
 
         // If we don't have a pipeline, Vis is just a passthrough
-        if (!m_pipeline)
+        if (!pipe_start)
         {
-            frameOut_out(m_listener.e, frame);
+            frameOut_out(listener.e, frame);
 
             // Tell the frame pipe we are ready for another frame
             ready_out(0, 0);
@@ -48,26 +58,17 @@ namespace Rpi
                       frame->span.data(),
                       frame->info.stride);
 
-        // We need to extract this atomically because recording requests
-        // may be cancelled asynchronously by commanding
-        m_state_mutex.lock();
-        Fw::String target_file = m_recording_file;
-        bool recording_is_file = m_is_file_recording;
-        VisPipelineStage* pipe_start = m_pipeline;
-        VisRecord* recording = m_recording;
-        m_state_mutex.unLock();
-
         // Pass the frame through the transformation pipeline
-        bool pipe_status = pipe_start->run(image, recording);
+        bool pipe_status = pipe_start->run(image, recording.get());
         if (!pipe_status)
         {
             // TODO(tumbar) telemetry
         }
 
         m_state_mutex.lock();
-        VisRecord* recording_new = m_recording;
+        VisRecord* recording_new = m_recording.get();
 
-        if (recording_new == recording)
+        if (recording_new == recording.get())
         {
             // The request has not been cancelled
             // It is still running
@@ -88,21 +89,15 @@ namespace Rpi
                     }
                 }
 
-                delete recording;
                 clear_recording();
             }
-        }
-        else
-        {
-            // The recording has been cancelled
-            delete recording;
         }
 
         m_state_mutex.unLock();
 
         // The image should now have our pipeline changes written to it
         // Send it to the listener
-        frameOut_out(m_listener.e, frame);
+        frameOut_out(listener.e, frame);
 
         // Tell the frame pipe we are ready for another frame
         ready_out(0, 0);
@@ -110,6 +105,7 @@ namespace Rpi
 
     void VisImpl::STREAM_cmdHandler(U32 opCode, U32 cmdSeq, VisListener listener)
     {
+        m_state_mutex.lock();
         if (m_listener != VisListener::NONE)
         {
             log_ACTIVITY_LO_VisStopping(m_listener);
@@ -121,17 +117,16 @@ namespace Rpi
         }
 
         m_listener = listener;
+        m_state_mutex.unLock();
         cmdResponse_out(opCode, cmdSeq, Fw::COMMAND_OK);
     }
 
     void VisImpl::CLEAR_cmdHandler(U32 opCode, U32 cmdSeq)
     {
         m_state_mutex.lock();
-        delete m_pipeline;
         m_pipeline = nullptr;
         m_pipeline_last = nullptr;
 
-        delete m_recording;
         clear_recording();
 
         m_state_mutex.unLock();
@@ -168,6 +163,26 @@ namespace Rpi
                 stage_ptr = new VisPoseCalculation(calib_size);
             }
                 break;
+            case VisPipe::UNDISTORT:
+            {
+                Fw::ParamString s = paramGet_CALIBRATION(valid);
+                auto* undistort = new VisUndistort();
+
+                Fw::LogStringArg arg(s);
+                if (undistort->read(s.toChar()))
+                {
+                    log_ACTIVITY_LO_VisCalibrationLoaded(arg);
+                    stage_ptr = undistort;
+                }
+                else
+                {
+                    delete undistort;
+                    log_WARNING_HI_VisCalibrationFailed(arg);
+                    cmdResponse_out(opCode, cmdSeq, Fw::COMMAND_EXECUTION_ERROR);
+                    return;
+                }
+            }
+                break;
             default:
                 FW_ASSERT(0 && "Invalid stage", stage.e);
         }
@@ -180,7 +195,7 @@ namespace Rpi
             // This is the first item
             // We can add it directly to the member
             FW_ASSERT(!m_pipeline_last);
-            m_pipeline = stage_ptr;
+            m_pipeline = std::shared_ptr<VisPipelineStage>(stage_ptr);
         }
         else
         {
@@ -215,7 +230,7 @@ namespace Rpi
         switch(record_type)
         {
             case CALIBRATION_RECORD:
-                m_recording = new CalibrationRecord(frame_count);
+                m_recording = std::make_shared<CalibrationRecord>(frame_count);
                 break;
             default:
             case VisRecordType_MAX:

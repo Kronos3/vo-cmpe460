@@ -204,4 +204,38 @@ namespace Rpi
 
         return true;
     }
+
+    VisUndistort::VisUndistort()
+    : calibration(0)
+    {
+    }
+
+    bool VisUndistort::read(const char* calibration_file)
+    {
+        bool read_status = calibration.read(calibration_file);
+        if (!read_status) return false;
+
+        cv::Size s(CAMERA_RAW_WIDTH, CAMERA_RAW_HEIGHT);
+        new_k = cv::getOptimalNewCameraMatrix(
+                calibration.k, calibration.d,
+                s, 1, s, &roi);
+
+        cv::Mat r;
+        cv::initUndistortRectifyMap(calibration.k, calibration.d,
+                                    r, new_k, s, CV_32FC1,
+                                    map1, map2);
+
+        return true;
+    }
+
+    bool VisUndistort::process(cv::Mat &image, VisRecord* recording)
+    {
+        // TODO(tumbar) Do we pull this out the constructor?
+
+//        cv::remap(image, image, map1, map2, cv::INTER_NEAREST);
+        cv::Laplacian(image, undistorted, CV_32F);
+        std::memcpy(image.data, undistorted.data, image.total());
+
+        return true;
+    }
 }

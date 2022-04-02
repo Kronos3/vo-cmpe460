@@ -5,6 +5,8 @@ project(VO-CMPE460)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD 17)
 
+option(SANITIZER_BUILD "Build FSW with AddressSanitizer" OFF)
+
 set(AARCH 64)
 set(RASPPI 3)
 set(ARM_ALLOW_MULTI_CORE OFF)
@@ -20,8 +22,10 @@ enable_language(C CXX ASM)
 #include(cmake/platform/${RPI_PLATFORM}-toolchain-clang.cmake)
 include(cmake/platform/${RPI_PLATFORM}-toolchain-gcc.cmake)
 
-#add_compile_options(-fsanitize=address -fno-omit-frame-pointer -O1)
-#add_link_options(-fsanitize=address)
+if (SANITIZER_BUILD)
+    add_compile_options(-fsanitize=address -fno-omit-frame-pointer -O1)
+    add_link_options(-fsanitize=address)
+endif()
 
 #find_package(OpenCV REQUIRED)
 #include_directories(${OpenCV_INCLUDE_DIRS})

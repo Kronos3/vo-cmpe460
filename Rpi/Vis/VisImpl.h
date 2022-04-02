@@ -34,8 +34,8 @@ namespace Rpi
         bool m_is_file_recording;
         Fw::String m_recording_file;
 
-        VisRecord* m_recording;
-        VisPipelineStage* m_pipeline;
+        std::shared_ptr<VisRecord> m_recording;
+        std::shared_ptr<VisPipelineStage> m_pipeline;
         VisPipelineStage* m_pipeline_last;
     };
 }

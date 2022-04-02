@@ -57,6 +57,24 @@ namespace Rpi
         cv::Size m_pattern_size;
         std::vector<cv::Point3f> m_object_points;
     };
+
+    class VisUndistort : public VisPipelineStage
+    {
+    public:
+        explicit VisUndistort();
+
+        bool read(const char* calibration_file);
+        bool process(cv::Mat &image, VisRecord *recording) override;
+
+    private:
+        cv::Mat undistorted;
+        CalibrationRecord calibration;
+        cv::Rect roi;
+        cv::Mat new_k;
+
+        cv::Mat map1;
+        cv::Mat map2;
+    };
 }
 
 #endif //VO_CMPE460_VISPIPELINE_H
