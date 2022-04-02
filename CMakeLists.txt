@@ -7,9 +7,8 @@ set(CMAKE_CXX_STANDARD 17)
 
 option(SANITIZER_BUILD "Build FSW with AddressSanitizer" OFF)
 
-set(AARCH 64)
+set(AARCH 32)
 set(RASPPI 3)
-set(ARM_ALLOW_MULTI_CORE OFF)
 set(FLOAT_ABI "hard")
 
 # 'bare_metal' will build Circle + FPrime layer
