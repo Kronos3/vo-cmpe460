@@ -13,7 +13,7 @@ namespace Rpi
         VisPipelineStage();
         virtual ~VisPipelineStage();
 
-        void run(cv::Mat& image, VisRecord* recording);
+        bool run(cv::Mat& image, VisRecord* recording);
         void chain(VisPipelineStage* next);
 
     protected:
@@ -23,7 +23,7 @@ namespace Rpi
          * @param image the image to transform
          * @param recording currently running recording
          */
-        virtual void process(cv::Mat& image, VisRecord* recording) = 0;
+        virtual bool process(cv::Mat& image, VisRecord* recording) = 0;
 
     private:
         VisPipelineStage* m_next;
@@ -43,7 +43,7 @@ namespace Rpi
         explicit VisFindChessBoard(cv::Size patternSize);
 
     private:
-        void process(cv::Mat &image, VisRecord* recording) override;
+        bool process(cv::Mat &image, VisRecord* recording) override;
         cv::Size m_patternSize;
     };
 
@@ -52,11 +52,10 @@ namespace Rpi
     public:
         explicit VisPoseCalculation(cv::Size patternSize);
 
-        void process(cv::Mat &image, VisRecord *recording) override;
+        bool process(cv::Mat &image, VisRecord *recording) override;
     private:
         cv::Size m_pattern_size;
         std::vector<cv::Point3f> m_object_points;
-        std::vector<std::vector<cv::Point2f>> m_image_points;
     };
 }
 

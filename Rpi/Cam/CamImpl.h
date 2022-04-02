@@ -37,7 +37,6 @@ namespace Rpi
         void deallocate_handler(NATIVE_INT_TYPE portNum, CamFrame* frame) override;
 
         void CAPTURE_cmdHandler(U32 opCode, U32 cmdSeq, const Fw::CmdStringArg &destination) override;
-        void CONFIGURE_cmdHandler(U32 opCode, U32 cmdSeq) override;
         void STOP_cmdHandler(U32 opCode, U32 cmdSeq) override;
         void START_cmdHandler(U32 opCode, U32 cmdSeq) override;
         void STREAM_cmdHandler(U32 opCode, U32 cmdSeq, CamListener listener) override;

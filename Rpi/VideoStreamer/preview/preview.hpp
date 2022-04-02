@@ -24,7 +24,6 @@ public:
 	virtual ~Preview() {}
 	// This is where the application sets the callback it gets whenever the viewfinder
 	// is no longer displaying the buffer and it can be safely recycled.
-	void SetDoneCallback(DoneCallback callback) { done_callback_ = callback; }
 	virtual void SetInfoText(const std::string &text) {}
 	// Display the buffer. You get given the fd back in the BufferDoneCallback
 	// once its available for re-use.
@@ -36,9 +35,6 @@ public:
 	virtual bool Quit() { return false; }
 	// Return the maximum image size allowed.
 	virtual void MaxImageSize(unsigned int &w, unsigned int &h) const = 0;
-
-protected:
-	DoneCallback done_callback_;
 };
 
 libcamera::Size get_screen_size();

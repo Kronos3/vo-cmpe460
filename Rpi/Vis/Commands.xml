@@ -22,13 +22,21 @@
             <arg name="stage" type="Rpi::VisPipe"/>
         </args>
     </command>
-    <command kind="sync" opcode="3" mnemonic="RECORD">
+    <command kind="sync" opcode="3" mnemonic="RECORD_FILE">
         <comment>
             Record pipeline metadata over a certain period of time. Fails
             if there is a running recording request in progress. Use RECORD_TIMEOUT
             wait for the recording to clear.
         </comment>
         <args>
+            <arg name="record_type" type="ENUM">
+                <comment>
+                    Record type to pass through the components
+                </comment>
+                <enum name="VisRecordType">
+                    <item name="CALIBRATION_RECORD"/>
+                </enum>
+            </arg>
             <arg name="frame_count" type="U32">
                 <comment>
                     Number of frames to record metadata product over
@@ -41,11 +49,10 @@
             </arg>
         </args>
     </command>
-    <command kind="sync" opcode="4" mnemonic="RECORD_TIMEOUT">
+    <command kind="sync" opcode="4" mnemonic="RECORD_CANCEL_IF_RUNNING">
         <comment>
             Checks if there is still a recording running, if so
-            cancel the recording and exit with failure. Otherwise,
-            just exit with success.
+            cancel the recording. Always exists with success
         </comment>
     </command>
 </commands>
