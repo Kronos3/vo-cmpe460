@@ -3,6 +3,7 @@
 
 #include <Rpi/Vis/VisComponentAc.hpp>
 #include <Rpi/Vis/VisPipeline.h>
+#include "VisRecord.h"
 
 namespace Rpi
 {
@@ -20,10 +21,14 @@ namespace Rpi
         void CLEAR_cmdHandler(U32 opCode, U32 cmdSeq) override;
         void PIPE_cmdHandler(U32 opCode, U32 cmdSeq, Rpi::VisPipe stage) override;
         void RECORD_cmdHandler(U32 opCode, U32 cmdSeq, U32 frame_count, const Fw::CmdStringArg &filename) override;
+        void RECORD_TIMEOUT_cmdHandler(U32 opCode, U32 cmdSeq) override;
 
     PRIVATE:
         VisListener m_listener;
 
+        Os::Mutex m_state_mutex;
+
+        VisRecord* m_recording;
         VisPipelineStage* m_pipeline;
         VisPipelineStage* m_pipeline_last;
     };

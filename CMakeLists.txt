@@ -11,7 +11,7 @@ set(ARM_ALLOW_MULTI_CORE OFF)
 set(FLOAT_ABI "hard")
 
 # 'bare_metal' will build Circle + FPrime layer
-# 'rt_linux' will run on Preempt RT Linux and build /sbin/init
+# 'rt_linux' will run on Preempt RT Linux with DietPi in /fsw/fsw
 set(RPI_PLATFORM rt_linux)
 
 enable_language(C CXX ASM)

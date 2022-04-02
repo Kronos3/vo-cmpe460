@@ -21,9 +21,30 @@
         </args>
     </event>
     <event id="4" name="VisRecord" severity="ACTIVITY_LO"
-           format_string="Recording vision DP from %s to %s">
+           format_string="Vis recording starting for DP %s">
         <args>
-            <arg name="stage" type="Rpi::VisPipe"/>
+            <arg name="filename" type="string" size="80"/>
+        </args>
+    </event>
+    <event id="5" name="VisAlreadyRecording" severity="WARNING_LO"
+           format_string="Vis is already recording a vision data product">
+    </event>
+    <event id="6" name="VisRecordFinished" severity="ACTIVITY_LO"
+           format_string="Vis recording finished for DP %s">
+        <args>
+            <arg name="filename" type="string" size="80"/>
+        </args>
+    </event>
+    <event id="7" name="VisRecordWriteFailed" severity="WARNING_LO"
+           format_string="Failed to write Vis DP %s error=%d">
+        <args>
+            <arg name="filename" type="string" size="80"/>
+            <arg name="error" type="U32"/>
+        </args>
+    </event>
+    <event id="8" name="VisRecordWritten" severity="ACTIVITY_LO"
+           format_string="Wrote Vis DP %s">
+        <args>
             <arg name="filename" type="string" size="80"/>
         </args>
     </event>
