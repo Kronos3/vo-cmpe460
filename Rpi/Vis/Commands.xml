@@ -24,7 +24,9 @@
     </command>
     <command kind="sync" opcode="3" mnemonic="RECORD">
         <comment>
-            Record pipeline metadata over a certain period of time
+            Record pipeline metadata over a certain period of time. Fails
+            if there is a running recording request in progress. Use RECORD_TIMEOUT
+            wait for the recording to clear.
         </comment>
         <args>
             <arg name="frame_count" type="U32">
@@ -38,5 +40,12 @@
                 </comment>
             </arg>
         </args>
+    </command>
+    <command kind="sync" opcode="4" mnemonic="RECORD_TIMEOUT">
+        <comment>
+            Checks if there is still a recording running, if so
+            cancel the recording and exit with failure. Otherwise,
+            just exit with success.
+        </comment>
     </command>
 </commands>

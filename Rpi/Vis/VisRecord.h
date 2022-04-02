@@ -10,38 +10,61 @@
 
 #include <unordered_map>
 #include <vector>
+#include "Fw/Buffer/Buffer.hpp"
+#include <memory>
 
 namespace Rpi
 {
     class VisRecord
     {
     public:
+        using Label = U16;
+
+        /**
+         * Write constructor
+         * @param num_frame number of frame to record over
+         * @param filename to write record down to
+         */
         VisRecord(U32 num_frame, const Fw::String& filename);
+
+        /**
+         * Read constructor
+         * @param filename filename to read from
+         */
+        explicit VisRecord(const Fw::String& filename);
+
         Os::File::Status write() const;
+        Os::File::Status read();
 
         enum Type
         {
-            CHESSBOARD_CORNER,      //!< 2F point
+            CHESSBOARD_CORNERS,     //!< 2F point
             FISHEYE_K,              //!< 3 x 3 matrix
             FISHEYE_D,              //!< 4 x 1 matrix
             VisRecord_Max,
         };
 
         bool is_finished() const;
-        U32 get_count() const;
-        U32 operator++();
+        U32 get_current() const;
+        U32 get_total() const;
+        void retry();
+        bool frame_failed() const;
+        void increment();
 
-        void append(Type type, std::vector<F32> record);
+        const Fw::StringBase& get_filename() const;
+
+        void append(Label label, Type type, std::unique_ptr<F32[]> data, U32 length);
+        F32* get(Label label, Type type, U32& length) const;
 
     private:
-        using FrameRecord = std::unordered_map<Type, std::vector<F32>>;
-
+        std::unordered_map<U32, std::unique_ptr<F32[]>> m_records;
+        std::unordered_map<U32, U32> m_length;
         Fw::String m_filename;
         U32 m_current_frame;
         U32 m_num_frames;
-        std::vector<FrameRecord> m_frames;
-    };
 
+        bool m_retry_frame;
+    };
 }
 
 #endif //VO_CMPE460_VISRECORD_H
