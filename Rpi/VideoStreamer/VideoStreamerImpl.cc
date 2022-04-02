@@ -8,12 +8,12 @@ namespace Rpi
 
     VideoStreamerImpl::VideoStreamerImpl(const char* compName)
     : VideoStreamerComponentBase(compName),
+      m_showing(nullptr),
       m_preview(make_drm_preview()),
       tlm_packets_sent(0)
     {
         FW_ASSERT(!this_ && "Only one VideoStreamer may exist");
         this_ = this;
-        m_preview->SetDoneCallback(VideoStreamerImpl::handle_done_s);
     }
 
     VideoStreamerImpl::~VideoStreamerImpl()
@@ -62,8 +62,15 @@ namespace Rpi
         m_last_frame = current_time;
 
         I32 fd = frame->buffer->planes()[0].fd.get();
-        m_showing_frames.emplace(fd, frame);
+
         m_preview->Show(fd, frame->span, frame->info);
+
+        if (m_showing)
+        {
+            frameDeallocate_out(0, m_showing);
+        }
+
+        m_showing = frame;
     }
 
     void VideoStreamerImpl::OPEN_cmdHandler(U32 opCode, U32 cmdSeq)
@@ -76,26 +83,5 @@ namespace Rpi
         ActiveComponentBase::preamble();
 
         m_last_frame = getTime();
-    }
-
-    void VideoStreamerImpl::handle_done(I32 fd)
-    {
-        auto f = m_showing_frames.find(fd);
-        if (f == m_showing_frames.end())
-        {
-            // We already freed this?
-            // TODO(tumbar) Warning
-        }
-        else
-        {
-            m_showing_frames.erase(f);
-            frameDeallocate_out(0, f->second);
-        }
-    }
-
-    void VideoStreamerImpl::handle_done_s(I32 fd)
-    {
-        FW_ASSERT(this_);
-        this_->handle_done(fd);
     }
 }

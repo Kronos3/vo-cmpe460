@@ -1,6 +1,7 @@
 
 #include "VisPipeline.h"
 #include "Assert.hpp"
+#include "VoCarCfg.h"
 #include <opencv2/opencv.hpp>
 
 namespace Rpi
@@ -15,14 +16,21 @@ namespace Rpi
         m_next = next;
     }
 
-    void VisPipelineStage::run(cv::Mat &image, VisRecord* recording)
+    bool VisPipelineStage::run(cv::Mat &image, VisRecord* recording)
     {
-        process(image, recording);
+        bool status = process(image, recording);
+        if (!status)
+        {
+            // The pipeline failed
+            return false;
+        }
 
         if (m_next)
         {
-            m_next->run(image, recording);
+            return m_next->run(image, recording);
         }
+
+        return true;
     }
 
     VisPipelineStage::~VisPipelineStage()
@@ -36,7 +44,7 @@ namespace Rpi
     {
     }
 
-    void VisFindChessBoard::process(cv::Mat &image, VisRecord* recording)
+    bool VisFindChessBoard::process(cv::Mat &image, VisRecord* recording)
     {
         std::vector<cv::Point2f> corners;
 
@@ -45,60 +53,48 @@ namespace Rpi
         // image is scanned meaning it cannot be split into sub-tasks run by
         // multiple threads
         cv::Mat resized;
-        cv::Size down_scaled_size = cv::Size(image.cols / 6, image.rows / 6);
+        cv::Size down_scaled_size = cv::Size(image.cols / VIS_CHESSBOARD_DOWNSCALE, image.rows / VIS_CHESSBOARD_DOWNSCALE);
         cv::resize(image, resized, down_scaled_size);
 
         bool patternFound = cv::findChessboardCorners(resized, m_patternSize, corners);
-
-        if (patternFound)
+        if (!patternFound)
         {
-            F32 x_original_center = (F32)(resized.cols - 1) / (F32)2.0;
-            F32 y_original_center = (F32)(resized.rows - 1) / (F32)2.0;
-
-            F32 x_scaled_center = (F32)(image.cols - 1) / (F32)2.0;
-            F32 y_scaled_center = (F32)(image.rows - 1) / (F32)2.0;
-
-            // Scale the corners back up the original size frame position
-            for (auto &c: corners)
-            {
-                c.x = (c.x - x_original_center) * 6 + x_scaled_center;
-                c.y = (c.y - y_original_center) * 6 + y_scaled_center;
-            }
-
-            // TODO(tumbar) Subpixel refinement of corners
-            //    Much faster than the chessboard algorithm because its localized per point
-            //    Refinement should be done on the full scale image for the best accuracy
-
-            cv::drawChessboardCorners(image, m_patternSize, corners, patternFound);
-
-            if (recording)
-            {
-                // Serialize the data into an opaque array
-                std::unique_ptr<F32[]> f_ptr = std::unique_ptr<F32[]>(new F32[2 * corners.size()]);
-
-                // Encode the points
-                for (U32 i = 0; i < corners.size(); i++)
-                {
-                    f_ptr[i * 2] = corners.at(i).x;
-                    f_ptr[i * 2 + 1] = corners.at(i).y;
-                }
-
-                // Place the corners into the recording
-                recording->append(recording->get_current(),
-                                  VisRecord::CHESSBOARD_CORNERS,
-                                  std::move(f_ptr),
-                                  2 * corners.size());
-            }
+            return false;
         }
-        else
+
+        F32 x_original_center = (F32)(resized.cols - 1) / (F32)2.0;
+        F32 y_original_center = (F32)(resized.rows - 1) / (F32)2.0;
+
+        F32 x_scaled_center = (F32)(image.cols - 1) / (F32)2.0;
+        F32 y_scaled_center = (F32)(image.rows - 1) / (F32)2.0;
+
+        // Scale the corners back up the original size frame position
+        for (auto &c: corners)
         {
-            if (recording)
-            {
-                // Make sure the frame doesn't get incremented
-                // This is not considered a valid frame
-                recording->retry();
-            }
+            c.x = (c.x - x_original_center) * VIS_CHESSBOARD_DOWNSCALE + x_scaled_center;
+            c.y = (c.y - y_original_center) * VIS_CHESSBOARD_DOWNSCALE + y_scaled_center;
         }
+
+        // Run sub-pixel refinement on the corners found previously
+        // This needs to be down on the original image to get as much quality as possible
+        // This algorithm operates on the local areas around the rough point found findChessboardCorners()
+        cornerSubPix(image, corners, m_patternSize, cv::Size(-1, -1),
+                     cv::TermCriteria(cv::TermCriteria::EPS | cv::TermCriteria::MAX_ITER, 30, 0.1));
+
+        cv::drawChessboardCorners(image, m_patternSize, corners, patternFound);
+
+        if (recording)
+        {
+            auto* record = dynamic_cast<CalibrationRecord*>(recording);
+            if (record == nullptr)
+            {
+                return false;
+            }
+
+            record->corners.push_back(std::move(corners));
+        }
+
+        return true;
     }
 
     VisPoseCalculation::VisPoseCalculation(cv::Size patternSize)
@@ -120,81 +116,92 @@ namespace Rpi
         }
     }
 
-    void VisPoseCalculation::process(cv::Mat &image, VisRecord* recording)
+    bool VisPoseCalculation::process(cv::Mat &image, VisRecord* recording)
     {
         if (!recording)
         {
             // This stage does nothing is we don't get points from
             // the FindChessBoard pipe
-            return;
+            return false;
         }
 
-        if (recording->frame_failed())
+        auto* record = dynamic_cast<CalibrationRecord*>(recording);
+        if (record == nullptr)
         {
-            // This is garbage frame
-            // We couldn't find chessboard points on this frame
-            return;
+            // The recording being passed through the pipeline not correct
+            // We can't continue
+            return false;
         }
-
-        U32 length;
-        F32* corners_raw = recording->get(recording->get_current(),
-                                          VisRecord::CHESSBOARD_CORNERS,
-                                          length);
-
-        if (corners_raw == nullptr)
-        {
-            // We couldn't find the entry in the recording?
-            // This means VisFindChessBoard somewhere before this
-            // pipe. This is garbage.
-            return;
-        }
-
-        // Every point has two entries
-        FW_ASSERT(length > 0 && length % 2 == 0, length);
 
         // Label offset from the corner point
         cv::Point2f c(0.1, 0.1);
 
-        // Load the points from the previous pipe
-        std::vector<cv::Point2f> corners;
-        for (U32 i = 0; i < length / 2; i++)
+        // Place labels on the corners from the most recent frame
+        for (const auto& p : record->corners.back())
         {
-            cv::Point2f p;
-            p.x = corners_raw[i * 2];
-            p.y = corners_raw[i * 2 + 1];
-            corners.push_back(p);
-
             std::ostringstream ss;
             ss << "("
-               << m_object_points[i].x
+               << p.x
                << ","
-               << m_object_points[i].y
+               << p.y
                << ")";
 
-            cv::putText(image, ss.str(), p + c, cv::FONT_HERSHEY_PLAIN, 3, CV_RGB(0, 255, 0), 3);
+            cv::putText(image, ss.str(), p + c, cv::FONT_HERSHEY_PLAIN, 1, CV_RGB(0, 255, 0), 3);
         }
 
-        m_image_points.emplace_back(std::move(corners));
-
         // Camera calibration will be calculated on the final frame
-        if (recording->get_current() + 1 == recording->get_total())
+        if (record->done())
         {
             // All the object points are the same
             // The calibration board should stay motionless during calibration
             std::vector<std::vector<cv::Point3f>> objpoints;
-            for (U32 i = 0; i < m_image_points.size(); i++)
+            for (U32 i = 0; i < record->corners.size(); i++)
+            {
                 objpoints.push_back(m_object_points);
+            }
 
-            cv::Mat K;              //!< Camera matrix
-            cv::Mat D;              //!< Distortion matrix
-            std::vector<F32> R;     //!< Rotation vector
-            std::vector<F32> T;     //!< Translation vector
-            cv::calibrateCamera(m_object_points, m_image_points,
+            // Calibrate the camera calibration into the record
+            // We don't want to dump the r/t transform matrices directly
+            // into the record yet. This is because this is actually a vector
+            // of cv::Mat where each item corresponds to the pose transform for every
+            // frame. The average of these should be passed to the record
+            // The intrinsic and distortion matrices are over all the frames
+            std::vector<cv::Mat> r_all;
+            std::vector<cv::Mat> t_all;
+
+            I32 flag = 0;
+            flag |= cv::CALIB_FIX_K4;
+            flag |= cv::CALIB_FIX_K5;
+
+            cv::calibrateCamera(objpoints,
+                                record->corners,
                                 m_pattern_size,
-                                K, D, R, T);
+                                record->k,
+                                record->d,
+                                r_all,
+                                t_all,
+                                flag);
 
-            // Make sure our data makes sense
+            // Find the average of these transforms
+            record->r = cv::Mat::zeros(r_all.at(0).rows,
+                                       r_all.at(0).cols,
+                                       r_all.at(0).type());
+            for (const auto& r_i : r_all)
+            {
+                record->r += r_i;
+            }
+            record->r = (1.0 / (F64)r_all.size()) * record->r;
 
+            record->t = cv::Mat::zeros(t_all.at(0).rows,
+                                       t_all.at(0).cols,
+                                       t_all.at(0).type());
+            for (const auto& t_i : t_all)
+            {
+                record->t += t_i;
+            }
+            record->t = (1.0 / (F64)t_all.size()) * record->t;
         }
+
+        return true;
     }
 }

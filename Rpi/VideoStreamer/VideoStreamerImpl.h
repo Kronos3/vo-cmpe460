@@ -27,12 +27,8 @@ namespace Rpi
         void frame_handler(NATIVE_INT_TYPE portNum, Rpi::CamFrame* frame) override;
         void OPEN_cmdHandler(U32 opCode, U32 cmdSeq) override;
 
-        void handle_done(I32 fd);
-        static void handle_done_s(I32 fd);
-
     PRIVATE:
-        std::unordered_map<I32, CamFrame*> m_showing_frames;
-//        UDPSocket* m_socket;            //!< UDP socket client
+        CamFrame* m_showing;
 
         Preview* m_preview;
         cv::Mat m_compressed_frame;     //!< Resized frame given video parameters

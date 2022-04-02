@@ -3,180 +3,63 @@
 //
 
 #include "VisRecord.h"
-#include <Fw/Types/Assert.hpp>
+#include "opencv2/core/persistence.hpp"
+#include "Logger.hpp"
 
 namespace Rpi
 {
-    // Make sure we can fit ids in U8
-    FW_STATIC_ASSERT(VisRecord::VisRecord_Max < (1 << (sizeof(U8) * 8)));
-
-    VisRecord::VisRecord(U32 num_frame, const Fw::String &filename)
-    : m_filename(filename), m_current_frame(0), m_num_frames(num_frame),
-      m_retry_frame(false)
+    CalibrationRecord::CalibrationRecord(U32 num_frame)
+    : total_frames(num_frame)
     {
     }
 
-    bool VisRecord::is_finished() const
+    bool CalibrationRecord::write(const char* filename) const
     {
-        return m_current_frame >= m_num_frames;
-    }
-
-    U32 VisRecord::get_current() const
-    {
-        return m_current_frame;
-    }
-
-    U32 VisRecord::get_total() const
-    {
-        return m_num_frames;
-    }
-
-    void VisRecord::retry()
-    {
-        m_retry_frame = true;
-    }
-
-    bool VisRecord::frame_failed() const
-    {
-        return m_retry_frame;
-    }
-
-    void VisRecord::increment()
-    {
-        if (m_retry_frame)
+        try
         {
-            m_retry_frame = false;
+            cv::FileStorage fs(filename, cv::FileStorage::WRITE);
+            fs << "K" << k;
+            fs << "D" << d;
+            fs << "R" << r;
+            fs << "T" << t;
+            fs.release();
+
+            return true;
         }
-        else
+        catch (const std::exception& e)
         {
-            m_current_frame++;
+            Fw::Logger::logMsg("Failed to write DP to %s: %s",
+                               (POINTER_CAST)filename,
+                               (POINTER_CAST)e.what());
+            return false;
         }
     }
 
-    void VisRecord::append(Label label,
-                           VisRecord::Type type,
-                           std::unique_ptr<F32[]> data,
-                           U32 length)
+    bool CalibrationRecord::read(const char* filename)
     {
-        U32 key = (label << 16) & (type & 0xFFFF);
-        m_records[key] = std::move(data);
-        m_length[key] = length;
-    }
-
-    Os::File::Status VisRecord::write() const
-    {
-        Os::File fp;
-        Os::File::Status status = fp.open(m_filename.toChar(), Os::File::OPEN_CREATE);
-        if (status != Os::File::OP_OK)
-            return status;
-
-        // Write the file header describing the metadata
-        U32 num_records = m_records.size();
-        NATIVE_INT_TYPE size = sizeof(num_records);
-        status = fp.write(&num_records, size);
-        if (status != Os::File::OP_OK)
-            return status;
-
-        size = sizeof(m_num_frames);
-        status = fp.write(&m_num_frames, size);
-        if (status != Os::File::OP_OK)
-            return status;
-
-        for (const auto& record : m_records)
+        try
         {
-            U32 id = record.first;
-            size = sizeof(id);
-            status = fp.write(&id, size);
-            if (status != Os::File::OP_OK)
-                return status;
+            cv::FileStorage fs(filename, cv::FileStorage::READ);
+            fs["K"] >> k;
+            fs["D"] >> d;
+            fs["R"] >> r;
+            fs["T"] >> t;
+            fs.release();
 
-            U32 length = m_length.at(id);
-            size = sizeof(length);
-            status = fp.write(&length, size);
-            if (status != Os::File::OP_OK)
-                return status;
-
-            size = (NATIVE_INT_TYPE)(sizeof(F32) * length);
-            status = fp.write(m_records.at(id).get(), size);
-            if (status != Os::File::OP_OK)
-                return status;
+            return true;
         }
-
-        fp.close();
-        return Os::File::OP_OK;
-    }
-
-    VisRecord::VisRecord(const Fw::String &filename)
-    : m_filename(filename),
-    m_current_frame(0),
-    m_num_frames(0),
-    m_retry_frame(false)
-    {
-    }
-
-    Os::File::Status VisRecord::read()
-    {
-        Os::File fp;
-        Os::File::Status status = fp.open(m_filename.toChar(), Os::File::OPEN_READ);
-        if (status != Os::File::OP_OK)
-            return status;
-
-        // Read the file header describing the metadata
-        U32 num_records = m_records.size();
-        NATIVE_INT_TYPE size = sizeof(num_records);
-        status = fp.read(&num_records, size);
-        if (status != Os::File::OP_OK)
-            return status;
-
-        size = sizeof(m_num_frames);
-        status = fp.read(&m_num_frames, size);
-        if (status != Os::File::OP_OK)
-            return status;
-
-        for (U32 record_i = 0; record_i < num_records; record_i++)
+        catch (const std::exception& e)
         {
-            U32 id;
-            size = sizeof(id);
-            status = fp.read(&id, size);
-            if (status != Os::File::OP_OK)
-                return status;
+            Fw::Logger::logMsg("Failed to write DP to %s: %s",
+                               (POINTER_CAST)filename,
+                               (POINTER_CAST)e.what());
 
-            U32 length;
-            size = sizeof(length);
-            status = fp.read(&length, size);
-            if (status != Os::File::OP_OK)
-                return status;
-
-            std::unique_ptr<F32[]> ptr = std::unique_ptr<F32[]>(new F32[length]);
-            size = (NATIVE_INT_TYPE)(sizeof(F32) * length);
-            status = fp.read(ptr.get(), size);
-            if (status != Os::File::OP_OK)
-                return status;
-
-            m_records[id] = std::move(ptr);
-            m_length[id] = length;
+            return false;
         }
-
-        fp.close();
-        return Os::File::OP_OK;
     }
 
-    F32* VisRecord::get(Label label, VisRecord::Type type, U32& length) const
+    bool CalibrationRecord::done() const
     {
-        U32 key = (label << 16) & (type & 0xFFFF);
-        if (m_records.find(key) == m_records.end())
-        {
-            // Not found
-            length = 0;
-            return nullptr;
-        }
-
-        length = m_length.at(key);
-        return m_records.at(key).get();
-    }
-
-    const Fw::StringBase &VisRecord::get_filename() const
-    {
-        return m_filename;
+        return corners.size() >= total_frames;
     }
 }

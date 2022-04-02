@@ -9,24 +9,18 @@
             <arg name="destination" type="string" size="80"/>
         </args>
     </command>
-    <command kind="sync" opcode="1" mnemonic="CONFIGURE">
-        <comment>
-            Load all changes to camera parameters into the camera
-            This will restart the camera stream
-        </comment>
-    </command>
-    <command kind="sync" opcode="2" mnemonic="STOP">
+    <command kind="sync" opcode="1" mnemonic="STOP">
         <comment>
             Stop the libcamera thread. This lower power
             usage as the camera will not be actively streaming
         </comment>
     </command>
-    <command kind="sync" opcode="3" mnemonic="START">
+    <command kind="sync" opcode="2" mnemonic="START">
         <comment>
             Start the camera thread
         </comment>
     </command>
-    <command kind="sync" opcode="4" mnemonic="STREAM">
+    <command kind="sync" opcode="3" mnemonic="STREAM">
         <comment>
             Set the listener the camera should send frames to
         </comment>

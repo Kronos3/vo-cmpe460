@@ -20,13 +20,19 @@ namespace Rpi
         void STREAM_cmdHandler(U32 opCode, U32 cmdSeq, VisListener listener) override;
         void CLEAR_cmdHandler(U32 opCode, U32 cmdSeq) override;
         void PIPE_cmdHandler(U32 opCode, U32 cmdSeq, Rpi::VisPipe stage) override;
-        void RECORD_cmdHandler(U32 opCode, U32 cmdSeq, U32 frame_count, const Fw::CmdStringArg &filename) override;
-        void RECORD_TIMEOUT_cmdHandler(U32 opCode, U32 cmdSeq) override;
+        void RECORD_FILE_cmdHandler(U32 opCode, U32 cmdSeq, VisRecordType record_type, U32 frame_count, const Fw::CmdStringArg &filename) override;
+        void RECORD_CANCEL_IF_RUNNING_cmdHandler(U32 opCode, U32 cmdSeq) override;
+
+    PRIVATE:
+        void clear_recording();
 
     PRIVATE:
         VisListener m_listener;
 
         Os::Mutex m_state_mutex;
+
+        bool m_is_file_recording;
+        Fw::String m_recording_file;
 
         VisRecord* m_recording;
         VisPipelineStage* m_pipeline;

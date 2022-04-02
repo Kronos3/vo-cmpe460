@@ -387,8 +387,6 @@ void DrmPreview::Show(int fd, libcamera::Span<uint8_t> span, StreamInfo const &i
 	if (drmModeSetPlane(drmfd_, planeId_, crtcId_, buffer.fb_handle, 0, x_off + x_, y_off + y_, w, h, 0, 0,
 						buffer.info.width << 16, buffer.info.height << 16))
 		throw std::runtime_error("drmModeSetPlane failed: " + std::string(ERRSTR));
-	if (last_fd_ >= 0)
-		done_callback_(last_fd_);
 	last_fd_ = fd;
 }
 

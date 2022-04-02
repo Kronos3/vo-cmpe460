@@ -24,11 +24,6 @@ namespace Rpi
         m_camera->OpenCamera(0);
         m_camera->ConfigureCameraStream(width, height, rotation,
                                         hflip, vflip);
-
-        log_ACTIVITY_HI_CameraConfiguring();
-        CameraConfig cfg;
-        get_config(cfg);
-        m_camera->ConfigureCamera(cfg);
     }
 
     CamImpl::~CamImpl()
@@ -123,24 +118,6 @@ namespace Rpi
         cmdResponse_out(opCode, cmdSeq, Fw::COMMAND_EXECUTION_ERROR);
     }
 
-    void CamImpl::CONFIGURE_cmdHandler(U32 opCode, U32 cmdSeq)
-    {
-        // Grab the configuration from the parameter database
-
-        log_ACTIVITY_HI_CameraStopping();
-        m_camera->StopCamera();
-
-        CameraConfig config;
-        get_config(config);
-        log_ACTIVITY_HI_CameraConfiguring();
-        m_camera->ConfigureCamera(config);
-
-        log_ACTIVITY_HI_CameraStarting();
-        m_camera->StartCamera();
-
-        cmdResponse_out(opCode, cmdSeq, Fw::COMMAND_OK);
-    }
-
     void CamImpl::get_config(CameraConfig &config)
     {
         Fw::ParamValid valid;
@@ -198,6 +175,13 @@ namespace Rpi
 
     void CamImpl::START_cmdHandler(U32 opCode, U32 cmdSeq)
     {
+        m_camera->StopCamera();
+
+        CameraConfig config;
+        get_config(config);
+        log_ACTIVITY_HI_CameraConfiguring();
+        m_camera->ConfigureCamera(config);
+
         log_ACTIVITY_HI_CameraStarting();
         m_camera->StartCamera();
         cmdResponse_out(opCode, cmdSeq, Fw::COMMAND_OK);
