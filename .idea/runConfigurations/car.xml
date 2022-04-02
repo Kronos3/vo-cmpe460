@@ -1,0 +1,7 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="car" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="$CMakeCurrentBuildDir$/$CMakeCurrentTargetName$" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" WORKING_DIR="file://$ContentRoot$" PASS_PARENT_ENVS_2="true" PROJECT_NAME="VO-CMPE460" TARGET_NAME="car" CONFIG_NAME="debug" RUN_PATH="scripts/upload_manual.sh">
+    <method v="2">
+      <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+    </method>
+  </configuration>
+</component>
