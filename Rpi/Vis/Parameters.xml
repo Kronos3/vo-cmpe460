@@ -12,4 +12,10 @@
             Number of inner corner rows for chessboard calibration
         </comment>
     </parameter>
+    <parameter id="2" set_opcode="5" save_opcode="6"
+               name="CALIBRATION" data_type="string" size="40" default="/fsw/data/pose_calibration.dat">
+        <comment>
+            Location of the pose calibration file storing K, D, R, and T
+        </comment>
+    </parameter>
 </parameters>
