@@ -1,6 +1,4 @@
-
 #include "VisPipeline.h"
-#include "Assert.hpp"
 #include "VoCarCfg.h"
 #include "CamFrame.h"
 #include <opencv2/opencv.hpp>
@@ -216,16 +214,14 @@ namespace Rpi
         return true;
     }
 
-    VisGradiant::VisGradiant()
-    {
-    }
+    VisGradiant::VisGradiant() = default;
 
     bool VisGradiant::process(CamFrame* frame, cv::Mat &image, VisRecord* recording)
     {
 
 
         U8 value = 128;
-        I32 num = (frame->info.stride * frame->info.height) / 2;
+        U32 num = (frame->info.stride * frame->info.height) / 2;
         I32 scale = 1;
         I32 delta = 0;
         I32 ddepth = CV_16S;
@@ -237,7 +233,7 @@ namespace Rpi
                    0, 0, cv::INTER_NEAREST // faster than lerping
                    );
 
-        // Remove noise by blurring with a Gaussian filter ( kernal size = 3 )
+        // Remove noise by blurring with a Gaussian filter ( kernel size = 3 )
         GaussianBlur(smaller, smaller, cv::Size(3, 3), 0, 0, cv::BORDER_DEFAULT);
 
         cv::Sobel(smaller, grad_x, ddepth, 1, 0, 1, scale, delta, cv::BORDER_DEFAULT);
