@@ -1,0 +1,20 @@
+R00:00:00 cam.STOP
+
+; Set up the frame pathing
+R00:00:00 cam.STREAM VIS                ; Raw camera stream goes to vision
+R00:00:00 vis.STREAM VIDEO_STREAMER     ; Vision annotated stream goes to the screen/udp
+
+R00:00:00 videoStreamer.DISPLAY BOTH
+R00:00:00 videoStreamer.OPEN
+
+; Set up the vision pipeline
+R00:00:00 vis.CLEAR
+
+; Gradient will detect edges in the image by doing the following
+;   1. Gaussian blur
+;   2. Laplacian filter to find derivative
+;   3. Absolute value of derivative with some scaling factor
+R00:00:00 vis.PIPE GRADIENT
+
+; Start the stream
+R00:00:00 cam.START

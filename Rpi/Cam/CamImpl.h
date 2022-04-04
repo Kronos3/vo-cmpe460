@@ -34,7 +34,7 @@ namespace Rpi
         void parametersLoaded() override;
 
         void get_config(CameraConfig& config);
-        void deallocate_handler(NATIVE_INT_TYPE portNum, CamFrame* frame) override;
+//        void deallocate_handler(NATIVE_INT_TYPE portNum, CamFrame* frame) override;
 
         void CAPTURE_cmdHandler(U32 opCode, U32 cmdSeq, const Fw::CmdStringArg &destination) override;
         void STOP_cmdHandler(U32 opCode, U32 cmdSeq) override;

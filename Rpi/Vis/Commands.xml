@@ -49,10 +49,9 @@
             </arg>
         </args>
     </command>
-    <command kind="sync" opcode="4" mnemonic="RECORD_CANCEL_IF_RUNNING">
+    <command kind="sync" opcode="4" mnemonic="RECORD_WAIT">
         <comment>
-            Checks if there is still a recording running, if so
-            cancel the recording. Always exists with success
+            Waits until recording has finished
         </comment>
     </command>
 </commands>

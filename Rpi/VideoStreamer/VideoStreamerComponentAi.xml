@@ -1,16 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component name="VideoStreamer" kind="active" namespace="Rpi">
 
-    <import_port_type>Svc/Sched/SchedPortAi.xml</import_port_type>
     <import_port_type>Rpi/Cam/Ports/CamFrameSendPortAi.xml</import_port_type>
-    <import_port_type>Rpi/Cam/Ports/CamFrameDeallocatePortAi.xml</import_port_type>
+<!--    <import_port_type>Rpi/Cam/Ports/CamFrameDeallocatePortAi.xml</import_port_type>-->
 
     <ports>
-        <port name="startRaw" data_type="Sched" kind="output" max_number="1"/>
-        <port name="stopRaw" data_type="Sched" kind="output" max_number="1"/>
-
         <port name="frame" data_type="Rpi::CamFrameSend" kind="async_input" max_number="1"/>
-        <port name="frameDeallocate" data_type="Rpi::CamFrameDeallocate" kind="output" max_number="1"/>
+<!--        <port name="frameDeallocate" data_type="Rpi::CamFrameDeallocate" kind="output" max_number="1"/>-->
     </ports>
 
     <parameters>
@@ -18,18 +14,23 @@
                    name="HOSTNAME" data_type="string" size="32" default="192.168.1.220"/>
         <parameter id="1" set_opcode="2" save_opcode="3"
                    name="PORT" data_type="U16" default="8000"/>
-
-        <parameter id="2" set_opcode="4" save_opcode="5"
-                   name="VIDEO_WIDTH" data_type="I32" default="1920"/>
-        <parameter id="3" set_opcode="6" save_opcode="7"
-                   name="VIDEO_HEIGHT" data_type="I32" default="1080"/>
-        <parameter id="4" set_opcode="8" save_opcode="9"
-                   name="VIDEO_QUALITY" data_type="I32" default="80"/>
     </parameters>
 
     <commands>
-        <command kind="sync" opcode="10" mnemonic="OPEN">
+        <command kind="async" opcode="10" mnemonic="OPEN">
             <comment>Open UDP connection to start sending frames</comment>
+        </command>
+        <command kind="async" opcode="11" mnemonic="DISPLAY">
+            <comment>Where to stream video to</comment>
+            <args>
+                <arg name="where" type="ENUM">
+                    <enum name="DisplayLocation">
+                        <item name="HDMI"/>
+                        <item name="UDP"/>
+                        <item name="BOTH"/>
+                    </enum>
+                </arg>
+            </args>
         </command>
     </commands>
 
@@ -37,7 +38,10 @@
         <channel id="0" name="FramesPerSecond" data_type="F64">
             <comment>Frame output rate</comment>
         </channel>
-        <channel id="1" name="PacketsSent" data_type="U32">
+        <channel id="1" name="FramesTotal" data_type="U32">
+            <comment>Total number of frames sent to the video streamer</comment>
+        </channel>
+        <channel id="2" name="PacketsSent" data_type="U32">
             <comment>Number of UDP packets send to server</comment>
         </channel>
     </telemetry>

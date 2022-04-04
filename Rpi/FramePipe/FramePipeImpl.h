@@ -6,6 +6,7 @@
 #define VO_CMPE460_FRAMEPIPEIMPL_H
 
 #include <Rpi/FramePipe/FramePipeComponentAc.hpp>
+#include <Os/Mutex.hpp>
 
 namespace Rpi
 {
@@ -20,6 +21,7 @@ namespace Rpi
         void frame_handler(NATIVE_INT_TYPE portNum, CamFrame *frame) override;
         void ready_handler(NATIVE_INT_TYPE portNum, NATIVE_UINT_TYPE context) override;
 
+        Os::Mutex ready_mutex;
         bool m_frame_ready[NUM_FRAME_INPUT_PORTS];
     };
 }

@@ -2,7 +2,7 @@
 <component name="Cam" kind="passive" namespace="Rpi">
 
     <import_port_type>Rpi/Cam/Ports/CamFrameSendPortAi.xml</import_port_type>
-    <import_port_type>Rpi/Cam/Ports/CamFrameDeallocatePortAi.xml</import_port_type>
+<!--    <import_port_type>Rpi/Cam/Ports/CamFrameDeallocatePortAi.xml</import_port_type>-->
 
     <import_enum_type>Rpi/Cam/CamListenerEnumAi.xml</import_enum_type>
 
@@ -20,7 +20,7 @@
             2. VideoStreamer    - Stream raw video
          -->
         <port name="frame" data_type="Rpi::CamFrameSend" kind="output" max_number="2"/>
-        <port name="deallocate" data_type="Rpi::CamFrameDeallocate" kind="sync_input"/>
+<!--        <port name="deallocate" data_type="Rpi::CamFrameDeallocate" kind="sync_input"/>-->
     </ports>
 
 </component>
