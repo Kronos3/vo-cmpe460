@@ -3,5 +3,5 @@
     <comment>Vision pipeline stage</comment>
     <item name="FIND_CHESSBOARD" value="0"/>
     <item name="POSE_CALCULATION" value="1"/>
-    <item name="UNDISTORT" value="2"/>
+    <item name="GRADIENT" value="2"/>
 </enum>

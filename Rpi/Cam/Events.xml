@@ -8,11 +8,11 @@
             <arg name="destination" type="string" size="80" />
         </args>
     </event>
-    <event id="2" name="CameraStarting" severity="ACTIVITY_HI"
+    <event id="2" name="CameraStarting" severity="ACTIVITY_LO"
            format_string="Camera is starting"/>
-    <event id="3" name="CameraStopping" severity="ACTIVITY_HI"
+    <event id="3" name="CameraStopping" severity="ACTIVITY_LO"
            format_string="Camera is stopping"/>
-    <event id="4" name="CameraConfiguring" severity="ACTIVITY_HI"
+    <event id="4" name="CameraConfiguring" severity="ACTIVITY_LO"
            format_string="Configuration sending to camera"/>
 
     <event id="5" name="CameraStreamStarting" severity="ACTIVITY_LO"

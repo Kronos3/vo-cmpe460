@@ -21,6 +21,11 @@ namespace Rpi
     {
         CamComponentBase::init(instance);
 
+        for (auto& buffer : m_buffers)
+        {
+            buffer.register_callback([this](CompletedRequest* cr) { m_camera->queueRequest(cr); });
+        }
+
         m_camera->OpenCamera(0);
         m_camera->ConfigureCameraStream(width, height, rotation,
                                         hflip, vflip);
@@ -70,29 +75,18 @@ namespace Rpi
 
             // Get the DMA buffer
             buffer->buffer = msg.payload->buffers[m_camera->RawStream()];
-            FW_ASSERT(m_buffers->buffer);
+            FW_ASSERT(buffer->buffer);
 
             // Get the userland pointer
-            buffer->span = m_camera->Mmap(m_buffers->buffer)[0];
+            buffer->span = m_camera->Mmap(buffer->buffer)[0];
             buffer->info = m_camera->GetStreamInfo(m_camera->RawStream());
 
             // Send the frame to the requester on the same port
             frame_out(m_streaming_to.e, buffer);
         }
 
-        log_ACTIVITY_HI_CameraStopping();
+        log_ACTIVITY_LO_CameraStopping();
         m_camera->StopCamera();
-    }
-
-    void CamImpl::deallocate_handler(NATIVE_INT_TYPE portNum, CamFrame* frame)
-    {
-        m_buffer_mutex.lock();
-
-        // Return the buffer back to the camera to request another frame
-        m_camera->queueRequest(frame->request);
-        frame->clear();
-
-        m_buffer_mutex.unlock();
     }
 
     CamFrame* CamImpl::get_buffer()
@@ -100,9 +94,9 @@ namespace Rpi
         m_buffer_mutex.lock();
         for (auto &m_buffer : m_buffers)
         {
-            if (!m_buffer.in_use)
+            if (!m_buffer.in_use())
             {
-                m_buffer.in_use = true;
+                m_buffer.incref();
                 m_buffer_mutex.unlock();
                 return &m_buffer;
             }
@@ -168,7 +162,7 @@ namespace Rpi
 
     void CamImpl::STOP_cmdHandler(U32 opCode, U32 cmdSeq)
     {
-        log_ACTIVITY_HI_CameraStopping();
+        log_ACTIVITY_LO_CameraStopping();
         m_camera->StopCamera();
         cmdResponse_out(opCode, cmdSeq, Fw::COMMAND_OK);
     }
@@ -179,10 +173,10 @@ namespace Rpi
 
         CameraConfig config;
         get_config(config);
-        log_ACTIVITY_HI_CameraConfiguring();
+        log_ACTIVITY_LO_CameraConfiguring();
         m_camera->ConfigureCamera(config);
 
-        log_ACTIVITY_HI_CameraStarting();
+        log_ACTIVITY_LO_CameraStarting();
         m_camera->StartCamera();
         cmdResponse_out(opCode, cmdSeq, Fw::COMMAND_OK);
     }
@@ -209,7 +203,7 @@ namespace Rpi
 
         CameraConfig config;
         get_config(config);
-        log_ACTIVITY_HI_CameraConfiguring();
+        log_ACTIVITY_LO_CameraConfiguring();
         m_camera->ConfigureCamera(config);
 
     }

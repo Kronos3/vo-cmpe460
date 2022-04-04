@@ -4,6 +4,7 @@
 #include <Fw/Types/BasicTypes.hpp>
 #include <opencv2/core/mat.hpp>
 #include "VisRecord.h"
+#include <Rpi/Cam/Ports/CamFrame.h>
 
 namespace Rpi
 {
@@ -13,7 +14,7 @@ namespace Rpi
         VisPipelineStage();
         virtual ~VisPipelineStage();
 
-        bool run(cv::Mat& image, VisRecord* recording);
+        bool run(CamFrame* frame, cv::Mat& image, VisRecord* recording);
         void chain(VisPipelineStage* next);
 
     protected:
@@ -23,7 +24,7 @@ namespace Rpi
          * @param image the image to transform
          * @param recording currently running recording
          */
-        virtual bool process(cv::Mat& image, VisRecord* recording) = 0;
+        virtual bool process(CamFrame* frame, cv::Mat& image, VisRecord* recording) = 0;
 
     private:
         VisPipelineStage* m_next;
@@ -43,7 +44,8 @@ namespace Rpi
         explicit VisFindChessBoard(cv::Size patternSize);
 
     private:
-        bool process(cv::Mat &image, VisRecord* recording) override;
+        cv::Mat resized;
+        bool process(CamFrame* frame, cv::Mat &image, VisRecord* recording) override;
         cv::Size m_patternSize;
     };
 
@@ -52,28 +54,22 @@ namespace Rpi
     public:
         explicit VisPoseCalculation(cv::Size patternSize);
 
-        bool process(cv::Mat &image, VisRecord *recording) override;
+        bool process(CamFrame* frame, cv::Mat &image, VisRecord *recording) override;
     private:
         cv::Size m_pattern_size;
         std::vector<cv::Point3f> m_object_points;
     };
 
-    class VisUndistort : public VisPipelineStage
+    class VisGradiant : public VisPipelineStage
     {
     public:
-        explicit VisUndistort();
+        explicit VisGradiant();
 
-        bool read(const char* calibration_file);
-        bool process(cv::Mat &image, VisRecord *recording) override;
+        bool process(CamFrame* frame, cv::Mat &image, VisRecord *recording) override;
 
     private:
-        cv::Mat undistorted;
-        CalibrationRecord calibration;
-        cv::Rect roi;
-        cv::Mat new_k;
-
-        cv::Mat map1;
-        cv::Mat map2;
+        cv::Mat grad_x, grad_y;
+        cv::Mat smaller;
     };
 }
 

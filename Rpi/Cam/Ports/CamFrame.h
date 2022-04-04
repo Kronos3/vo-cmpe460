@@ -7,30 +7,35 @@
 #include <Rpi/Cam/core/stream_info.hpp>
 #include <Rpi/Cam/core/completed_request.hpp>
 
+#include <functional>
+#include <atomic>
+
 namespace Rpi
 {
     class CamFrame
     {
     public:
-        CamFrame() = default;
+        CamFrame();
 
         CamFrame(const CamFrame&) = delete;
         CamFrame(CamFrame&&) = delete;
 
-        bool in_use = false;
-        CompletedRequest* request = nullptr;
+        CompletedRequest* request;
         StreamInfo info;
-        libcamera::FrameBuffer* buffer = nullptr;
+        libcamera::FrameBuffer* buffer;
         libcamera::Span<U8> span;
 
-        void clear()
-        {
-            in_use = false;
-            request = nullptr;
-            buffer = nullptr;
-            size_t s = 0;
-            span = libcamera::Span<U8>(nullptr, s);
-        }
+        void incref();
+        void decref();
+        bool in_use() const;
+
+        void register_callback(std::function<void(CompletedRequest*)> return_cb);
+
+    private:
+        std::function<void(CompletedRequest*)> return_buffer;
+        std::atomic<I32> ref_count;
+
+        void clear();
     };
 }
 

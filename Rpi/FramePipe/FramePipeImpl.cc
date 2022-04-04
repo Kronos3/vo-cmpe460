@@ -20,10 +20,11 @@ namespace Rpi
 
     void FramePipeImpl::frame_handler(NATIVE_INT_TYPE portNum, CamFrame* frame)
     {
+        ready_mutex.lock();
         if (!m_frame_ready[portNum])
         {
             // TODO(tumbar) Tlm on dropped frames
-            frameDeallocate_out(0, frame);
+            frame->decref();
         }
         else
         {
@@ -32,6 +33,7 @@ namespace Rpi
             m_frame_ready[portNum] = false;
             frameOut_out(portNum, frame);
         }
+        ready_mutex.unLock();
     }
 
     void FramePipeImpl::ready_handler(NATIVE_INT_TYPE portNum, NATIVE_UINT_TYPE context)

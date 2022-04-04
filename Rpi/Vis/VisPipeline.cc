@@ -2,7 +2,9 @@
 #include "VisPipeline.h"
 #include "Assert.hpp"
 #include "VoCarCfg.h"
+#include "CamFrame.h"
 #include <opencv2/opencv.hpp>
+#include <Fw/Logger/Logger.hpp>
 
 namespace Rpi
 {
@@ -16,9 +18,9 @@ namespace Rpi
         m_next = next;
     }
 
-    bool VisPipelineStage::run(cv::Mat &image, VisRecord* recording)
+    bool VisPipelineStage::run(CamFrame* frame, cv::Mat &image, VisRecord* recording)
     {
-        bool status = process(image, recording);
+        bool status = process(frame, image, recording);
         if (!status)
         {
             // The pipeline failed
@@ -27,7 +29,7 @@ namespace Rpi
 
         if (m_next)
         {
-            return m_next->run(image, recording);
+            return m_next->run(frame, image, recording);
         }
 
         return true;
@@ -40,11 +42,11 @@ namespace Rpi
     }
 
     VisFindChessBoard::VisFindChessBoard(cv::Size patternSize)
-    : m_patternSize(patternSize)
+            : m_patternSize(patternSize)
     {
     }
 
-    bool VisFindChessBoard::process(cv::Mat &image, VisRecord* recording)
+    bool VisFindChessBoard::process(CamFrame* frame, cv::Mat &image, VisRecord* recording)
     {
         std::vector<cv::Point2f> corners;
 
@@ -52,21 +54,24 @@ namespace Rpi
         // findChessboardCorners has a convolution step in which the entire
         // image is scanned meaning it cannot be split into sub-tasks run by
         // multiple threads
-        cv::Mat resized;
-        cv::Size down_scaled_size = cv::Size(image.cols / VIS_CHESSBOARD_DOWNSCALE, image.rows / VIS_CHESSBOARD_DOWNSCALE);
+        cv::Size down_scaled_size = cv::Size(image.cols / VIS_CHESSBOARD_DOWNSCALE,
+                                             image.rows / VIS_CHESSBOARD_DOWNSCALE);
         cv::resize(image, resized, down_scaled_size);
 
-        bool patternFound = cv::findChessboardCorners(resized, m_patternSize, corners);
+        bool patternFound = cv::findChessboardCorners(resized, m_patternSize, corners,
+                                                      cv::CALIB_CB_ADAPTIVE_THRESH +
+                                                      cv::CALIB_CB_NORMALIZE_IMAGE
+                                                      + cv::CALIB_CB_FAST_CHECK);
         if (!patternFound)
         {
             return false;
         }
 
-        F32 x_original_center = (F32)(resized.cols - 1) / (F32)2.0;
-        F32 y_original_center = (F32)(resized.rows - 1) / (F32)2.0;
+        F32 x_original_center = (F32) (resized.cols - 1) / (F32) 2.0;
+        F32 y_original_center = (F32) (resized.rows - 1) / (F32) 2.0;
 
-        F32 x_scaled_center = (F32)(image.cols - 1) / (F32)2.0;
-        F32 y_scaled_center = (F32)(image.rows - 1) / (F32)2.0;
+        F32 x_scaled_center = (F32) (image.cols - 1) / (F32) 2.0;
+        F32 y_scaled_center = (F32) (image.rows - 1) / (F32) 2.0;
 
         // Scale the corners back up the original size frame position
         for (auto &c: corners)
@@ -83,6 +88,28 @@ namespace Rpi
 
         cv::drawChessboardCorners(image, m_patternSize, corners, patternFound);
 
+
+
+        // Label offset from the corner point
+        cv::Point2f c(0.1, 0.1);
+
+        // Label the object coordinates on each frame
+        auto iter = corners.begin();
+        for (I32 i = 0; i < m_patternSize.height; i++)
+        {
+            for (I32 j = 0; j < m_patternSize.width; j++)
+            {
+                std::ostringstream ss;
+                cv::Point3f object_point;
+                object_point.x = ((F32) m_patternSize.width / (F32) 2.0) - (F32)j - (F32)0.5;
+                object_point.y = ((F32) m_patternSize.height) - (F32) (i + 1);
+                object_point.z = 0.0;  // Calibration board is sitting on the floor
+                ss << "(" << object_point.x << "," << object_point.y << ")";
+                cv::putText(image, ss.str(), *iter + c, cv::FONT_HERSHEY_PLAIN, 1, CV_RGB(0, 255, 0), 2);
+                iter++;
+            }
+        }
+
         if (recording)
         {
             auto* record = dynamic_cast<CalibrationRecord*>(recording);
@@ -98,7 +125,7 @@ namespace Rpi
     }
 
     VisPoseCalculation::VisPoseCalculation(cv::Size patternSize)
-    : m_pattern_size(patternSize)
+            : m_pattern_size(patternSize)
     {
         // Object points vector needs to ordered with the top left pointer coming first
         // Points are row major
@@ -108,15 +135,15 @@ namespace Rpi
             for (I32 j = 0; j < patternSize.width; j++)
             {
                 cv::Point3f p;
-                p.x = ((F32)patternSize.width / (F32)2.0) - (F32)j;
-                p.y = ((F32)patternSize.height / (F32)2.0) - (F32)i;
+                p.x = ((F32) patternSize.width / (F32) 2.0) - (F32)j - (F32)0.5;
+                p.y = ((F32) patternSize.height) - (F32) (i + 1);
                 p.z = 0.0;  // Calibration board is sitting on the floor
                 m_object_points.push_back(p);
             }
         }
     }
 
-    bool VisPoseCalculation::process(cv::Mat &image, VisRecord* recording)
+    bool VisPoseCalculation::process(CamFrame* frame, cv::Mat &image, VisRecord* recording)
     {
         if (!recording)
         {
@@ -131,22 +158,6 @@ namespace Rpi
             // The recording being passed through the pipeline not correct
             // We can't continue
             return false;
-        }
-
-        // Label offset from the corner point
-        cv::Point2f c(0.1, 0.1);
-
-        // Place labels on the corners from the most recent frame
-        for (const auto& p : record->corners.back())
-        {
-            std::ostringstream ss;
-            ss << "("
-               << p.x
-               << ","
-               << p.y
-               << ")";
-
-            cv::putText(image, ss.str(), p + c, cv::FONT_HERSHEY_PLAIN, 1, CV_RGB(0, 255, 0), 3);
         }
 
         // Camera calibration will be calculated on the final frame
@@ -186,56 +197,61 @@ namespace Rpi
             record->r = cv::Mat::zeros(r_all.at(0).rows,
                                        r_all.at(0).cols,
                                        r_all.at(0).type());
-            for (const auto& r_i : r_all)
+            for (const auto &r_i: r_all)
             {
                 record->r += r_i;
             }
-            record->r = (1.0 / (F64)r_all.size()) * record->r;
+            record->r = (1.0 / (F64) r_all.size()) * record->r;
 
             record->t = cv::Mat::zeros(t_all.at(0).rows,
                                        t_all.at(0).cols,
                                        t_all.at(0).type());
-            for (const auto& t_i : t_all)
+            for (const auto &t_i: t_all)
             {
                 record->t += t_i;
             }
-            record->t = (1.0 / (F64)t_all.size()) * record->t;
+            record->t = (1.0 / (F64) t_all.size()) * record->t;
         }
 
         return true;
     }
 
-    VisUndistort::VisUndistort()
-    : calibration(0)
+    VisGradiant::VisGradiant()
     {
     }
 
-    bool VisUndistort::read(const char* calibration_file)
+    bool VisGradiant::process(CamFrame* frame, cv::Mat &image, VisRecord* recording)
     {
-        bool read_status = calibration.read(calibration_file);
-        if (!read_status) return false;
 
-        cv::Size s(CAMERA_RAW_WIDTH, CAMERA_RAW_HEIGHT);
-        new_k = cv::getOptimalNewCameraMatrix(
-                calibration.k, calibration.d,
-                s, 1, s, &roi);
 
-        cv::Mat r;
-        cv::initUndistortRectifyMap(calibration.k, calibration.d,
-                                    r, new_k, s, CV_32FC1,
-                                    map1, map2);
+        U8 value = 128;
+        I32 num = (frame->info.stride * frame->info.height) / 2;
+        I32 scale = 1;
+        I32 delta = 0;
+        I32 ddepth = CV_16S;
 
-        return true;
-    }
+        memset(frame->span.data() + frame->info.stride * frame->info.height, value, num);
 
-    bool VisUndistort::process(cv::Mat &image, VisRecord* recording)
-    {
-        // TODO(tumbar) Do we pull this out the constructor?
+        cv::resize(image, smaller, cv::Size(image.cols / VIS_RACE_DOWNSCALE,
+                                            image.rows / VIS_RACE_DOWNSCALE),
+                   0, 0, cv::INTER_NEAREST // faster than lerping
+                   );
 
-//        cv::remap(image, image, map1, map2, cv::INTER_NEAREST);
-        cv::Laplacian(image, undistorted, CV_32F);
-        std::memcpy(image.data, undistorted.data, image.total());
+        // Remove noise by blurring with a Gaussian filter ( kernal size = 3 )
+        GaussianBlur(smaller, smaller, cv::Size(3, 3), 0, 0, cv::BORDER_DEFAULT);
 
+        cv::Sobel(smaller, grad_x, ddepth, 1, 0, 1, scale, delta, cv::BORDER_DEFAULT);
+        Sobel(smaller, grad_y, ddepth, 0, 1, 1, scale, delta, cv::BORDER_DEFAULT);
+
+        // converting back to CV_8U
+        convertScaleAbs(grad_x, grad_x);
+        convertScaleAbs(grad_y, grad_y);
+
+        //weight the x and y gradients and add their magnitudes
+        addWeighted(grad_x, 1, grad_y, 1, 0, smaller);
+
+        cv::resize(smaller, image, cv::Size(image.cols, image.rows),
+                   0, 0, cv::INTER_NEAREST);
         return true;
     }
 }

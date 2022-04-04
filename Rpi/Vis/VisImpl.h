@@ -21,7 +21,7 @@ namespace Rpi
         void CLEAR_cmdHandler(U32 opCode, U32 cmdSeq) override;
         void PIPE_cmdHandler(U32 opCode, U32 cmdSeq, Rpi::VisPipe stage) override;
         void RECORD_FILE_cmdHandler(U32 opCode, U32 cmdSeq, VisRecordType record_type, U32 frame_count, const Fw::CmdStringArg &filename) override;
-        void RECORD_CANCEL_IF_RUNNING_cmdHandler(U32 opCode, U32 cmdSeq) override;
+        void RECORD_WAIT_cmdHandler(U32 opCode, U32 cmdSeq) override;
 
     PRIVATE:
         void clear_recording();
@@ -34,9 +34,17 @@ namespace Rpi
         bool m_is_file_recording;
         Fw::String m_recording_file;
 
+        bool cmd_waiting;
+        U32 waiting_opCode;
+        U32 waiting_cmdSeq;
+
         std::shared_ptr<VisRecord> m_recording;
         std::shared_ptr<VisPipelineStage> m_pipeline;
         VisPipelineStage* m_pipeline_last;
+
+        U32 tlm_frame_in;
+        U32 tlm_frame_failed;
+        U32 tlm_frame_processed;
     };
 }
 

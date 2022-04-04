@@ -18,4 +18,10 @@
             Location of the pose calibration file storing K, D, R, and T
         </comment>
     </parameter>
+    <parameter id="3" set_opcode="7" save_opcode="8"
+               name="GRADIENT_THRESHOLD" data_type="F32" default="0.5">
+        <comment>
+            Hard threshold for edge detection after gradient step
+        </comment>
+    </parameter>
 </parameters>

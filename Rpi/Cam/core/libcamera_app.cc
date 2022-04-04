@@ -10,6 +10,7 @@
 #include "core/frame_info.hpp"
 #include "libcamera_app.h"
 #include "Rpi/VideoStreamer/preview/preview.hpp"
+#include "VoCarCfg.h"
 //#include "core/options.hpp"
 
 #include <fcntl.h>
@@ -97,7 +98,8 @@ namespace Rpi
     void LibcameraApp::ConfigureCameraStream(int width, int height, int rotation,
                                              bool hflip, bool vflip)
     {
-        StreamRoles stream_roles = {StreamRole::Raw};
+//        StreamRoles stream_roles = {StreamRole::Raw};
+        StreamRoles stream_roles = {StreamRole::VideoRecording};
 
         configuration_ = camera_->generateConfiguration(stream_roles);
         if (!configuration_)
@@ -116,11 +118,6 @@ namespace Rpi
 
         // Finally trim the image size to the largest that the preview can handle.
         Size size(width, height);
-        Size max_size = get_screen_size();
-        if (max_size.width && max_size.height)
-        {
-            size.boundTo(max_size.boundedToAspectRatio(size)).alignDownTo(2, 2);
-        }
 
         // Now we get to override any of the default settings from the options.
         configuration_->at(0).pixelFormat = libcamera::formats::YUV420;
@@ -134,7 +131,7 @@ namespace Rpi
         if (vflip)
             configuration_->transform = libcamera::Transform::VFlip * configuration_->transform;
 
-        configuration_->at(0).bufferCount = 4;
+        configuration_->at(0).bufferCount = CAMERA_LIBCAMERA_BUFFER_N;
 
         setupCapture();
 

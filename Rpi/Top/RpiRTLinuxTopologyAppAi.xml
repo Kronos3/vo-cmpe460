@@ -123,10 +123,6 @@
         <source component="cam" port="frame" type="Rpi::CamFrameSend" num="0"/>
         <target component="videoStreamer" port="frame" type="Rpi::CamFrameSend" num="0"/>
     </connection>
-    <connection name="videoStreamer__cam_dealloc">
-        <source component="videoStreamer" port="frameDeallocate" type="Rpi::CamFrameDeallocate" num="0"/>
-        <target component="cam" port="deallocate" type="Rpi::CamFrameDeallocate" num="0"/>
-    </connection>
 
     <connection name="cam_vis_frame">
         <source component="cam" port="frame" type="Rpi::CamFrameSend" num="1"/>
@@ -136,10 +132,6 @@
         <source component="framePipe" port="frameOut" type="Rpi::CamFrameSend" num="0"/>
         <target component="vis" port="frame" type="Rpi::CamFrameSend" num="0"/>
     </connection>
-    <connection name="cam_vis_Pipe">
-        <source component="framePipe" port="frameDeallocate" type="Rpi::CamFrameDeallocate" num="0"/>
-        <target component="cam" port="deallocate" type="Rpi::CamFrameDeallocate" num="0"/>
-    </connection>
     <connection name="vis_Pipe_Ready">
         <source component="vis" port="ready" type="Sched" num="0"/>
         <target component="framePipe" port="ready" type="Sched" num="0"/>
@@ -147,10 +139,6 @@
     <connection name="vis__videoStreamer_frame">
         <source component="vis" port="frameOut" type="Rpi::CamFrameSend" num="0"/>
         <target component="videoStreamer" port="frame" type="Rpi::CamFrameSend" num="0"/>
-    </connection>
-    <connection name="vis__cam_dealloc">
-        <source component="vis" port="frameDeallocate" type="Rpi::CamFrameDeallocate" num="0"/>
-        <target component="cam" port="deallocate" type="Rpi::CamFrameDeallocate" num="0"/>
     </connection>
 
     <!-- Mot connections -->
@@ -421,6 +409,10 @@
     </connection>
     <connection name="videoStreamer__chanTlm">
         <source component="videoStreamer" port="Tlm" type="Tlm" num="0"/>
+        <target component="chanTlm" port="TlmRecv" type="Tlm" num="0"/>
+    </connection>
+    <connection name="vis__chanTlm">
+        <source component="vis" port="Tlm" type="Tlm" num="0"/>
         <target component="chanTlm" port="TlmRecv" type="Tlm" num="0"/>
     </connection>
 
