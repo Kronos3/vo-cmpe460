@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<enum namespace="Rpi" name="NavAlgorithmType" serialize_type="I32">
+    <comment>Nav control algorithm</comment>
+    <item name="NONE" value="0" comment="No mot commanding will be transmitted, frames are passed through to the output video port."/>
+    <item name="SIMPLE" value="1" comment="Look through a non-moving horizontal slit and stay away from edges via P-control."/>
+    <item name="SIMPLE_PID" value="2" comment="Look through a non-moving horizontal slit and stay away from edges via PID control."/>
+    <item name="COMPLEX_PID" value="3" comment="Dynamically move the slit we are looking at based on the speed we are running the throttle. Faster will look further out to be able to brake sooner and not go off the track."/>
+</enum>

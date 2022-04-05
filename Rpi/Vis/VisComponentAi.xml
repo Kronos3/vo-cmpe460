@@ -3,7 +3,6 @@
 
     <import_port_type>Svc/Sched/SchedPortAi.xml</import_port_type>
     <import_port_type>Rpi/Cam/Ports/CamFrameSendPortAi.xml</import_port_type>
-<!--    <import_port_type>Rpi/Cam/Ports/CamFrameDeallocatePortAi.xml</import_port_type>-->
 
     <import_enum_type>Rpi/Vis/VisListenerEnumAi.xml</import_enum_type>
     <import_enum_type>Rpi/Vis/VisPipeEnumAi.xml</import_enum_type>
@@ -18,7 +17,6 @@
 
         <port name="frame" data_type="Rpi::CamFrameSend" kind="async_input"/>
         <port name="frameOut" data_type="Rpi::CamFrameSend" kind="output" max_number="2"/>
-<!--        <port name="frameDeallocate" data_type="Rpi::CamFrameDeallocate" kind="output"/>-->
     </ports>
 
 </component>

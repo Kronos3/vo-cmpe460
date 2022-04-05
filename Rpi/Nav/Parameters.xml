@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<parameters opcode_base="10">
+    <parameter id="0" set_opcode="1" save_opcode="2"
+               name="SIMPLE_CENTER" data_type="F32" default="0.5">
+        <comment>
+            Scalar from 0.0 to 1.0 representing the center position of the car.
+            0.0 is the left side of the image, 1.0 is the right of the image.
+        </comment>
+    </parameter>
+    <parameter id="1" set_opcode="3" save_opcode="4"
+               name="SIMPLE_P" data_type="I32" default="2">
+        <comment>
+            Proportional constant turning factor. Scaled by distance
+            from center line.
+        </comment>
+    </parameter>
+    <parameter id="2" set_opcode="5" save_opcode="6"
+               name="SIMPLE_ROW" data_type="F32" default="0.5">
+        <comment>
+
+        </comment>
+    </parameter>
+</parameters>

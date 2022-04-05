@@ -3,6 +3,14 @@
 #include <cstdlib>
 #include <cerrno>
 
+extern "C"
+{
+#include <arpa/inet.h>
+#include <sys/socket.h>
+#include <netdb.h>
+#include <ifaddrs.h>
+}
+
 #define TIMER_HZ (100)
 
 enum
@@ -63,7 +71,9 @@ Kernel::Kernel()
         videoStreamer("VIDEO_STREAMER"),
         mot("MOT"),
         vis("VIS"),
-        framePipe("F-PIPE")
+        nav("NAV"),
+        framePipe("F-PIPE"),
+        display("DISPLAY")
 {
 }
 
@@ -131,11 +141,43 @@ void Kernel::prv_init()
 
     mot.init(0);
     vis.init(QUEUE_DEPTH, 0);
+    nav.init(QUEUE_DEPTH, 0);
     framePipe.init(0);
+    display.init(0);
 }
 
 void Kernel::prv_start()
 {
+    // Print the Ip address of the Raspberry Pi on the display
+    display.oled_init();
+    {
+        struct ifaddrs* addrs = nullptr;
+        struct ifaddrs* tmp;
+        getifaddrs(&addrs);
+        tmp = addrs;
+
+        // Find the IP address of the first non-home interface
+        // Print this IP to the first line on the OLED display
+        while (tmp)
+        {
+            if (tmp->ifa_addr && tmp->ifa_addr->sa_family == AF_INET)
+            {
+                auto* pAddr = (struct sockaddr_in *) tmp->ifa_addr;
+                const char* addr_str = inet_ntoa(pAddr->sin_addr);
+                if (strcmp(addr_str, "127.0.0.1") != 0)
+                {
+                    // This is the address we want
+                    display.write(0, addr_str);
+                    break;
+                }
+            }
+
+            tmp = tmp->ifa_next;
+        }
+
+        freeifaddrs(addrs);
+    }
+
     rg1hz.start();
     rg10hz.start();
     rg20hz.start();
@@ -158,16 +200,19 @@ void Kernel::prv_start()
     cam.startStreamThread(s);
     videoStreamer.start(19);
     vis.start();
+    nav.start();
 
     // Always start this last (or first, but not in the middle)
     Os::File gds_cfg;
     Os::File::Status status = gds_cfg.open("/fsw/cfg/gds.cfg", Os::File::OPEN_READ);
     if (status != Os::File::OP_OK)
     {
+        display.write(1, "No GDS!");
         Fw::Logger::logMsg("Failed to load GDS configuration /fsw/cfg/gds.cfg\n");
     }
     else
     {
+
         static char gds_hostname_port[32];
         NATIVE_INT_TYPE size = sizeof(gds_hostname_port);
         gds_cfg.read(gds_hostname_port, size);
@@ -185,6 +230,7 @@ void Kernel::prv_start()
             *split = 0;
             U16 port = strtoul(split + 1, nullptr, 10);
 
+            display.write(1, gds_hostname_port);
             Fw::Logger::logMsg("Connecting to GDS on %s:%d\n", (POINTER_CAST) gds_hostname_port, port);
 
             Fw::String comm_name = "comm";
@@ -205,6 +251,8 @@ void Kernel::prv_reg_commands()
     videoStreamer.regCommands();
     mot.regCommands();
     vis.regCommands();
+    nav.regCommands();
+    display.regCommands();
     fileManager.regCommands();
     fileDownlink.regCommands();
 }
@@ -215,6 +263,7 @@ void Kernel::prv_loadParameters()
     videoStreamer.loadParameters();
     cam.loadParameters();
     vis.loadParameters();
+    nav.loadParameters();
 }
 
 void Kernel::start()
@@ -267,6 +316,7 @@ void Kernel::exit()
     cam.quitStreamThread();
     videoStreamer.exit();
     vis.exit();
+    nav.exit();
 
 //        serialDriver.quitReadThread();
 
@@ -287,6 +337,7 @@ void Kernel::exit()
 
     videoStreamer.join(nullptr);
     vis.join(nullptr);
+    nav.join(nullptr);
 
     comm.stopSocketTask();
     comm.joinSocketTask(nullptr);

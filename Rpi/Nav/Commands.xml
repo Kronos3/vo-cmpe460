@@ -1,0 +1,16 @@
+<commands>
+    <command kind="async" opcode="0" mnemonic="RUN">
+        <comment>
+            Run the Nav algorithm in question.
+            Runs asynchronously until stopped
+        </comment>
+        <args>
+            <arg name="algorithm" type="Rpi::NavAlgorithmType"/>
+        </args>
+    </command>
+    <command kind="async" opcode="1" mnemonic="STOP">
+        <comment>
+            Stop the currently running Nav algorithm
+        </comment>
+    </command>
+</commands>
