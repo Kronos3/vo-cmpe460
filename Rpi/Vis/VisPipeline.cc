@@ -214,12 +214,15 @@ namespace Rpi
         return true;
     }
 
-    VisGradiant::VisGradiant() = default;
+    VisGradiant::VisGradiant(U32 ostu_frames, F32 sigma)
+    : m_ostu_running_sum(0.0), m_ostu_index(0),
+    m_ostu_frames(ostu_frames),
+    m_sigma(sigma)
+    {
+    }
 
     bool VisGradiant::process(CamFrame* frame, cv::Mat &image, VisRecord* recording)
     {
-
-
         U8 value = 128;
         U32 num = (frame->info.stride * frame->info.height) / 2;
         I32 scale = 1;
@@ -228,26 +231,70 @@ namespace Rpi
 
         memset(frame->span.data() + frame->info.stride * frame->info.height, value, num);
 
-        cv::resize(image, smaller, cv::Size(image.cols / VIS_RACE_DOWNSCALE,
-                                            image.rows / VIS_RACE_DOWNSCALE),
+        // Downscale the image so that we actually get good performance
+        // We upscale the results later
+        cv::resize(image, m_smaller,
+                   cv::Size(image.cols / VIS_RACE_DOWNSCALE,
+                            image.rows / VIS_RACE_DOWNSCALE),
                    0, 0, cv::INTER_NEAREST // faster than lerping
                    );
 
         // Remove noise by blurring with a Gaussian filter ( kernel size = 3 )
-        GaussianBlur(smaller, smaller, cv::Size(3, 3), 0, 0, cv::BORDER_DEFAULT);
+        cv::GaussianBlur(m_smaller, m_smaller, cv::Size(3, 3), m_sigma, 0, cv::BORDER_DEFAULT);
 
-        cv::Sobel(smaller, grad_x, ddepth, 1, 0, 1, scale, delta, cv::BORDER_DEFAULT);
-        Sobel(smaller, grad_y, ddepth, 0, 1, 1, scale, delta, cv::BORDER_DEFAULT);
+        // Find the dx and dy gradients by applying simple Sobel filters
+        // This is just a convolution of gradient kernels.
+        cv::Sobel(m_smaller, m_grad_x, ddepth, 1, 0, 1, scale, delta, cv::BORDER_DEFAULT);
+        cv::Sobel(m_smaller, m_grad_y, ddepth, 0, 1, 1, scale, delta, cv::BORDER_DEFAULT);
 
-        // converting back to CV_8U
-        convertScaleAbs(grad_x, grad_x);
-        convertScaleAbs(grad_y, grad_y);
+        // We don't care about negative gradients
+        cv::convertScaleAbs(m_grad_x, m_grad_x);
+        cv::convertScaleAbs(m_grad_y, m_grad_y);
 
-        //weight the x and y gradients and add their magnitudes
-        addWeighted(grad_x, 1, grad_y, 1, 0, smaller);
+        // Todo(tumbar) cv::add
+        // Combine dx and dy into a single frame
+        // We can reuse the m_smaller buffer
+        cv::addWeighted(m_grad_x, 1, m_grad_y, 1, 0, m_smaller);
 
-        cv::resize(smaller, image, cv::Size(image.cols, image.rows),
+        cv::Mat erosion_kernel = cv::Mat::ones(cv::Size(3, 3), CV_8U);
+        cv::morphologyEx(m_smaller, m_smaller, cv::MORPH_OPEN, erosion_kernel);
+
+        // Now that we have the gradient image calculated, we need to threshold
+        // these values to filter out the small deltas in color. To avoid needing
+        // to mess with a thresholding value that depends on environment etc. We
+        // can expose this pipeline to image and use the Otsu thresholding algorithm
+        // to find the optimal threshold between foreground and background.
+        if (m_ostu_index < m_ostu_frames)
+        {
+            // We only wants to perform Otsu thresholding for a certain number of frames
+            // We can average out the running sum at the end
+            m_ostu_running_sum += cv::threshold(m_smaller, m_smaller, 0, 255, cv::THRESH_BINARY | cv::THRESH_OTSU);
+            m_ostu_index++;
+        }
+        else
+        {
+            if (m_ostu_index == m_ostu_frames)
+            {
+                // This is the first frame after Otsu thresholding running average has finished
+                // We can calculate the average threshold now and use it for the rest of the life
+                // of the pipeline.
+                m_ostu_running_sum /= m_ostu_frames;
+                m_ostu_index++;
+            }
+
+            // Standard binary thresholding is faster than Otsu
+            cv::threshold(m_smaller, m_smaller, m_ostu_running_sum, 255, cv::THRESH_BINARY);
+        }
+
+        // Update the result image back to the output
+        // The rest of the pipeline and the output does not handle a size change
+        // We can use INTER_NEAREST to get sharp edges on the up-scaled image.
+        // Linear interpolate hear would get rid of the thresholding work we already did
+        cv::resize(m_smaller,
+                   image,
+                   cv::Size(image.cols, image.rows),
                    0, 0, cv::INTER_NEAREST);
+
         return true;
     }
 }

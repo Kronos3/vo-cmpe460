@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<telemetry>
+    <channel id="0" name="FramesIn" data_type="U32" update="on_change"
+             format_string="%d frames input into pipeline"/>
+    <channel id="1" name="FramesFailed" data_type="U32" update="on_change"
+             format_string="%d frames failed in the pipeline"/>
+    <channel id="2" name="FramesPassed" data_type="U32" update="on_change"
+             format_string="%d frames passed through pipeline"/>
+</telemetry>

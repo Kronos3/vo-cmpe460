@@ -2,6 +2,7 @@
 #include "VideoStreamerImpl.h"
 #include "encoder/h264_encoder.hpp"
 #include "output/net_output.hpp"
+#include "Logger.hpp"
 #include <preview/preview.hpp>
 #include <functional>
 
@@ -10,8 +11,8 @@ namespace Rpi
     VideoStreamerImpl::VideoStreamerImpl(const char* compName)
     : VideoStreamerComponentBase(compName),
       m_showing(nullptr),
-      m_displaying(HDMI),
-      m_preview(make_drm_preview()),
+      m_displaying(BOTH),
+      m_preview(nullptr),
       m_encoder(nullptr),
       m_net(nullptr),
       tlm_packets_sent(0),
@@ -24,12 +25,20 @@ namespace Rpi
         delete m_preview;
         delete m_encoder;
         delete m_net;
-//        delete m_socket;
     }
 
     void VideoStreamerImpl::init(NATIVE_INT_TYPE queueDepth, NATIVE_INT_TYPE instance)
     {
         VideoStreamerComponentBase::init(queueDepth, instance);
+
+        try
+        {
+            m_preview = make_drm_preview();
+        }
+        catch (const std::runtime_error& e)
+        {
+            Fw::Logger::logMsg("Failed initialize preview: %s\n", (POINTER_CAST)e.what());
+        }
     }
 
     void VideoStreamerImpl::frame_handler(NATIVE_INT_TYPE portNum, CamFrame* frame)
@@ -79,7 +88,7 @@ namespace Rpi
                                     (I64)frame->buffer->metadata().timestamp / 1000);
         }
 
-        if (m_displaying == BOTH || m_displaying == HDMI)
+        if ((m_displaying == BOTH || m_displaying == HDMI) && m_preview)
         {
             frame->incref();
             m_preview->Show(fd, frame->span, frame->info);

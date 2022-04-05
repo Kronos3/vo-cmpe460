@@ -1,0 +1,31 @@
+<events>
+    <event id="0" name="NavStarting" severity="ACTIVITY_HI"
+           format_string="Start Nav algorithm %s">
+        <args>
+            <arg name="algorithm" type="Rpi::NavAlgorithmType"/>
+        </args>
+    </event>
+    <event id="1" name="NavStartFailed" severity="WARNING_HI"
+           format_string="Failed to start Nav algorithm %s">
+        <args>
+            <arg name="algorithm" type="Rpi::NavAlgorithmType"/>
+        </args>
+    </event>
+
+    <event id="2" name="NavStopping" severity="ACTIVITY_HI"
+           format_string="Stopping Nav algorithm %s">
+        <args>
+            <arg name="algorithm" type="Rpi::NavAlgorithmType"/>
+        </args>
+    </event>
+    <event id="3" name="NavNoAlgorithmRunning" severity="WARNING_LO"
+           format_string="Couldn't stop Nav algorithm as none was running">
+    </event>
+    <event id="4" name="NavCanceling" severity="WARNING_LO"
+           format_string="Canceling running nav algorithm %s in favour of %s">
+        <args>
+            <arg name="canceling" type="Rpi::NavAlgorithmType"/>
+            <arg name="favourable" type="Rpi::NavAlgorithmType"/>
+        </args>
+    </event>
+</events>

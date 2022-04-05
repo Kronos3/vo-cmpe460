@@ -185,7 +185,13 @@ namespace Rpi
                 break;
             case VisPipe::GRADIENT:
             {
-                stage_ptr = new VisGradiant();
+                U32 otsu_frames = paramGet_OSTU_FRAMES(valid);
+                FW_ASSERT(valid == Fw::PARAM_DEFAULT || valid == Fw::PARAM_VALID, valid);
+
+                F32 sigma = paramGet_GAUSSIAN_SIGMA(valid);
+                FW_ASSERT(valid == Fw::PARAM_DEFAULT || valid == Fw::PARAM_VALID, valid);
+
+                stage_ptr = new VisGradiant(otsu_frames, sigma);
             }
                 break;
             default:

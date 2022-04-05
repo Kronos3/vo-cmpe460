@@ -68,13 +68,17 @@
     <import_component_type>Rpi/VideoStreamer/VideoStreamerComponentAi.xml</import_component_type>
     <import_component_type>Rpi/Mot/MotComponentAi.xml</import_component_type>
     <import_component_type>Rpi/Vis/VisComponentAi.xml</import_component_type>
+    <import_component_type>Rpi/Nav/NavComponentAi.xml</import_component_type>
     <import_component_type>Rpi/FramePipe/FramePipeComponentAi.xml</import_component_type>
+    <import_component_type>Rpi/Display/DisplayComponentAi.xml</import_component_type>
 
     <instance namespace="Rpi" name="cam" type="Cam" base_id="6000" base_id_window="100"/>
     <instance namespace="Rpi" name="mot" type="Mot" base_id="6100" base_id_window="100"/>
     <instance namespace="Rpi" name="videoStreamer" type="VideoStreamer" base_id="6200" base_id_window="100"/>
     <instance namespace="Rpi" name="vis" type="Vis" base_id="6300" base_id_window="100"/>
-    <instance namespace="Rpi" name="framePipe" type="FramePipe" base_id="6400" base_id_window="100"/>
+    <instance namespace="Rpi" name="nav" type="FramePipe" base_id="6400" base_id_window="100"/>
+    <instance namespace="Rpi" name="framePipe" type="FramePipe" base_id="6500" base_id_window="100"/>
+    <instance namespace="Rpi" name="display" type="Display" base_id="6600" base_id_window="100"/>
 
     <!-- Rate group driver connections -->
     <connection name="linuxTimer__rgDriver_isr">
@@ -124,6 +128,13 @@
         <target component="videoStreamer" port="frame" type="Rpi::CamFrameSend" num="0"/>
     </connection>
 
+    <!-- Camera pipeline
+        There is also a direct connection from Cam to VideoStreamer not shown
+        Cam -> FramePipe -> Vis -> VideoStreamer -+
+         ^_________+         |  -> Nav -^         |
+         ^___________________+                    |
+         ^________________________________________+
+     -->
     <connection name="cam_vis_frame">
         <source component="cam" port="frame" type="Rpi::CamFrameSend" num="1"/>
         <target component="framePipe" port="frame" type="Rpi::CamFrameSend" num="0"/>
@@ -141,15 +152,42 @@
         <target component="videoStreamer" port="frame" type="Rpi::CamFrameSend" num="0"/>
     </connection>
 
+    <connection name="vis__nav_frame">
+        <source component="vis" port="frameOut" type="Rpi::CamFrameSend" num="1"/>
+        <target component="nav" port="frame" type="Rpi::CamFrameSend" num="0"/>
+    </connection>
+    <connection name="nav__videoStreamer_frame">
+        <source component="nav" port="frameOut" type="Rpi::CamFrameSend" num="0"/>
+        <target component="videoStreamer" port="frame" type="Rpi::CamFrameSend" num="0"/>
+    </connection>
+
     <!-- Mot connections -->
     <connection name="mot__i2c_commanding">
         <source component="mot" port="command" type="Drv::I2c" num="0"/>
         <target component="i2cDriver" port="write" type="Drv::I2c" num="0"/>
     </connection>
-    <!--    <connection name="mot__uart_commanding">-->
-    <!--        <source component="mot" port="command" type="Drv::SerialWrite" num="0"/>-->
-    <!--        <target component="serialDriver" port="serialSend" type="Drv::SerialWrite" num="0"/>-->
-    <!--    </connection>-->
+    <connection name="display__i2c_commanding">
+        <source component="display" port="i2c" type="Drv::I2c" num="0"/>
+        <target component="i2cDriver" port="write" type="Drv::I2c" num="0"/>
+    </connection>
+<!--        <connection name="mot__uart_commanding">-->
+<!--            <source component="mot" port="command" type="Drv::SerialWrite" num="0"/>-->
+<!--            <target component="serialDriver" port="serialSend" type="Drv::SerialWrite" num="0"/>-->
+<!--        </connection>-->
+
+    <!-- Nav connections -->
+    <connection name="nav__mot_steer">
+        <source component="nav" port="steer" type="Rpi::MotSteer" num="0"/>
+        <target component="mot" port="steer" type="Rpi::MotSteer" num="0"/>
+    </connection>
+    <connection name="nav__mot_throttle">
+        <source component="nav" port="throttle" type="Rpi::MotThrottle" num="0"/>
+        <target component="mot" port="throttle" type="Rpi::MotThrottle" num="0"/>
+    </connection>
+    <connection name="nav__mot_get">
+        <source component="nav" port="get" type="Rpi::MotGet" num="0"/>
+        <target component="mot" port="get" type="Rpi::MotGet" num="0"/>
+    </connection>
 
     <!-- Communications driver connections -->
     <connection name="UplinkDrvAllocate">
@@ -247,10 +285,10 @@
         <source component="rg50hz" port="Time" type="Time" num="0"/>
         <target component="systemTime" port="timeGetPort" type="Time" num="0"/>
     </connection>
-    <connection name="spiDriverTime">
-        <source component="spiDriver" port="Time" type="Time" num="0"/>
-        <target component="systemTime" port="timeGetPort" type="Time" num="0"/>
-    </connection>
+<!--    <connection name="spiDriverTime">-->
+<!--        <source component="spiDriver" port="Time" type="Time" num="0"/>-->
+<!--        <target component="systemTime" port="timeGetPort" type="Time" num="0"/>-->
+<!--    </connection>-->
     <connection name="videoStreamerTime">
         <source component="videoStreamer" port="Time" type="Time" num="0"/>
         <target component="systemTime" port="timeGetPort" type="Time" num="0"/>
@@ -269,6 +307,10 @@
     </connection>
     <connection name="visTime">
         <source component="vis" port="Time" type="Time" num="0"/>
+        <target component="systemTime" port="timeGetPort" type="Time" num="0"/>
+    </connection>
+    <connection name="navTime">
+        <source component="nav" port="Time" type="Time" num="0"/>
         <target component="systemTime" port="timeGetPort" type="Time" num="0"/>
     </connection>
     <connection name="motTime">
@@ -305,10 +347,10 @@
         <source component="prmDb" port="Log" type="Log" num="0"/>
         <target component="eventLogger" port="LogRecv" type="Log" num="0"/>
     </connection>
-    <connection name="spiDriver__eventLogger_LogRecv">
-        <source component="spiDriver" port="Log" type="Log" num="0"/>
-        <target component="eventLogger" port="LogRecv" type="Log" num="0"/>
-    </connection>
+<!--    <connection name="spiDriver__eventLogger_LogRecv">-->
+<!--        <source component="spiDriver" port="Log" type="Log" num="0"/>-->
+<!--        <target component="eventLogger" port="LogRecv" type="Log" num="0"/>-->
+<!--    </connection>-->
     <connection name="cmdDisp__eventLogger_LogRecv">
         <source component="cmdDisp" port="Log" type="Log" num="0"/>
         <target component="eventLogger" port="LogRecv" type="Log" num="0"/>
@@ -323,6 +365,10 @@
     </connection>
     <connection name="vis__eventLogger_LogRecv">
         <source component="vis" port="Log" type="Log" num="0"/>
+        <target component="eventLogger" port="LogRecv" type="Log" num="0"/>
+    </connection>
+    <connection name="nav__eventLogger_LogRecv">
+        <source component="nav" port="Log" type="Log" num="0"/>
         <target component="eventLogger" port="LogRecv" type="Log" num="0"/>
     </connection>
     <!--    <connection name="videoStreamer__eventLogger_LogRecv">-->
@@ -371,10 +417,10 @@
         <source component="rg50hz" port="Tlm" type="Tlm" num="0"/>
         <target component="chanTlm" port="TlmRecv" type="Time" num="0"/>
     </connection>
-    <connection name="spi__chanTlm">
-        <source component="spiDriver" port="Tlm" type="Tlm" num="0"/>
-        <target component="chanTlm" port="TlmRecv" type="Time" num="0"/>
-    </connection>
+<!--    <connection name="spi__chanTlm">-->
+<!--        <source component="spiDriver" port="Tlm" type="Tlm" num="0"/>-->
+<!--        <target component="chanTlm" port="TlmRecv" type="Time" num="0"/>-->
+<!--    </connection>-->
     <connection name="cmdDisp__chanTlm">
         <source component="cmdDisp" port="Tlm" type="Tlm" num="0"/>
         <target component="chanTlm" port="TlmRecv" type="Time" num="0"/>
@@ -415,6 +461,10 @@
         <source component="vis" port="Tlm" type="Tlm" num="0"/>
         <target component="chanTlm" port="TlmRecv" type="Tlm" num="0"/>
     </connection>
+    <connection name="nav__chanTlm">
+        <source component="nav" port="Tlm" type="Tlm" num="0"/>
+        <target component="chanTlm" port="TlmRecv" type="Tlm" num="0"/>
+    </connection>
 
     <!-- Parameter connections -->
     <connection name="videoStreamer__prmDb_Get">
@@ -439,6 +489,14 @@
     </connection>
     <connection name="vis__prmDb_Set">
         <source component="vis" port="ParamSet" type="PrmSet" num="0"/>
+        <target component="prmDb" port="setPrm" type="PrmSet" num="0"/>
+    </connection>
+    <connection name="nav__prmDb_Get">
+        <source component="nav" port="ParamGet" type="PrmGet" num="0"/>
+        <target component="prmDb" port="getPrm" type="PrmGet" num="0"/>
+    </connection>
+    <connection name="nav__prmDb_Set">
+        <source component="nav" port="ParamSet" type="PrmSet" num="0"/>
         <target component="prmDb" port="setPrm" type="PrmSet" num="0"/>
     </connection>
 
@@ -570,6 +628,32 @@
     </connection>
     <connection name="vis__cmdDisp_Reply">
         <source component="vis" port="CmdStatus" type="CmdResponse" num="0"/>
+        <target component="cmdDisp" port="compCmdStat" type="CmdResponse" num="0"/>
+    </connection>
+
+    <connection name="nav__cmdDisp_Reg">
+        <source component="nav" port="CmdReg" type="CmdReg" num="0"/>
+        <target component="cmdDisp" port="compCmdReg" type="CmdReg" num="10"/>
+    </connection>
+    <connection name="cmdDisp__nav_Disp">
+        <source component="cmdDisp" port="compCmdSend" type="Cmd" num="10"/>
+        <target component="nav" port="CmdDisp" type="Cmd" num="0"/>
+    </connection>
+    <connection name="nav__cmdDisp_Reply">
+        <source component="nav" port="CmdStatus" type="CmdResponse" num="0"/>
+        <target component="cmdDisp" port="compCmdStat" type="CmdResponse" num="0"/>
+    </connection>
+
+    <connection name="display__cmdDisp_Reg">
+        <source component="display" port="CmdReg" type="CmdReg" num="0"/>
+        <target component="cmdDisp" port="compCmdReg" type="CmdReg" num="11"/>
+    </connection>
+    <connection name="cmdDisp__display_Disp">
+        <source component="cmdDisp" port="compCmdSend" type="Cmd" num="11"/>
+        <target component="display" port="CmdDisp" type="Cmd" num="0"/>
+    </connection>
+    <connection name="display__cmdDisp_Reply">
+        <source component="display" port="CmdStatus" type="CmdResponse" num="0"/>
         <target component="cmdDisp" port="compCmdStat" type="CmdResponse" num="0"/>
     </connection>
 

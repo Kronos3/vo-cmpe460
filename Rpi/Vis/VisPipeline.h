@@ -63,13 +63,44 @@ namespace Rpi
     class VisGradiant : public VisPipelineStage
     {
     public:
-        explicit VisGradiant();
+        explicit VisGradiant(U32 ostu_frames, F32 sigma);
 
         bool process(CamFrame* frame, cv::Mat &image, VisRecord *recording) override;
 
     private:
-        cv::Mat grad_x, grad_y;
-        cv::Mat smaller;
+        // For the first OTSU_FRAMES of capture, we will average the
+        // computed OTSU threshold. Then we will switch to flat binary
+        // thresholding. This allows us to avoid extra work when finding
+        // thresholds in different light environments.
+        F64 m_ostu_running_sum;
+        U32 m_ostu_index;
+        U32 m_ostu_frames;
+
+        F32 m_sigma;
+        cv::Mat m_grad_x;
+        cv::Mat m_grad_y;
+        cv::Mat m_smaller;
+    };
+
+    class VisMapping : public VisPipelineStage
+    {
+    public:
+        explicit VisMapping(const char* calibration_file,
+                            F32 threshold,
+                            U32 x_cells,
+                            U32 y_cells);
+
+        bool is_valid() const;
+
+        bool process(CamFrame *frame, cv::Mat &image, VisRecord *recording) override;
+
+    private:
+        bool valid;
+        CalibrationRecord m_calibration;    //!< Camera calibration with pose information
+
+        F32 m_threshold;                    //!< Threshold to apply to Sobel filter
+        U32 m_x_cells;                      //!< Number of cells to divide columns into
+        U32 m_y_cells;                      //!< Number of cells to divide rows into
     };
 }
 

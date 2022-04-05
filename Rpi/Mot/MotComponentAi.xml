@@ -10,14 +10,14 @@
 
     <import_dictionary>Rpi/Mot/Events.xml</import_dictionary>
     <import_dictionary>Rpi/Mot/Commands.xml</import_dictionary>
-<!--    <import_dictionary>Rpi/Mot/Parameters.xml</import_dictionary>-->
-<!--    <import_dictionary>Rpi/Mot/Telemetry.xml</import_dictionary>-->
+    <!--    <import_dictionary>Rpi/Mot/Parameters.xml</import_dictionary>-->
+    <!--    <import_dictionary>Rpi/Mot/Telemetry.xml</import_dictionary>-->
 
     <import_serializable_type>Rpi/Mot/Types/MSP432PwmSerializableAi.xml</import_serializable_type>
 
     <ports>
-        <port name="steer" data_type="Rpi::MotSteer" kind="sync_input" max_number="1" />
-        <port name="throttle" data_type="Rpi::MotThrottle" kind="sync_input" max_number="1" />
+        <port name="steer" data_type="Rpi::MotSteer" kind="sync_input" max_number="1"/>
+        <port name="throttle" data_type="Rpi::MotThrottle" kind="sync_input" max_number="1"/>
         <port name="get" data_type="Rpi::MotGet" kind="sync_input" max_number="1"/>
 
         <port name="command" data_type="Drv::I2c" kind="output"/>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component name="Nav" kind="active" namespace="Rpi">
+
+    <import_enum_type>Rpi/Nav/NavAlgorithmTypeEnumAi.xml</import_enum_type>
+
+    <import_port_type>Rpi/Cam/Ports/CamFrameSendPortAi.xml</import_port_type>
+
+    <import_port_type>Rpi/Mot/Ports/MotGetPortAi.xml</import_port_type>
+    <import_port_type>Rpi/Mot/Ports/MotSteerPortAi.xml</import_port_type>
+    <import_port_type>Rpi/Mot/Ports/MotThrottlePortAi.xml</import_port_type>
+
+    <import_dictionary>Rpi/Nav/Commands.xml</import_dictionary>
+    <import_dictionary>Rpi/Nav/Events.xml</import_dictionary>
+    <import_dictionary>Rpi/Nav/Parameters.xml</import_dictionary>
+    <import_dictionary>Rpi/Nav/Telemetry.xml</import_dictionary>
+
+    <ports>
+
+        <!-- Mot ports -->
+        <port name="steer" data_type="Rpi::MotSteer" kind="output"/>
+        <port name="throttle" data_type="Rpi::MotThrottle" kind="output"/>
+        <port name="get" data_type="Rpi::MotGet" kind="output"/>
+
+        <!-- Input frames processed by Vis -->
+        <port name="frame" data_type="Rpi::CamFrameSend" kind="async_input"/>
+
+        <!--
+            Nav's output frames are just annotated frames
+            with whatever metadata we need to display for
+            developing the algorithm.
+
+            There is only one output port because we don't need to have the
+            ability to swap listeners. This should just go directly to the
+            VideoStreamer
+        -->
+        <port name="frameOut" data_type="Rpi::CamFrameSend" kind="output" max_number="1"/>
+    </ports>
+
+</component>

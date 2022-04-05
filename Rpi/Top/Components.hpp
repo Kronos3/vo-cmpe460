@@ -31,7 +31,9 @@
 #include <Rpi/VideoStreamer/VideoStreamerImpl.h>
 #include <Rpi/Mot/MotImpl.h>
 #include <Rpi/Vis/VisImpl.h>
+#include <Rpi/Nav/NavImpl.h>
 #include <Rpi/FramePipe/FramePipeImpl.h>
+#include <Rpi/Display/DisplayImpl.h>
 
 #include <Svc/BufferManager/BufferManagerComponentImpl.hpp>
 #include <FprimeProtocol.hpp>
@@ -73,14 +75,13 @@ class Kernel
 //    Drv::LinuxSpiDriverComponentImpl spiDriver;
     Drv::TcpClientComponentImpl comm;
 
-
-//    Rpi::CamImpl camL;
-//    Rpi::CamImpl camR;
     Rpi::CamImpl cam;
     Rpi::VideoStreamerImpl videoStreamer;
     Rpi::MotImpl mot;
     Rpi::VisImpl vis;
+    Rpi::NavImpl nav;
     Rpi::FramePipeImpl framePipe;
+    Rpi::DisplayImpl display;
 
     Svc::FprimeDeframing deframing;
     Svc::FprimeFraming framing;

@@ -19,9 +19,18 @@
         </comment>
     </parameter>
     <parameter id="3" set_opcode="7" save_opcode="8"
-               name="GRADIENT_THRESHOLD" data_type="F32" default="0.5">
+               name="OSTU_FRAMES" data_type="U32" default="30">
         <comment>
-            Hard threshold for edge detection after gradient step
+            Number of frames to average ostu thresholding detection over. Once averaging
+            is done, switch over to normal binary thresholding.
+        </comment>
+    </parameter>
+    <parameter id="4" set_opcode="9" save_opcode="10"
+               name="GAUSSIAN_SIGMA" data_type="F32" default="2">
+        <comment>
+            Sigma to apply to 3x3 gaussian smoothing kernel before
+            Sobel edge detector is applied. Essentially controls
+            the low pass filter before the noise sensitive step.
         </comment>
     </parameter>
 </parameters>
