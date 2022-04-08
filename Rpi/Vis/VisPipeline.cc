@@ -256,6 +256,9 @@ namespace Rpi
         // We can reuse the m_smaller buffer
         cv::addWeighted(m_grad_x, 1, m_grad_y, 1, 0, m_smaller);
 
+        // The erosion kernel will remove small dots seen where the localized
+        // gradient is higher. The resultant image not include small dots that
+        // are unlikely to be actual track edges.
         cv::Mat erosion_kernel = cv::Mat::ones(cv::Size(3, 3), CV_8U);
         cv::morphologyEx(m_smaller, m_smaller, cv::MORPH_OPEN, erosion_kernel);
 

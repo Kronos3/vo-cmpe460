@@ -1,4 +1,5 @@
 #include "NavImpl.h"
+#include "opencv2/imgproc.hpp"
 
 namespace Rpi
 {
@@ -37,13 +38,24 @@ namespace Rpi
             return;
         }
 
-        cv::Mat image((I32)frame->info.height,
-                      (I32)frame->info.width,
-                      CV_8U,
-                      frame->span.data(),
-                      frame->info.stride);
+        // This image was upscale during vision to maintain
+        // the same image dimensions
+        cv::Mat full_image(
+                (I32)frame->info.height,
+                (I32)frame->info.width,
+                CV_8U,
+                frame->span.data(),
+                frame->info.stride);
 
-        bool keep_going = m_algorithm->process(frame, image);
+        // Nav doesn't care about the dimensions of the image,
+        // we can operate on the Vision pipeline's size
+//        cv::resize(full_image, m_image,
+//                   cv::Size(full_image.cols / VIS_RACE_DOWNSCALE,
+//                            full_image.rows / VIS_RACE_DOWNSCALE),
+//                   0, 0, cv::INTER_NEAREST // same as Vis
+//        );
+
+        bool keep_going = m_algorithm->process(frame, full_image);
 
         if (!keep_going)
         {
@@ -141,7 +153,19 @@ namespace Rpi
                 FW_ASSERT(valid == Fw::PARAM_DEFAULT || valid == Fw::PARAM_VALID, valid);
                 break;
             case PARAMID_SIMPLE_P:
-                m_params.simple.turning = paramGet_SIMPLE_CENTER(valid);
+                m_params.simple.turning = paramGet_SIMPLE_P(valid);
+                FW_ASSERT(valid == Fw::PARAM_DEFAULT || valid == Fw::PARAM_VALID, valid);
+                break;
+            case PARAMID_SIMPLE_ROW:
+                m_params.simple.row = paramGet_SIMPLE_ROW(valid);
+                FW_ASSERT(valid == Fw::PARAM_DEFAULT || valid == Fw::PARAM_VALID, valid);
+                break;
+            case PARAMID_SIMPLE_THROTTLE:
+                m_params.simple.throttle = paramGet_SIMPLE_THROTTLE(valid);
+                FW_ASSERT(valid == Fw::PARAM_DEFAULT || valid == Fw::PARAM_VALID, valid);
+                break;
+            case PARAMID_SIMPLE_CUTOFF:
+                m_params.simple.cutoff = paramGet_SIMPLE_CUTOFF(valid);
                 FW_ASSERT(valid == Fw::PARAM_DEFAULT || valid == Fw::PARAM_VALID, valid);
                 break;
             default:
@@ -155,6 +179,9 @@ namespace Rpi
 
         parameterUpdated(PARAMID_SIMPLE_CENTER);
         parameterUpdated(PARAMID_SIMPLE_P);
+        parameterUpdated(PARAMID_SIMPLE_ROW);
+        parameterUpdated(PARAMID_SIMPLE_THROTTLE);
+        parameterUpdated(PARAMID_SIMPLE_CUTOFF);
     }
 
     void NavImpl::clear()

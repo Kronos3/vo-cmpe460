@@ -8,7 +8,7 @@
         </comment>
     </parameter>
     <parameter id="1" set_opcode="3" save_opcode="4"
-               name="SIMPLE_P" data_type="I32" default="2">
+               name="SIMPLE_P" data_type="F32" default="2.0">
         <comment>
             Proportional constant turning factor. Scaled by distance
             from center line.
@@ -17,7 +17,19 @@
     <parameter id="2" set_opcode="5" save_opcode="6"
                name="SIMPLE_ROW" data_type="F32" default="0.5">
         <comment>
-
+            Which row on the camera should we scan
+        </comment>
+    </parameter>
+    <parameter id="3" set_opcode="7" save_opcode="8"
+               name="SIMPLE_THROTTLE" data_type="F32" default="0.35">
+        <comment>
+            Constant throttle to run the car during simple mode
+        </comment>
+    </parameter>
+    <parameter id="4" set_opcode="9" save_opcode="10"
+               name="SIMPLE_CUTOFF" data_type="F32" default="0.05">
+        <comment>
+            Ratio of image to cut off of each side
         </comment>
     </parameter>
 </parameters>

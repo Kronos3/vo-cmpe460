@@ -40,11 +40,11 @@ namespace Rpi
 
     bool MotImpl::set_steering(F64 position)
     {
-        FW_ASSERT(position >= -1.0 && position <= 1.0, position * 100);
+        position = FW_MIN(1.0, position);
+        position = FW_MAX(-1.0, position);
 
         // Translate position to 0 for left and 1 for right
         F64 normal = (position + 1) / 2.0;
-        FW_ASSERT(normal >= 0.0 && normal <= 1.0, normal * 100);
 
         // Convert 0 - 1 (F64) position to 0 - 255 (U8)
         MSP432Pwm pwm(MSP432PwmOpcode::SERVO, static_cast<U8>(normal * UINT8_MAX));
@@ -65,7 +65,6 @@ namespace Rpi
 
     bool MotImpl::set_throttle(F64 left, F64 right)
     {
-
         MSP432PwmOpcode left_opcode = left >= 0 ?
                                       MSP432PwmOpcode::DC0_FORWARD : MSP432PwmOpcode::DC0_BACKWARD;
         MSP432PwmOpcode right_opcode = right >= 0 ?
