@@ -15,7 +15,7 @@ namespace Rpi
     public:
         explicit DisplayImpl(const char* name);
 
-        void init(NATIVE_INT_TYPE instance) override;
+        void init(NATIVE_INT_TYPE instance);
         void oled_init();
 
         void write(U32 line_number, const char* text);

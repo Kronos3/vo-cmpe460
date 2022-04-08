@@ -34,6 +34,7 @@ namespace Rpi
 
         Rpi::NavAlgorithmType m_type;
         Rpi::NavAlgorithm* m_algorithm;
+//        cv::Mat m_image;
         NavParams m_params;
     };
 }

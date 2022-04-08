@@ -31,6 +31,8 @@ namespace Rpi
 
     protected:
         CarController* m_car;
+
+        virtual void draw_information(cv::Mat& image, std::string text);
     };
 
     class NavSimple : public NavAlgorithm
@@ -41,6 +43,7 @@ namespace Rpi
     private:
         enum EdgesFound
         {
+            NONE_FOUND = 0,
             LEFT_FOUND = 1,
             RIGHT_FOUND = 2,
             BOTH_FOUND = LEFT_FOUND | RIGHT_FOUND,

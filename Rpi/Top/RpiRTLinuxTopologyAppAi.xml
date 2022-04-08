@@ -61,7 +61,6 @@
 
     <instance namespace="Rpi" name="serialDriver" type="LinuxSerialDriver" base_id="5100" base_id_window="100"/>
     <instance namespace="Rpi" name="i2cDriver" type="LinuxI2cDriver" base_id="5200" base_id_window="100"/>
-    <!--    <instance namespace="Rpi" name="spiDriver" type="LinuxSpiDriver" base_id="5300" base_id_window="100"/>-->
 
     <!-- Car components -->
     <import_component_type>Rpi/Cam/CamComponentAi.xml</import_component_type>
@@ -76,7 +75,7 @@
     <instance namespace="Rpi" name="mot" type="Mot" base_id="6100" base_id_window="100"/>
     <instance namespace="Rpi" name="videoStreamer" type="VideoStreamer" base_id="6200" base_id_window="100"/>
     <instance namespace="Rpi" name="vis" type="Vis" base_id="6300" base_id_window="100"/>
-    <instance namespace="Rpi" name="nav" type="FramePipe" base_id="6400" base_id_window="100"/>
+    <instance namespace="Rpi" name="nav" type="Nav" base_id="6400" base_id_window="100"/>
     <instance namespace="Rpi" name="framePipe" type="FramePipe" base_id="6500" base_id_window="100"/>
     <instance namespace="Rpi" name="display" type="Display" base_id="6600" base_id_window="100"/>
 
