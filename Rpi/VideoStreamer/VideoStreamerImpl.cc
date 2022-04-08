@@ -65,7 +65,11 @@ namespace Rpi
                 m_encoder = new H264Encoder(frame->info);
                 m_encoder->SetInputDoneCallback([this](void* mem)
                 {
-                    FW_ASSERT(!encoding_buffers.empty());
+                    if (encoding_buffers.empty())
+                    {
+                        // The video stream was swapped during stream
+                        return;
+                    }
 
                     // Drop the reference to the oldest frame buffer we sent to the encoder
                     // This assumed that the H264 encoding will reply with in order frames...

@@ -1,6 +1,7 @@
 #include "NavAlgorithm.h"
 #include "Assert.hpp"
 #include "opencv2/imgproc.hpp"
+#include "VoCarCfg.h"
 
 namespace Rpi
 {
@@ -154,5 +155,22 @@ namespace Rpi
         }
 
         return static_cast<EdgesFound>(out);
+    }
+
+    NavComplexPid::NavComplexPid(CarController* car)
+    : NavAlgorithm(car)
+    {
+
+    }
+
+    bool NavComplexPid::process(CamFrame* frame, cv::Mat &image)
+    {
+        cv::resize(image, m_smaller,
+                   cv::Size(image.cols / VIS_RACE_DOWNSCALE,
+                            image.rows / VIS_RACE_DOWNSCALE),
+                   0, 0, cv::INTER_NEAREST // faster than lerping
+        );
+
+        return true;
     }
 }

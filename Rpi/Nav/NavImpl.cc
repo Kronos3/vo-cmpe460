@@ -96,9 +96,11 @@ namespace Rpi
                 m_algorithm = new NavSimple(this);
                 break;
             case NavAlgorithmType::SIMPLE_PID:
-            case NavAlgorithmType::COMPLEX_PID:
                 // TODO(tumbar) Not implemented
                 m_algorithm = nullptr;
+                break;
+            case NavAlgorithmType::COMPLEX_PID:
+                m_algorithm = new NavComplexPid(this);
                 break;
             default:
                 FW_ASSERT(0 && "Invalid Nav algorithm", algorithm.e);
