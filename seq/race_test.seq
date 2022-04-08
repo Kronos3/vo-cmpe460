@@ -1,0 +1,27 @@
+R00:00:00 cam.STOP
+
+; Set up the frame pathing
+R00:00:00 cam.STREAM VIS    ; Raw camera stream goes to vision
+R00:00:00 vis.STREAM NAV    ; Vision process stream goes to Nav to control the car
+
+; Nav always streams to VideoStreamer
+; We can view the Nav frame results via Vlc
+R00:00:00 videoStreamer.DISPLAY UDP
+R00:00:00 videoStreamer.OPEN
+
+; Set up the vision pipeline
+R00:00:00 vis.CLEAR
+
+; Gradient will detect edges in the image by doing the following
+;   1. Gaussian blur
+;   2. Laplacian filter to find derivative
+;   3. Absolute value of derivative with some scaling factor
+;   4. Erosion to get rid of small dots
+;   5. Ostu thresholding (dynamic) for 30 frames, then binary threshold
+R00:00:00 vis.PIPE GRADIENT
+
+; The actual Nav algorithm to control the car
+R00:00:00 nav.RUN COMPLEX_PID
+
+; Start the stream, this starts all the other components
+R00:00:00 cam.START

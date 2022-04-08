@@ -8,9 +8,14 @@
 
 namespace Rpi
 {
-    CalibrationRecord::CalibrationRecord(U32 num_frame)
+    ChessBoardRecord::ChessBoardRecord(U32 num_frame)
     : total_frames(num_frame)
     {
+    }
+
+    bool ChessBoardRecord::done() const
+    {
+        return corners.size() >= total_frames;
     }
 
     bool CalibrationRecord::write(const char* filename) const
@@ -58,8 +63,46 @@ namespace Rpi
         }
     }
 
-    bool CalibrationRecord::done() const
+    bool WarpRecord::write(const char* filename) const
     {
-        return corners.size() >= total_frames;
+        try
+        {
+            cv::FileStorage fs(filename, cv::FileStorage::WRITE);
+            fs << "I" << image_corners;
+            fs << "O" << object_corners;
+            fs << "T" << transform;
+            fs.release();
+
+            return true;
+        }
+        catch (const std::exception& e)
+        {
+            Fw::Logger::logMsg("Failed to write DP to %s: %s",
+                               (POINTER_CAST)filename,
+                               (POINTER_CAST)e.what());
+            return false;
+        }
+    }
+
+    bool WarpRecord::read(const char* filename)
+    {
+        try
+        {
+            cv::FileStorage fs(filename, cv::FileStorage::READ);
+            fs["I"] >> image_corners;
+            fs["O"] >> object_corners;
+            fs["T"] >> transform;
+            fs.release();
+
+            return true;
+        }
+        catch (const std::exception& e)
+        {
+            Fw::Logger::logMsg("Failed to write DP to %s: %s",
+                               (POINTER_CAST)filename,
+                               (POINTER_CAST)e.what());
+
+            return false;
+        }
     }
 }

@@ -53,6 +53,17 @@ namespace Rpi
 
         bool process(CamFrame *frame, cv::Mat &image) override;
     };
+
+    class NavComplexPid : public NavAlgorithm
+    {
+    public:
+        explicit NavComplexPid(CarController* car);
+
+    private:
+        bool process(CamFrame *frame, cv::Mat &image) override;
+
+        cv::Mat m_smaller;
+    };
 }
 
 #endif //VO_CMPE460_NAVALGORITHM_H

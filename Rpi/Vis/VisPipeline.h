@@ -51,10 +51,33 @@ namespace Rpi
 
     class VisPoseCalculation : public VisPipelineStage
     {
+        /**
+         * Uses cv::calibrateCamera to calibrate a camera matrix and distortion
+         * vector as well as R/T transforms for all images.
+         * Averages out R/T for all images and dumps to recording
+         */
     public:
         explicit VisPoseCalculation(cv::Size patternSize);
 
-        bool process(CamFrame* frame, cv::Mat &image, VisRecord *recording) override;
+        bool process(CamFrame* frame, cv::Mat &image, VisRecord* recording) override;
+    private:
+        cv::Size m_pattern_size;
+        std::vector<cv::Point3f> m_object_points;
+    };
+
+    class VisWarpCalculation : public VisPipelineStage
+    {
+        /**
+         * Warp will generate a homography transform between the imaging plane
+         * and the birds eye object plane. Do make this operation simple, we assume
+         * the size bottom chessboard corners will be the size we want the transformed
+         * corners to be.
+         */
+    public:
+        explicit VisWarpCalculation(cv::Size patternSize);
+
+        bool process(CamFrame *frame, cv::Mat &image, VisRecord *recording) override;
+
     private:
         cv::Size m_pattern_size;
         std::vector<cv::Point3f> m_object_points;

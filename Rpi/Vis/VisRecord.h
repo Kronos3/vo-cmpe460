@@ -26,12 +26,21 @@ namespace Rpi
         virtual ~VisRecord() = default;
     };
 
-    struct CalibrationRecord : public VisRecord
+    struct ChessBoardRecord : public VisRecord
     {
         // Intermediate frames
         // Populated per frame
         std::vector<std::vector<cv::Point2f>> corners;
         U32 total_frames;
+
+        explicit ChessBoardRecord(U32 num_frame);
+        bool write(const char* filename) const override = 0;
+        bool read(const char* filename) override = 0;
+        bool done() const override;
+    };
+
+    struct CalibrationRecord : public ChessBoardRecord
+    {
 
         // Final calibrated image data products
         cv::Mat k;                  //!< Camera intrinsic matrix
@@ -39,11 +48,18 @@ namespace Rpi
         cv::Mat r;                  //!< Rotation Transform
         cv::Mat t;                  //!< Translation Transform
 
-        explicit CalibrationRecord(U32 num_frame);
         bool write(const char* filename) const override;
         bool read(const char* filename) override;
-        bool done() const override;
-        ~CalibrationRecord() override = default;
+    };
+
+    struct WarpRecord : public ChessBoardRecord
+    {
+        std::vector<cv::Point2f> image_corners;    //!< Actual image position of the chess board corners
+        std::vector<cv::Point2f> object_corners;   //!< Desired location of the chess board corners
+        cv::Mat transform;                         //!< Transform for Image -> Object perspective
+
+        bool write(const char* filename) const override;
+        bool read(const char* filename) override;
     };
 }
 

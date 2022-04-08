@@ -86,8 +86,6 @@ namespace Rpi
 
         cv::drawChessboardCorners(image, m_patternSize, corners, patternFound);
 
-
-
         // Label offset from the corner point
         cv::Point2f c(0.1, 0.1);
 
@@ -110,7 +108,7 @@ namespace Rpi
 
         if (recording)
         {
-            auto* record = dynamic_cast<CalibrationRecord*>(recording);
+            auto* record = dynamic_cast<ChessBoardRecord*>(recording);
             if (record == nullptr)
             {
                 return false;
@@ -209,6 +207,108 @@ namespace Rpi
                 record->t += t_i;
             }
             record->t = (1.0 / (F64) t_all.size()) * record->t;
+        }
+
+        return true;
+    }
+
+    VisWarpCalculation::VisWarpCalculation(cv::Size patternSize)
+    : m_pattern_size(patternSize)
+    {}
+
+    bool VisWarpCalculation::process(CamFrame* frame, cv::Mat &image, VisRecord* recording)
+    {
+        if (recording)
+        {
+            auto* record = dynamic_cast<WarpRecord*>(recording);
+            if (record == nullptr)
+            {
+                // We are using the wrong record
+                // Just kill the pipeline
+                return false;
+            }
+
+            if (!record->done())
+            {
+                // Wait until the recording is ready
+                return true;
+            }
+
+            // We took N images and found the chessboard corners
+            // There is a little noise in this. We can assume that
+            // the calibration target did not move during calibration.
+            // We can therefore average the corner positions
+            for (U32 i = 0; i < record->corners.at(0).size(); i++)
+            {
+                // Start with zeroes
+                cv::Point2f current = cv::Point2f(0, 0);
+
+                // Add up all the corner points from all the images
+                for (U32 j = 0; j < record->total_frames; j++)
+                {
+                    current += record->corners.at(j).at(i);
+                }
+
+                // Find the average position
+                current.x /= (F32)record->total_frames;
+                current.y /= (F32)record->total_frames;
+
+                record->image_corners.push_back(current);
+            }
+
+            // Now that we have the average position of the chessboard corners
+            // We can assume the bottom line of corners will include the X size
+            // we desire from our grid.
+            // We want to place the bottom line of the calibration target on the
+            // edge bottom of the transformed frame.
+
+            // Average the X distance between the bottom points
+            // The final m_pattern_size.width points will be the bottom
+            F64 square_size = 0.0;
+            cv::Point2f origin;
+            for (U32 i = (m_pattern_size.height - 1) * m_pattern_size.width, j = 0;
+                 i < m_pattern_size.height * m_pattern_size.width;
+                 i++, j++)
+            {
+                square_size += record->image_corners.at(i).x;
+
+                // Check if this is the origin point
+                // We need to find a XY offset for the entire pattern
+                if (j == m_pattern_size.width / 2)
+                {
+                    // We need to average the position between this point
+                    // and the next point to find the origin
+                    origin = record->image_corners.at(i) + record->image_corners.at(i + 1);
+                    origin.x /= 2.0;
+                    origin.y /= 2.0;
+                }
+            }
+
+            square_size /= (F64)m_pattern_size.width;
+
+            // Build the list of transformed points
+            for (I32 i = 0; i < m_pattern_size.height; i++)
+            {
+                for (I32 j = 0; j < m_pattern_size.width; j++)
+                {
+                    // The raw coordinate is a coordinate pair with (0,0) being the
+                    // origin point. We don't take into account the square or pixel offset of the
+                    // origin.
+                    cv::Point2f raw_coordinate;
+                    raw_coordinate.x = ((F32) m_pattern_size.width / (F32) 2.0) - (F32)j - (F32)0.5;
+                    raw_coordinate.y = ((F32) m_pattern_size.height) - (F32) (i + 1);
+
+                    // We now need to scale the point by the square size and shift it by the origin
+                    cv::Point2f object_coordinate = (raw_coordinate * square_size) + origin;
+                    record->object_corners.push_back(object_coordinate);
+                }
+            }
+
+            // Finally, get the transform between the image -> object points
+            record->transform = cv::getPerspectiveTransform(
+                    record->image_corners,
+                    record->object_corners
+            );
         }
 
         return true;
