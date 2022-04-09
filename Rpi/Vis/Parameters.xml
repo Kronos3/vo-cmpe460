@@ -19,7 +19,7 @@
         </comment>
     </parameter>
     <parameter id="3" set_opcode="7" save_opcode="8"
-               name="OSTU_FRAMES" data_type="U32" default="30">
+               name="OTSU_FRAMES" data_type="U32" default="30">
         <comment>
             Number of frames to average ostu thresholding detection over. Once averaging
             is done, switch over to normal binary thresholding.
@@ -31,6 +31,48 @@
             Sigma to apply to 3x3 gaussian smoothing kernel before
             Sobel edge detector is applied. Essentially controls
             the low pass filter before the noise sensitive step.
+        </comment>
+    </parameter>
+    <parameter id="5" set_opcode="11" save_opcode="12"
+               name="WARP_CALIBRATION" data_type="string" size="40" default="/fsw/data/warp_calibration.dat">
+        <comment>
+            Warp calibration for perspective transform
+        </comment>
+    </parameter>
+    <parameter id="6" set_opcode="13" save_opcode="14"
+               name="DOWNSCALE" data_type="I32" default="1">
+        <comment>
+            Downscale amount to pass through downscale pipeline
+        </comment>
+    </parameter>
+    <parameter id="7" set_opcode="15" save_opcode="16"
+               name="INTERPOLATION" data_type="Rpi::VisInterpolation" default="Rpi::VisInterpolation::NEAREST">
+        <comment>
+            Downscale amount to pass through downscale pipeline
+        </comment>
+    </parameter>
+    <parameter id="8" set_opcode="17" save_opcode="18"
+               name="WARP_SCALE_X" data_type="F32" default="1.0">
+        <comment>
+            Object frame scaling factor (X) during warp transform
+        </comment>
+    </parameter>
+    <parameter id="9" set_opcode="19" save_opcode="20"
+               name="WARP_SCALE_Y" data_type="F32" default="1.0">
+        <comment>
+            Object frame scaling factor (Y) during warp transform
+        </comment>
+    </parameter>
+    <parameter id="10" set_opcode="21" save_opcode="22"
+               name="WARP_TRANSLATE_X" data_type="F32" default="0.0">
+        <comment>
+            Object frame translate (X) during warp transform
+        </comment>
+    </parameter>
+    <parameter id="11" set_opcode="23" save_opcode="24"
+               name="WARP_TRANSLATE_Y" data_type="F32" default="0.0">
+        <comment>
+            Object frame translate (Y) during warp transform
         </comment>
     </parameter>
 </parameters>

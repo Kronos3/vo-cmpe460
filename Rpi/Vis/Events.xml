@@ -53,4 +53,10 @@
             <arg name="filename" type="string" size="80"/>
         </args>
     </event>
+    <event id="10" name="VisPipelineFailed" severity="WARNING_HI"
+           format_string="Vis failed to add pipeline %s">
+        <args>
+            <arg name="pipe_name" type="Rpi::VisPipe"/>
+        </args>
+    </event>
 </events>

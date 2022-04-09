@@ -68,7 +68,7 @@ namespace Rpi
                 tlm_dropped++;
                 tlmWrite_FramesDropped(tlm_dropped);
                 m_camera->queueRequest(msg.payload);
-                return;
+                continue;
             }
 
             buffer->request = msg.payload;

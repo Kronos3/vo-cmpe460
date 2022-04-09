@@ -69,7 +69,8 @@ namespace Rpi
                       frame->info.stride);
 
         // Pass the frame through the transformation pipeline
-        bool pipe_status = pipe_start->run(frame, image, recording.get());
+        bool pipe_status;
+        cv::Mat& output = pipe_start->run(frame, image, recording.get(), pipe_status);
         if (!pipe_status)
         {
             tlm_frame_failed++;
@@ -81,6 +82,10 @@ namespace Rpi
             ready_out(0, 0);
             return;
         }
+
+        cv::resize(output, image,
+                   cv::Size(image.cols, image.rows),
+                   0, 0, cv::INTER_NEAREST);
 
         m_state_mutex.lock();
         VisRecord* recording_new = m_recording.get();
@@ -183,22 +188,96 @@ namespace Rpi
                 stage_ptr = new VisPoseCalculation(calib_size);
             }
                 break;
-            case VisPipe::GRADIENT:
+            case VisPipe::WARP_CALCULATION:
             {
-                U32 otsu_frames = paramGet_OSTU_FRAMES(valid);
+                I32 col = paramGet_POSE_CALIB_COL(valid);
+                FW_ASSERT(valid == Fw::PARAM_DEFAULT || valid == Fw::PARAM_VALID, valid);
+                I32 row = paramGet_POSE_CALIB_ROW(valid);
                 FW_ASSERT(valid == Fw::PARAM_DEFAULT || valid == Fw::PARAM_VALID, valid);
 
+                cv::Size calib_size(row, col);
+                stage_ptr = new VisWarpCalculation(calib_size);
+            }
+                break;
+            case VisPipe::DOWNSCALE:
+            {
+                I32 downscale = paramGet_DOWNSCALE(valid);
+                FW_ASSERT(valid == Fw::PARAM_DEFAULT || valid == Fw::PARAM_VALID, valid);
+
+                VisInterpolation interpolation = paramGet_INTERPOLATION(valid);
+                FW_ASSERT(valid == Fw::PARAM_DEFAULT || valid == Fw::PARAM_VALID, valid);
+
+                stage_ptr = new VisDownscale(
+                        downscale,
+                        static_cast<cv::InterpolationFlags>(
+                                interpolation.e)
+                                );
+            }
+                break;
+            case VisPipe::GAUSSIAN:
+            {
                 F32 sigma = paramGet_GAUSSIAN_SIGMA(valid);
                 FW_ASSERT(valid == Fw::PARAM_DEFAULT || valid == Fw::PARAM_VALID, valid);
 
-                stage_ptr = new VisGradiant(otsu_frames, sigma);
+                stage_ptr = new VisGaussian(sigma);
             }
                 break;
+            case VisPipe::GRADIENT:
+                stage_ptr = new VisGradiant();
+                break;
+            case VisPipe::ERODE:
+                stage_ptr = new VisErode();
+                break;
+            case VisPipe::OTSU_THRESHOLD:
+            {
+                U32 otsu_frames = paramGet_OTSU_FRAMES(valid);
+                FW_ASSERT(valid == Fw::PARAM_DEFAULT || valid == Fw::PARAM_VALID, valid);
+
+                stage_ptr = new VisOtsuThreshold(otsu_frames);
+            }
+                break;
+            case VisPipe::WARP:
+            {
+                Fw::ParamString warp_calibration = paramGet_WARP_CALIBRATION(valid);
+                FW_ASSERT(valid == Fw::PARAM_DEFAULT || valid == Fw::PARAM_VALID, valid);
+
+                F32 scale_x = paramGet_WARP_SCALE_X(valid);
+                FW_ASSERT(valid == Fw::PARAM_DEFAULT || valid == Fw::PARAM_VALID, valid);
+
+                F32 scale_y = paramGet_WARP_SCALE_Y(valid);
+                FW_ASSERT(valid == Fw::PARAM_DEFAULT || valid == Fw::PARAM_VALID, valid);
+
+                F32 translate_x = paramGet_WARP_TRANSLATE_X(valid);
+                FW_ASSERT(valid == Fw::PARAM_DEFAULT || valid == Fw::PARAM_VALID, valid);
+
+                F32 translate_y = paramGet_WARP_TRANSLATE_Y(valid);
+                FW_ASSERT(valid == Fw::PARAM_DEFAULT || valid == Fw::PARAM_VALID, valid);
+
+                auto* warp = new VisWarp(scale_x, scale_y, translate_x, translate_y);
+                Fw::LogStringArg a = warp_calibration;
+                if (!warp->read(warp_calibration.toChar()))
+                {
+                    log_WARNING_HI_VisCalibrationFailed(a);
+                    delete warp;
+                    stage_ptr = nullptr;
+                }
+                else
+                {
+                    log_ACTIVITY_LO_VisCalibrationLoaded(a);
+                    stage_ptr = warp;
+                }
+                break;
+            }
             default:
                 FW_ASSERT(0 && "Invalid stage", stage.e);
         }
 
-        FW_ASSERT(stage_ptr);
+        if (!stage_ptr)
+        {
+            log_WARNING_HI_VisPipelineFailed(stage);
+            cmdResponse_out(opCode, cmdSeq, Fw::COMMAND_EXECUTION_ERROR);
+            return;
+        }
 
         m_state_mutex.lock();
         if (!m_pipeline)
@@ -239,7 +318,9 @@ namespace Rpi
         {
             case CALIBRATION_RECORD:
                 m_recording = std::make_shared<CalibrationRecord>(frame_count);
-                Fw::Logger::logMsg("frame_count: %d\n", frame_count);
+                break;
+            case WARP_RECORD:
+                m_recording = std::make_shared<WarpRecord>(frame_count);
                 break;
             default:
             case VisRecordType_MAX:
