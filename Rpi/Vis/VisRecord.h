@@ -41,6 +41,7 @@ namespace Rpi
 
     struct CalibrationRecord : public ChessBoardRecord
     {
+        explicit CalibrationRecord(U32 num_frame);
 
         // Final calibrated image data products
         cv::Mat k;                  //!< Camera intrinsic matrix
@@ -54,12 +55,17 @@ namespace Rpi
 
     struct WarpRecord : public ChessBoardRecord
     {
+        explicit WarpRecord(U32 num_frame);
+
         std::vector<cv::Point2f> image_corners;    //!< Actual image position of the chess board corners
-        std::vector<cv::Point2f> object_corners;   //!< Desired location of the chess board corners
-        cv::Mat transform;                         //!< Transform for Image -> Object perspective
+        cv::Size image_size;                       //!< Size of the original image
+        cv::Size corner_pattern;                   //!< Chessboard pattern (usually 9x6)
+        F32 square_size;                           //!< Pixel size of the chessboard square
 
         bool write(const char* filename) const override;
         bool read(const char* filename) override;
+
+        cv::Mat get_transform(I32 downscale, const std::vector<cv::Point2f>& object_corners) const;
     };
 }
 

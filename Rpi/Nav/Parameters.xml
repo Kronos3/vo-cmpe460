@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <parameters opcode_base="10">
+    <!-- Simple P parameter set -->
     <parameter id="0" set_opcode="1" save_opcode="2"
                name="SIMPLE_CENTER" data_type="F32" default="0.5">
         <comment>
@@ -30,6 +31,32 @@
                name="SIMPLE_CUTOFF" data_type="F32" default="0.05">
         <comment>
             Ratio of image to cut off of each side
+        </comment>
+    </parameter>
+
+    <!-- Simple PID parameter set -->
+    <parameter id="5" set_opcode="11" save_opcode="12"
+               name="SIMPLE_PID_P" data_type="F32" default="0.5">
+        <comment>
+            P coefficient
+        </comment>
+    </parameter>
+    <parameter id="6" set_opcode="13" save_opcode="14"
+               name="SIMPLE_PID_I" data_type="F32" default="0.5">
+        <comment>
+            I coefficient
+        </comment>
+    </parameter>
+    <parameter id="7" set_opcode="15" save_opcode="16"
+               name="SIMPLE_PID_D" data_type="F32" default="0.5">
+        <comment>
+            D coefficient
+        </comment>
+    </parameter>
+    <parameter id="8" set_opcode="17" save_opcode="18"
+               name="SIMPLE_PID_T" data_type="F32" default="0.5">
+        <comment>
+            Throttle coefficient
         </comment>
     </parameter>
 </parameters>

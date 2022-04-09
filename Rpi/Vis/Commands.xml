@@ -35,6 +35,7 @@
                 </comment>
                 <enum name="VisRecordType">
                     <item name="CALIBRATION_RECORD"/>
+                    <item name="WARP_RECORD"/>
                 </enum>
             </arg>
             <arg name="frame_count" type="U32">

@@ -16,21 +16,17 @@ namespace Rpi
         m_next = next;
     }
 
-    bool VisPipelineStage::run(CamFrame* frame, cv::Mat &image, VisRecord* recording)
+    cv::Mat& VisPipelineStage::run(CamFrame* frame, cv::Mat &image, VisRecord* recording, bool &valid)
     {
-        bool status = process(frame, image, recording);
-        if (!status)
+        valid = true;
+        cv::Mat& transformed = process(frame, image, recording, valid);
+        if (!valid || !m_next)
         {
-            // The pipeline failed
-            return false;
+            // The pipeline failed or is the last in the chain
+            return transformed;
         }
 
-        if (m_next)
-        {
-            return m_next->run(frame, image, recording);
-        }
-
-        return true;
+        return m_next->run(frame, transformed, recording, valid);
     }
 
     VisPipelineStage::~VisPipelineStage()
@@ -39,12 +35,16 @@ namespace Rpi
         m_next = nullptr;
     }
 
-    VisFindChessBoard::VisFindChessBoard(cv::Size patternSize)
-            : m_patternSize(patternSize)
+    cv::Mat& VisDownscale::process(CamFrame* frame, cv::Mat& image, VisRecord* recording, bool &valid)
     {
+        cv::resize(image, m_downscaled,
+                   cv::Size(image.cols / m_downscale,
+                            image.rows / m_downscale),
+                   0, 0, m_interpolation);
+        return m_downscaled;
     }
 
-    bool VisFindChessBoard::process(CamFrame* frame, cv::Mat &image, VisRecord* recording)
+    cv::Mat& VisFindChessBoard::process(CamFrame* frame, cv::Mat& image, VisRecord* recording, bool &valid)
     {
         std::vector<cv::Point2f> corners;
 
@@ -62,7 +62,8 @@ namespace Rpi
                                                       + cv::CALIB_CB_FAST_CHECK);
         if (!patternFound)
         {
-            return false;
+            valid = false;
+            return image;
         }
 
         F32 x_original_center = (F32) (resized.cols - 1) / (F32) 2.0;
@@ -111,13 +112,14 @@ namespace Rpi
             auto* record = dynamic_cast<ChessBoardRecord*>(recording);
             if (record == nullptr)
             {
-                return false;
+                valid = false;
+                return image;
             }
 
             record->corners.push_back(std::move(corners));
         }
 
-        return true;
+        return image;
     }
 
     VisPoseCalculation::VisPoseCalculation(cv::Size patternSize)
@@ -139,21 +141,15 @@ namespace Rpi
         }
     }
 
-    bool VisPoseCalculation::process(CamFrame* frame, cv::Mat &image, VisRecord* recording)
+    cv::Mat& VisPoseCalculation::process(CamFrame* frame, cv::Mat& image, VisRecord* recording, bool &valid)
     {
-        if (!recording)
-        {
-            // This stage does nothing is we don't get points from
-            // the FindChessBoard pipe
-            return false;
-        }
-
         auto* record = dynamic_cast<CalibrationRecord*>(recording);
         if (record == nullptr)
         {
             // The recording being passed through the pipeline not correct
             // We can't continue
-            return false;
+            valid = false;
+            return image;
         }
 
         // Camera calibration will be calculated on the final frame
@@ -209,14 +205,14 @@ namespace Rpi
             record->t = (1.0 / (F64) t_all.size()) * record->t;
         }
 
-        return true;
+        return image;
     }
 
     VisWarpCalculation::VisWarpCalculation(cv::Size patternSize)
     : m_pattern_size(patternSize)
     {}
 
-    bool VisWarpCalculation::process(CamFrame* frame, cv::Mat &image, VisRecord* recording)
+    cv::Mat& VisWarpCalculation::process(CamFrame* frame, cv::Mat &image, VisRecord* recording, bool& valid)
     {
         if (recording)
         {
@@ -225,19 +221,21 @@ namespace Rpi
             {
                 // We are using the wrong record
                 // Just kill the pipeline
-                return false;
+                valid = false;
+                return image;
             }
 
             if (!record->done())
             {
                 // Wait until the recording is ready
-                return true;
+                return image;
             }
 
             // We took N images and found the chessboard corners
             // There is a little noise in this. We can assume that
             // the calibration target did not move during calibration.
             // We can therefore average the corner positions
+            std::vector<cv::Point2f> average_corners;
             for (U32 i = 0; i < record->corners.at(0).size(); i++)
             {
                 // Start with zeroes
@@ -253,99 +251,47 @@ namespace Rpi
                 current.x /= (F32)record->total_frames;
                 current.y /= (F32)record->total_frames;
 
-                record->image_corners.push_back(current);
+                average_corners.push_back(current);
             }
 
-            // Now that we have the average position of the chessboard corners
-            // We can assume the bottom line of corners will include the X size
-            // we desire from our grid.
-            // We want to place the bottom line of the calibration target on the
-            // edge bottom of the transformed frame.
+            record->corner_pattern = m_pattern_size;
+            record->image_size = cv::Size(image.cols, image.rows);
 
-            // Average the X distance between the bottom points
-            // The final m_pattern_size.width points will be the bottom
-            F64 square_size = 0.0;
-            cv::Point2f origin;
-            for (U32 i = (m_pattern_size.height - 1) * m_pattern_size.width, j = 0;
-                 i < m_pattern_size.height * m_pattern_size.width;
-                 i++, j++)
+            for (U32 i = 0; i < 4; i++)
             {
-                square_size += record->image_corners.at(i).x;
-
-                // Check if this is the origin point
-                // We need to find a XY offset for the entire pattern
-                if (j == m_pattern_size.width / 2)
-                {
-                    // We need to average the position between this point
-                    // and the next point to find the origin
-                    origin = record->image_corners.at(i) + record->image_corners.at(i + 1);
-                    origin.x /= 2.0;
-                    origin.y /= 2.0;
-                }
+                record->image_corners.emplace_back(0, 0);
             }
 
-            square_size /= (F64)m_pattern_size.width;
+            // Copy the four corners into place
+            record->image_corners[0] = average_corners[0];
+            record->image_corners[1] = average_corners[m_pattern_size.width - 1];
+            record->image_corners[2] = average_corners[(m_pattern_size.height - 1) * (m_pattern_size.width)];
+            record->image_corners[3] = average_corners[(m_pattern_size.height - 1) * (m_pattern_size.width) +
+                                                       (m_pattern_size.width - 1)];
 
-            // Build the list of transformed points
-            for (I32 i = 0; i < m_pattern_size.height; i++)
-            {
-                for (I32 j = 0; j < m_pattern_size.width; j++)
-                {
-                    // The raw coordinate is a coordinate pair with (0,0) being the
-                    // origin point. We don't take into account the square or pixel offset of the
-                    // origin.
-                    cv::Point2f raw_coordinate;
-                    raw_coordinate.x = ((F32) m_pattern_size.width / (F32) 2.0) - (F32)j - (F32)0.5;
-                    raw_coordinate.y = ((F32) m_pattern_size.height) - (F32) (i + 1);
-
-                    // We now need to scale the point by the square size and shift it by the origin
-                    cv::Point2f object_coordinate = (raw_coordinate * square_size) + origin;
-                    record->object_corners.push_back(object_coordinate);
-                }
-            }
-
-            // Finally, get the transform between the image -> object points
-            record->transform = cv::getPerspectiveTransform(
-                    record->image_corners,
-                    record->object_corners
-            );
+            // Each square is of equal size
+            record->square_size = (record->image_corners[3].x - record->image_corners[2].x) / (F32)(m_pattern_size.width - 1);
         }
 
-        return true;
+        return image;
     }
 
-    VisGradiant::VisGradiant(U32 ostu_frames, F32 sigma)
-    : m_ostu_running_sum(0.0), m_ostu_index(0),
-    m_ostu_frames(ostu_frames),
-    m_sigma(sigma)
+    cv::Mat& VisGaussian::process(CamFrame* frame, cv::Mat &image, VisRecord* recording, bool& valid)
     {
-    }
-
-    bool VisGradiant::process(CamFrame* frame, cv::Mat &image, VisRecord* recording)
-    {
-        U8 value = 128;
-        U32 num = (frame->info.stride * frame->info.height) / 2;
-        I32 scale = 1;
-        I32 delta = 0;
-        I32 ddepth = CV_16S;
-
-        memset(frame->span.data() + frame->info.stride * frame->info.height, value, num);
-
-        // Downscale the image so that we actually get good performance
-        // We upscale the results later
-        cv::resize(image, m_smaller,
-                   cv::Size(image.cols / VIS_RACE_DOWNSCALE,
-                            image.rows / VIS_RACE_DOWNSCALE),
-                   0, 0, cv::INTER_NEAREST // faster than lerping
-                   );
-
         // Remove noise by blurring with a Gaussian filter ( kernel size = 3 )
-        cv::GaussianBlur(m_smaller, m_smaller, cv::Size(3, 3), m_sigma, 0, cv::BORDER_DEFAULT);
+        cv::GaussianBlur(image, m_out, cv::Size(3, 3), m_sigma, 0, cv::BORDER_DEFAULT);
+        return m_out;
+    }
 
+    cv::Mat& VisGradiant::process(CamFrame* frame, cv::Mat &image, VisRecord* recording, bool& valid)
+    {
         // Find the dx and dy gradients by applying simple Sobel filters
         // This is just a convolution of gradient kernels.
-        cv::Sobel(m_smaller, m_grad_x, ddepth, 1, 0, 1, scale, delta, cv::BORDER_DEFAULT);
-        cv::Sobel(m_smaller, m_grad_y, ddepth, 0, 1, 1, scale, delta, cv::BORDER_DEFAULT);
+        I32 delta = 0;
+        I32 ddepth = CV_16S;
+        I32 scale = 1;
+        cv::Sobel(image, m_grad_x, ddepth, 1, 0, 1, scale, delta, cv::BORDER_DEFAULT);
+        cv::Sobel(image, m_grad_y, ddepth, 0, 1, 1, scale, delta, cv::BORDER_DEFAULT);
 
         // We don't care about negative gradients
         cv::convertScaleAbs(m_grad_x, m_grad_x);
@@ -354,14 +300,22 @@ namespace Rpi
         // Todo(tumbar) cv::add
         // Combine dx and dy into a single frame
         // We can reuse the m_smaller buffer
-        cv::addWeighted(m_grad_x, 1, m_grad_y, 1, 0, m_smaller);
+        cv::addWeighted(m_grad_x, 1, m_grad_y, 1, 0, m_out);
 
+        return m_out;
+    }
+
+    cv::Mat& VisErode::process(CamFrame* frame, cv::Mat &image, VisRecord* recording, bool& valid)
+    {
         // The erosion kernel will remove small dots seen where the localized
         // gradient is higher. The resultant image not include small dots that
         // are unlikely to be actual track edges.
-        cv::Mat erosion_kernel = cv::Mat::ones(cv::Size(3, 3), CV_8U);
-        cv::morphologyEx(m_smaller, m_smaller, cv::MORPH_OPEN, erosion_kernel);
+        cv::morphologyEx(image, m_out, cv::MORPH_OPEN, m_erosion_kernel);
+        return m_out;
+    }
 
+    cv::Mat& VisOtsuThreshold::process(CamFrame* frame, cv::Mat &image, VisRecord* recording, bool& valid)
+    {
         // Now that we have the gradient image calculated, we need to threshold
         // these values to filter out the small deltas in color. To avoid needing
         // to mess with a thresholding value that depends on environment etc. We
@@ -371,7 +325,7 @@ namespace Rpi
         {
             // We only wants to perform Otsu thresholding for a certain number of frames
             // We can average out the running sum at the end
-            m_ostu_running_sum += cv::threshold(m_smaller, m_smaller, 0, 255, cv::THRESH_BINARY | cv::THRESH_OTSU);
+            m_ostu_running_sum += cv::threshold(image, m_out, 0, 255, cv::THRESH_BINARY | cv::THRESH_OTSU);
             m_ostu_index++;
         }
         else
@@ -386,18 +340,77 @@ namespace Rpi
             }
 
             // Standard binary thresholding is faster than Otsu
-            cv::threshold(m_smaller, m_smaller, m_ostu_running_sum, 255, cv::THRESH_BINARY);
+            cv::threshold(image, m_out, m_ostu_running_sum, 255, cv::THRESH_BINARY);
         }
 
-        // Update the result image back to the output
-        // The rest of the pipeline and the output does not handle a size change
-        // We can use INTER_NEAREST to get sharp edges on the up-scaled image.
-        // Linear interpolate hear would get rid of the thresholding work we already did
-        cv::resize(m_smaller,
-                   image,
-                   cv::Size(image.cols, image.rows),
-                   0, 0, cv::INTER_NEAREST);
+        return m_out;
+    }
+
+    VisWarp::VisWarp(F32 scale_x, F32 scale_y,
+                     F32 translate_x, F32 translate_y)
+    : m_scale_x(scale_x), m_scale_y(scale_y),
+    m_translate(translate_x, translate_y),
+    m_calibration(0)
+    {
+        for (U32 i = 0; i < 4; i++)
+        {
+            m_object_corners.emplace_back(0, 0);
+        }
+    }
+
+    bool VisWarp::read(const char* calibration_file)
+    {
+        bool status = m_calibration.read(calibration_file);
+        if (!status) return false;
+
+        // The bottom edge should sit aligned with the origin. This may provide
+        // a slight rotation and translation if needed
+        // We don't need to mess with the Y position of the origin. Move the origin
+        // to the center of the image
+        m_object_corners[2] = m_calibration.image_corners[2] + m_translate;
+        m_object_corners[3] = cv::Point2f(m_calibration.image_corners[3].x * m_scale_x,
+                                          m_calibration.image_corners[2].y)
+                                                  + m_translate;
+        m_object_corners[0] = cv::Point2f(m_object_corners[2].x,
+                                          m_object_corners[2].y -
+                                          (F32)(m_calibration.corner_pattern.height - 1) *
+                                          (m_calibration.square_size * m_scale_y))
+                                                  + m_translate;
+        m_object_corners[1] = cv::Point2f(m_object_corners[3].x,
+                                          m_object_corners[3].y -
+                                          (F32)(m_calibration.corner_pattern.height - 1) *
+                                          (m_calibration.square_size * m_scale_y))
+                                                  + m_translate;
 
         return true;
+    }
+
+    cv::Mat& VisWarp::process(CamFrame* frame, cv::Mat& image, VisRecord* recording, bool &valid)
+    {
+        if (m_current_size != cv::Size(image.cols, image.rows))
+        {
+            m_current_size = cv::Size(image.cols, image.rows);
+            m_transform = m_calibration.get_transform(
+                    m_calibration.image_size.width / m_current_size.width,
+                    m_object_corners);
+        }
+
+        // Warp the image to the object (birds-eye) view
+        cv::warpPerspective(image, m_warped,
+                            m_transform,
+                            m_current_size,
+                            cv::INTER_NEAREST);
+
+//        cv::drawMarker(m_smaller, m_calibration.image_corners[0] * (1.0 / m_downscale), cv::Scalar(0, 0, 0), cv::MARKER_CROSS, 50, 4);
+//        cv::drawMarker(m_smaller, m_calibration.image_corners[1] * (1.0 / m_downscale), cv::Scalar(0, 0, 0), cv::MARKER_CROSS, 50, 4);
+//        cv::drawMarker(m_smaller, m_calibration.image_corners[2] * (1.0 / m_downscale), cv::Scalar(0, 0, 0), cv::MARKER_CROSS, 50, 4);
+//        cv::drawMarker(m_smaller, m_calibration.image_corners[3] * (1.0 / m_downscale), cv::Scalar(0, 0, 0), cv::MARKER_CROSS, 50, 4);
+
+//        cv::drawMarker(m_smaller, m_calibration.object_corners[0] * (1.0 / m_downscale), cv::Scalar(150, 150, 150), cv::MARKER_CROSS, 50, 4);
+//        cv::drawMarker(m_smaller, m_calibration.object_corners[1] * (1.0 / m_downscale), cv::Scalar(150, 150, 150), cv::MARKER_CROSS, 50, 4);
+//        cv::drawMarker(m_smaller, m_calibration.object_corners[2] * (1.0 / m_downscale), cv::Scalar(150, 150, 150), cv::MARKER_CROSS, 50, 4);
+//        cv::drawMarker(m_smaller, m_calibration.object_corners[3] * (1.0 / m_downscale), cv::Scalar(150, 150, 150), cv::MARKER_CROSS, 50, 4);
+
+        return m_warped;
     }
 }

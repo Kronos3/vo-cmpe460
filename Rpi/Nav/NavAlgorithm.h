@@ -3,6 +3,9 @@
 
 #include <Rpi/Nav/NavAlgorithmTypeEnumAc.hpp>
 #include <Rpi/Cam/Ports/CamFrame.h>
+
+#include <Rpi/Vis/VisRecord.h>
+
 #include "NavParams.h"
 
 namespace Rpi
@@ -62,6 +65,7 @@ namespace Rpi
     private:
         bool process(CamFrame *frame, cv::Mat &image) override;
 
+        cv::Mat birds_eye;
         cv::Mat m_smaller;
     };
 }

@@ -3,16 +3,18 @@ R00:00:00 cam.STOP
 ; Set up the frame pathing
 R00:00:00 cam.STREAM VIS                ; Raw camera stream goes to vision
 R00:00:00 vis.STREAM VIDEO_STREAMER     ; Vision annotated stream goes to the screen/udp
+R00:00:00 videoStreamer.HOSTNAME_PRM_SET "192.168.1.220"
+R00:00:00 videoStreamer.OPEN
 
 ; Set up the vision pipeline
 R00:00:00 vis.CLEAR
 R00:00:00 vis.PIPE FIND_CHESSBOARD
-R00:00:00 vis.PIPE POSE_CALCULATION
+R00:00:00 vis.PIPE WARP_CALCULATION
 
 ; Record the calibration over an average of 10 frames
 ; This will give a bit more accuracy that just taking a single image
 ; NOTE: Make sure to keep the calibration board perfectly still during this time!!
-R00:00:00 vis.RECORD_FILE CALIBRATION_RECORD 5 "/fsw/data/pose_calibration.dat"
+R00:00:00 vis.RECORD_FILE WARP_RECORD 10 "/fsw/data/warp_calibration.dat"
 
 ; Start the stream
 R00:00:00 cam.START
@@ -24,3 +26,15 @@ R00:00:00 vis.RECORD_WAIT
 R00:00:00 vis.CLEAR
 
 R00:00:00 cam.STOP
+
+; Set up a pipeline to perform the warping
+R00:00:00 vis.DOWNSCALE_PRM_SET 8
+R00:00:00 vis.PIPE DOWNSCALE
+
+R00:00:00 vis.WARP_SCALE_X_PRM_SET 1.0
+R00:00:00 vis.WARP_SCALE_Y_PRM_SET 0.5
+R00:00:00 vis.WARP_TRANSLATE_X_PRM_SET 0.0
+R00:00:00 vis.WARP_TRANSLATE_Y_PRM_SET 0.0
+R00:00:00 vis.PIPE WARP
+
+R00:00:00 cam.START

@@ -4,6 +4,7 @@
 #include <Fw/Types/BasicTypes.hpp>
 #include <opencv2/core/mat.hpp>
 #include "VisRecord.h"
+#include "opencv2/imgproc.hpp"
 #include <Rpi/Cam/Ports/CamFrame.h>
 
 namespace Rpi
@@ -14,7 +15,7 @@ namespace Rpi
         VisPipelineStage();
         virtual ~VisPipelineStage();
 
-        bool run(CamFrame* frame, cv::Mat& image, VisRecord* recording);
+        cv::Mat& run(CamFrame* frame, cv::Mat& image, VisRecord* recording, bool &valid);
         void chain(VisPipelineStage* next);
 
     protected:
@@ -23,29 +24,42 @@ namespace Rpi
          * Apply an in place transformation
          * @param image the image to transform
          * @param recording currently running recording
+         * @return transformed image
          */
-        virtual bool process(CamFrame* frame, cv::Mat& image, VisRecord* recording) = 0;
+        virtual cv::Mat& process(CamFrame* frame, cv::Mat& image, VisRecord* recording, bool &valid) = 0;
 
     private:
         VisPipelineStage* m_next;
     };
 
-#if 0
-    class VisGrayscale : public VisPipelineStage
+    class VisDownscale : public VisPipelineStage
     {
+    public:
+        explicit VisDownscale(I32 downscale,
+                              cv::InterpolationFlags interpolation)
+        : m_downscale(downscale), m_interpolation(interpolation)
+        {
+        }
+
     private:
-        void process(cv::Mat &image) override;
+        cv::Mat& process(CamFrame* frame, cv::Mat& image, VisRecord* recording, bool &valid) override;
+
+        I32 m_downscale;
+        cv::InterpolationFlags m_interpolation;
+        cv::Mat m_downscaled;
     };
-#endif
 
     class VisFindChessBoard : public VisPipelineStage
     {
     public:
-        explicit VisFindChessBoard(cv::Size patternSize);
+        explicit VisFindChessBoard(cv::Size patternSize)
+        : m_patternSize(patternSize)
+        {
+        }
 
     private:
+        cv::Mat& process(CamFrame* frame, cv::Mat& image, VisRecord* recording, bool &valid) override;
         cv::Mat resized;
-        bool process(CamFrame* frame, cv::Mat &image, VisRecord* recording) override;
         cv::Size m_patternSize;
     };
 
@@ -59,7 +73,7 @@ namespace Rpi
     public:
         explicit VisPoseCalculation(cv::Size patternSize);
 
-        bool process(CamFrame* frame, cv::Mat &image, VisRecord* recording) override;
+        cv::Mat& process(CamFrame* frame, cv::Mat& image, VisRecord* recording, bool &valid) override;
     private:
         cv::Size m_pattern_size;
         std::vector<cv::Point3f> m_object_points;
@@ -76,21 +90,63 @@ namespace Rpi
     public:
         explicit VisWarpCalculation(cv::Size patternSize);
 
-        bool process(CamFrame *frame, cv::Mat &image, VisRecord *recording) override;
+        cv::Mat& process(CamFrame* frame, cv::Mat& image, VisRecord* recording, bool &valid) override;
 
     private:
         cv::Size m_pattern_size;
-        std::vector<cv::Point3f> m_object_points;
     };
+
+    class VisGaussian : public VisPipelineStage
+    {
+    public:
+        explicit VisGaussian(F32 sigma)
+        : m_sigma(sigma) {}
+
+    private:
+        cv::Mat& process(CamFrame* frame, cv::Mat& image, VisRecord* recording, bool &valid) override;
+        F32 m_sigma;
+        cv::Mat m_out;
+    };
+
 
     class VisGradiant : public VisPipelineStage
     {
     public:
-        explicit VisGradiant(U32 ostu_frames, F32 sigma);
-
-        bool process(CamFrame* frame, cv::Mat &image, VisRecord *recording) override;
+        explicit VisGradiant() = default;
 
     private:
+        cv::Mat& process(CamFrame* frame, cv::Mat& image, VisRecord* recording, bool &valid) override;
+
+        cv::Mat m_grad_x;
+        cv::Mat m_grad_y;
+        cv::Mat m_out;
+    };
+
+    class VisErode : public VisPipelineStage
+    {
+    public:
+        explicit VisErode()
+        : m_erosion_kernel(cv::Mat::ones(cv::Size(3, 3), CV_8U))
+        {}
+    private:
+        cv::Mat& process(CamFrame* frame, cv::Mat& image, VisRecord* recording, bool &valid) override;
+
+        cv::Mat m_out;
+        cv::Mat m_erosion_kernel;
+    };
+
+    class VisOtsuThreshold : public VisPipelineStage
+    {
+    public:
+        explicit VisOtsuThreshold(U32 ostu_frames)
+        : m_ostu_running_sum(0.0), m_ostu_index(0),
+          m_ostu_frames(ostu_frames)
+        {
+        }
+
+    private:
+        cv::Mat& process(CamFrame* frame, cv::Mat& image, VisRecord* recording, bool &valid) override;
+
         // For the first OTSU_FRAMES of capture, we will average the
         // computed OTSU threshold. Then we will switch to flat binary
         // thresholding. This allows us to avoid extra work when finding
@@ -99,31 +155,31 @@ namespace Rpi
         U32 m_ostu_index;
         U32 m_ostu_frames;
 
-        F32 m_sigma;
-        cv::Mat m_grad_x;
-        cv::Mat m_grad_y;
-        cv::Mat m_smaller;
+        cv::Mat m_out;
     };
 
-    class VisMapping : public VisPipelineStage
+    class VisWarp : public VisPipelineStage
     {
     public:
-        explicit VisMapping(const char* calibration_file,
-                            F32 threshold,
-                            U32 x_cells,
-                            U32 y_cells);
+        explicit VisWarp(F32 scale_x, F32 scale_y,
+                         F32 translate_x, F32 translate_y);
 
-        bool is_valid() const;
-
-        bool process(CamFrame *frame, cv::Mat &image, VisRecord *recording) override;
+        bool read(const char* calibration_file);
 
     private:
-        bool valid;
-        CalibrationRecord m_calibration;    //!< Camera calibration with pose information
+        cv::Mat& process(CamFrame* frame, cv::Mat& image, VisRecord* recording, bool &valid) override;
 
-        F32 m_threshold;                    //!< Threshold to apply to Sobel filter
-        U32 m_x_cells;                      //!< Number of cells to divide columns into
-        U32 m_y_cells;                      //!< Number of cells to divide rows into
+        // Transform edit parameters
+        F32 m_scale_x;
+        F32 m_scale_y;
+        cv::Point2f m_translate;
+
+        WarpRecord m_calibration;   //!< Calibration target
+        std::vector<cv::Point2f> m_object_corners;
+
+        cv::Size m_current_size;    //!< Size of the current transform
+        cv::Mat m_transform;        //!< Warp transform to perform
+        cv::Mat m_warped;           //!< Output warped image
     };
 }
 

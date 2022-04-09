@@ -3,5 +3,11 @@
     <comment>Vision pipeline stage</comment>
     <item name="FIND_CHESSBOARD" value="0"/>
     <item name="POSE_CALCULATION" value="1"/>
-    <item name="GRADIENT" value="2"/>
+    <item name="WARP_CALCULATION" value="2"/>
+    <item name="DOWNSCALE" value="3"/>
+    <item name="GAUSSIAN" value="4"/>
+    <item name="GRADIENT" value="5"/>
+    <item name="ERODE" value="6"/>
+    <item name="OTSU_THRESHOLD" value="7"/>
+    <item name="WARP" value="8"/>
 </enum>
