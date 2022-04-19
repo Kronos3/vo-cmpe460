@@ -4,6 +4,12 @@ R00:00:00 cam.STOP
 R00:00:00 cam.STREAM VIS    ; Raw camera stream goes to vision
 R00:00:00 vis.STREAM NAV    ; Vision process stream goes to Nav to control the car
 
+; Nav always streams to VideoStreamer
+; We can view the Nav frame results via Vlc
+R00:00:00 videoStreamer.HOSTNAME_PRM_SET "192.168.1.220"
+R00:00:00 videoStreamer.DISPLAY UDP
+R00:00:00 videoStreamer.OPEN
+
 ; Set up the vision pipeline
 R00:00:00 vis.CLEAR
 
@@ -33,8 +39,6 @@ R00:00:00 vis.PIPE GAUSSIAN
 ; Absolute value of gradient is used
 R00:00:00 vis.PIPE GRADIENT
 
-R00:00:00 vis.PIPE ERODE
-
 ; Calculate Otsu threshold value for the first 30 frames
 ; and then use the average of these values to perform simple
 ; binary thresholding.
@@ -42,7 +46,7 @@ R00:00:00 vis.OTSU_FRAMES_PRM_SET 30
 R00:00:00 vis.PIPE OTSU_THRESHOLD
 
 ; The actual Nav algorithm to control the car
-R00:00:00 nav.RUN SIMPLE_PID
+R00:00:00 nav.RUN DIAG_CONTOUR
 
 ; Start the stream, this starts all the other components
 R00:00:00 cam.START

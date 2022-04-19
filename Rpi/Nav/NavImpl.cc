@@ -47,14 +47,6 @@ namespace Rpi
                 frame->span.data(),
                 frame->info.stride);
 
-        // Nav doesn't care about the dimensions of the image,
-        // we can operate on the Vision pipeline's size
-//        cv::resize(full_image, m_image,
-//                   cv::Size(full_image.cols / VIS_RACE_DOWNSCALE,
-//                            full_image.rows / VIS_RACE_DOWNSCALE),
-//                   0, 0, cv::INTER_NEAREST // same as Vis
-//        );
-
         bool keep_going = m_algorithm->process(frame, full_image);
 
         if (!keep_going)
@@ -96,11 +88,13 @@ namespace Rpi
                 m_algorithm = new NavSimple(this);
                 break;
             case NavAlgorithmType::SIMPLE_PID:
-                // TODO(tumbar) Not implemented
-                m_algorithm = nullptr;
+                m_algorithm = new NavSimplePid(this);
                 break;
             case NavAlgorithmType::COMPLEX_PID:
                 m_algorithm = new NavComplexPid(this);
+                break;
+            case NavAlgorithmType::DIAG_CONTOUR:
+                m_algorithm = new NavDiagContour(this);
                 break;
             default:
                 FW_ASSERT(0 && "Invalid Nav algorithm", algorithm.e);
@@ -150,24 +144,68 @@ namespace Rpi
         Fw::ParamValid valid;
         switch(id)
         {
-            case PARAMID_SIMPLE_CENTER:
-                m_params.simple.center = paramGet_SIMPLE_CENTER(valid);
+            case PARAMID_SCAN_ROW:
+                m_params.scan.row = paramGet_SCAN_ROW(valid);
                 FW_ASSERT(valid == Fw::PARAM_DEFAULT || valid == Fw::PARAM_VALID, valid);
                 break;
-            case PARAMID_SIMPLE_P:
-                m_params.simple.turning = paramGet_SIMPLE_P(valid);
+            case PARAMID_SCAN_STEP:
+                m_params.scan.step = paramGet_SCAN_STEP(valid);
                 FW_ASSERT(valid == Fw::PARAM_DEFAULT || valid == Fw::PARAM_VALID, valid);
                 break;
-            case PARAMID_SIMPLE_ROW:
-                m_params.simple.row = paramGet_SIMPLE_ROW(valid);
+            case PARAMID_SCAN_DISCONTINUITY_THRESH_1:
+                m_params.scan.discontinuity_thresh_1 = paramGet_SCAN_DISCONTINUITY_THRESH_1(valid);
                 FW_ASSERT(valid == Fw::PARAM_DEFAULT || valid == Fw::PARAM_VALID, valid);
                 break;
-            case PARAMID_SIMPLE_THROTTLE:
-                m_params.simple.throttle = paramGet_SIMPLE_THROTTLE(valid);
+            case PARAMID_SCAN_DISCONTINUITY_THRESH_2:
+                m_params.scan.discontinuity_thresh_2 = paramGet_SCAN_DISCONTINUITY_THRESH_2(valid);
                 FW_ASSERT(valid == Fw::PARAM_DEFAULT || valid == Fw::PARAM_VALID, valid);
                 break;
-            case PARAMID_SIMPLE_CUTOFF:
-                m_params.simple.cutoff = paramGet_SIMPLE_CUTOFF(valid);
+//            case PARAMID_SIMPLE_CUTOFF:
+//                m_params.simple.cutoff = paramGet_SIMPLE_CUTOFF(valid);
+//                FW_ASSERT(valid == Fw::PARAM_DEFAULT || valid == Fw::PARAM_VALID, valid);
+//                break;
+            case PARAMID_PID_P:
+                m_params.pid.p = paramGet_PID_P(valid);
+                FW_ASSERT(valid == Fw::PARAM_DEFAULT || valid == Fw::PARAM_VALID, valid);
+                break;
+            case PARAMID_PID_I:
+                m_params.pid.i = paramGet_PID_I(valid);
+                FW_ASSERT(valid == Fw::PARAM_DEFAULT || valid == Fw::PARAM_VALID, valid);
+                break;
+            case PARAMID_PID_D:
+                m_params.pid.d = paramGet_PID_D(valid);
+                FW_ASSERT(valid == Fw::PARAM_DEFAULT || valid == Fw::PARAM_VALID, valid);
+                break;
+            case PARAMID_PID_T:
+                m_params.pid.t = paramGet_PID_T(valid);
+                FW_ASSERT(valid == Fw::PARAM_DEFAULT || valid == Fw::PARAM_VALID, valid);
+                break;
+            case PARAMID_PID_STEERING_TIME:
+                m_params.pid.steering_t = paramGet_PID_STEERING_TIME(valid);
+                FW_ASSERT(valid == Fw::PARAM_DEFAULT || valid == Fw::PARAM_VALID, valid);
+                break;
+            case PARAMID_PID_THROTTLE_TIME:
+                m_params.pid.throttle_t = paramGet_PID_THROTTLE_TIME(valid);
+                FW_ASSERT(valid == Fw::PARAM_DEFAULT || valid == Fw::PARAM_VALID, valid);
+                break;
+            case PARAMID_CONTOUR_RHO:
+                m_params.contour.rho = paramGet_CONTOUR_RHO(valid);
+                FW_ASSERT(valid == Fw::PARAM_DEFAULT || valid == Fw::PARAM_VALID, valid);
+                break;
+            case PARAMID_CONTOUR_THETA:
+                m_params.contour.theta = paramGet_CONTOUR_THETA(valid);
+                FW_ASSERT(valid == Fw::PARAM_DEFAULT || valid == Fw::PARAM_VALID, valid);
+                break;
+            case PARAMID_CONTOUR_THRESHOLD:
+                m_params.contour.threshold = paramGet_CONTOUR_THRESHOLD(valid);
+                FW_ASSERT(valid == Fw::PARAM_DEFAULT || valid == Fw::PARAM_VALID, valid);
+                break;
+            case PARAMID_CONTOUR_MIN_LINE_LENGTH:
+                m_params.contour.min_line_length = paramGet_CONTOUR_MIN_LINE_LENGTH(valid);
+                FW_ASSERT(valid == Fw::PARAM_DEFAULT || valid == Fw::PARAM_VALID, valid);
+                break;
+            case PARAMID_CONTOUR_MAX_LINE_GAP:
+                m_params.contour.max_line_gap = paramGet_CONTOUR_MAX_LINE_GAP(valid);
                 FW_ASSERT(valid == Fw::PARAM_DEFAULT || valid == Fw::PARAM_VALID, valid);
                 break;
             default:
@@ -179,11 +217,21 @@ namespace Rpi
     {
         NavComponentBase::parametersLoaded();
 
-        parameterUpdated(PARAMID_SIMPLE_CENTER);
-        parameterUpdated(PARAMID_SIMPLE_P);
-        parameterUpdated(PARAMID_SIMPLE_ROW);
-        parameterUpdated(PARAMID_SIMPLE_THROTTLE);
-        parameterUpdated(PARAMID_SIMPLE_CUTOFF);
+        parameterUpdated(PARAMID_SCAN_ROW);
+        parameterUpdated(PARAMID_SCAN_STEP);
+        parameterUpdated(PARAMID_SCAN_DISCONTINUITY_THRESH_1);
+        parameterUpdated(PARAMID_SCAN_DISCONTINUITY_THRESH_2);
+        parameterUpdated(PARAMID_PID_P);
+        parameterUpdated(PARAMID_PID_I);
+        parameterUpdated(PARAMID_PID_D);
+        parameterUpdated(PARAMID_PID_T);
+        parameterUpdated(PARAMID_PID_STEERING_TIME);
+        parameterUpdated(PARAMID_PID_THROTTLE_TIME);
+        parameterUpdated(PARAMID_CONTOUR_RHO);
+        parameterUpdated(PARAMID_CONTOUR_THETA);
+        parameterUpdated(PARAMID_CONTOUR_THRESHOLD);
+        parameterUpdated(PARAMID_CONTOUR_MIN_LINE_LENGTH);
+        parameterUpdated(PARAMID_CONTOUR_MAX_LINE_GAP);
     }
 
     void NavImpl::clear()

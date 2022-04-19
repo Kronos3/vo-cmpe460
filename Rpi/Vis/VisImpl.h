@@ -22,6 +22,7 @@ namespace Rpi
         void PIPE_cmdHandler(U32 opCode, U32 cmdSeq, Rpi::VisPipe stage) override;
         void RECORD_FILE_cmdHandler(U32 opCode, U32 cmdSeq, VisRecordType record_type, U32 frame_count, const Fw::CmdStringArg &filename) override;
         void RECORD_WAIT_cmdHandler(U32 opCode, U32 cmdSeq) override;
+        void MASK_QUAD_cmdHandler(U32 opCode, U32 cmdSeq, U8 color, F32 c1x, F32 c1y, F32 c2x, F32 c2y, F32 c3x, F32 c3y, F32 c4x, F32 c4y) override;
 
     PRIVATE:
         void clear_recording();

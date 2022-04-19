@@ -3,8 +3,6 @@ R00:00:00 cam.STOP
 ; Set up the frame pathing
 R00:00:00 cam.STREAM VIS                ; Raw camera stream goes to vision
 R00:00:00 vis.STREAM VIDEO_STREAMER     ; Vision annotated stream goes to the screen/udp
-R00:00:00 videoStreamer.HOSTNAME_PRM_SET "192.168.1.220"
-R00:00:00 videoStreamer.OPEN
 
 ; Set up the vision pipeline
 R00:00:00 vis.CLEAR

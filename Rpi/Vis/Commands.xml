@@ -55,4 +55,24 @@
             Waits until recording has finished
         </comment>
     </command>
+    <command kind="sync" opcode="5" mnemonic="MASK_QUAD">
+        <comment>
+            Add a pipeline stage to mask a quadrilateral a certain color
+        </comment>
+        <args>
+            <arg name="color" type="U8"/>
+
+            <arg name="c1x" type="F32"/>
+            <arg name="c1y" type="F32"/>
+
+            <arg name="c2x" type="F32"/>
+            <arg name="c2y" type="F32"/>
+
+            <arg name="c3x" type="F32"/>
+            <arg name="c3y" type="F32"/>
+
+            <arg name="c4x" type="F32"/>
+            <arg name="c4y" type="F32"/>
+        </args>
+    </command>
 </commands>
