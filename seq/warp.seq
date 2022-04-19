@@ -2,6 +2,9 @@ R00:00:00 cam.STOP
 
 R00:00:00 vis.CLEAR
 
+R00:00:00 cam.STREAM VIS
+R00:00:00 vis.STREAM VIDEO_STREAMER
+
 ; Set up a pipeline to perform the warping
 R00:00:00 vis.DOWNSCALE_PRM_SET 8
 R00:00:00 vis.PIPE DOWNSCALE

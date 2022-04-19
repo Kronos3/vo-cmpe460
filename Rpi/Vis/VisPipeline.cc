@@ -413,4 +413,16 @@ namespace Rpi
 
         return m_warped;
     }
+
+    cv::Mat &VisMaskQuad::process(CamFrame* frame, cv::Mat &image, VisRecord* recording, bool &valid)
+    {
+        std::vector<cv::Point> pts;
+        pts.emplace_back(m_c1.x * (F32)image.cols, m_c1.y * (F32)image.rows);
+        pts.emplace_back(m_c2.x * (F32)image.cols, m_c2.y * (F32)image.rows);
+        pts.emplace_back(m_c3.x * (F32)image.cols, m_c3.y * (F32)image.rows);
+        pts.emplace_back(m_c4.x * (F32)image.cols, m_c4.y * (F32)image.rows);
+
+        cv::fillPoly(image, pts, cv::Scalar(m_color, m_color, m_color));
+        return image;
+    }
 }

@@ -181,6 +181,25 @@ namespace Rpi
         cv::Mat m_transform;        //!< Warp transform to perform
         cv::Mat m_warped;           //!< Output warped image
     };
+
+    class VisMaskQuad : public VisPipelineStage
+    {
+    public:
+        explicit VisMaskQuad(cv::Point2f c1, cv::Point2f c2,
+                             cv::Point2f c3, cv::Point2f c4,
+                             U8 color)
+        : m_c1(c1), m_c2(c2), m_c3(c3), m_c4(c4), m_color(color)
+        {}
+
+    private:
+        cv::Mat & process(CamFrame *frame, cv::Mat &image, VisRecord *recording, bool &valid) override;
+
+        cv::Point2f m_c1;
+        cv::Point2f m_c2;
+        cv::Point2f m_c3;
+        cv::Point2f m_c4;
+        U8 m_color;
+    };
 }
 
 #endif //VO_CMPE460_VISPIPELINE_H

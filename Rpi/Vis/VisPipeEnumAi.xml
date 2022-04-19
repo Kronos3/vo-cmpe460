@@ -10,4 +10,5 @@
     <item name="ERODE" value="6"/>
     <item name="OTSU_THRESHOLD" value="7"/>
     <item name="WARP" value="8"/>
+    <item name="MASK_QUAD" value="9"/>
 </enum>

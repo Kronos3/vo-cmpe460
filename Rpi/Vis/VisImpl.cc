@@ -268,6 +268,9 @@ namespace Rpi
                 }
                 break;
             }
+            case VisPipe::MASK_QUAD:
+                stage_ptr = nullptr;
+                break;
             default:
                 FW_ASSERT(0 && "Invalid stage", stage.e);
         }
@@ -367,5 +370,41 @@ namespace Rpi
         m_recording = nullptr;
         m_is_file_recording = false;
         m_recording_file = "";
+    }
+
+    void VisImpl::MASK_QUAD_cmdHandler(U32 opCode, U32 cmdSeq,
+                                       U8 color,
+                                       F32 c1x, F32 c1y,
+                                       F32 c2x, F32 c2y,
+                                       F32 c3x, F32 c3y,
+                                       F32 c4x, F32 c4y)
+    {
+        auto* stage_ptr = new VisMaskQuad(
+                cv::Point2f(c1x, c1y),
+                cv::Point2f(c2x, c2y),
+                cv::Point2f(c3x, c3y),
+                cv::Point2f(c4x, c4y),
+                color
+                );
+
+        m_state_mutex.lock();
+        if (!m_pipeline)
+        {
+            // This is the first item
+            // We can add it directly to the member
+            FW_ASSERT(!m_pipeline_last);
+            m_pipeline = std::shared_ptr<VisPipelineStage>(stage_ptr);
+        }
+        else
+        {
+            FW_ASSERT(m_pipeline_last);
+            m_pipeline_last->chain(stage_ptr);
+        }
+
+        log_ACTIVITY_LO_VisPipe(VisPipe::MASK_QUAD);
+        m_pipeline_last = stage_ptr;
+
+        m_state_mutex.unLock();
+        cmdResponse_out(opCode, cmdSeq, Fw::COMMAND_OK);
     }
 }
