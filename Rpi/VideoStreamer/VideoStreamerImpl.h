@@ -3,16 +3,15 @@
 #define VO_CMPE460_VIDEOSTREAMERIMPL_H
 
 #include <Rpi/VideoStreamer/VideoStreamerComponentAc.hpp>
-//#include <Rpi/VideoStreamer/PracticalSocket.h>
-#include <opencv2/core/mat.hpp>
-#include <vector>
-#include <preview/preview.hpp>
-#include <queue>
-#include "encoder/encoder.hpp"
-#include "output/output.hpp"
 
-//#include "bcm_host.h"
-//#include "EGL/egl.h"
+#include <preview/preview.hpp>
+#include <encoder/encoder.hpp>
+#include <output/output.hpp>
+
+#include <Fw/Types/String.hpp>
+
+#include <vector>
+#include <queue>
 
 namespace Rpi
 {
@@ -33,6 +32,7 @@ namespace Rpi
         void frame_handler(NATIVE_INT_TYPE portNum, Rpi::CamFrame* frame) override;
         void OPEN_cmdHandler(U32 opCode, U32 cmdSeq) override;
         void DISPLAY_cmdHandler(U32 opCode, U32 cmdSeq, DisplayLocation where) override;
+        void CAPTURE_cmdHandler(U32 opCode, U32 cmdSeq, const Fw::CmdStringArg &destination) override;
 
     PRIVATE:
         void clean();
@@ -45,8 +45,13 @@ namespace Rpi
         std::queue<CamFrame*> encoding_buffers;
         Encoder* m_encoder;
         Output* m_net;
-        cv::Mat m_compressed_frame;     //!< Resized frame given video parameters
-        std::vector<U8> m_encoded;      //!< Encoded JPEG
+
+        struct {
+            bool requesting;
+            Fw::String destination;
+            U32 opcode;
+            U32 cmdSeq;
+        } m_capture;
 
         Fw::Time m_last_frame;          //!< Last sent frame for calculate frame rate
         U32 tlm_packets_sent;

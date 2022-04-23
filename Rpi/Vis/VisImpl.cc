@@ -51,8 +51,9 @@ namespace Rpi
         // If we don't have a pipeline, Vis is just a passthrough
         if (!pipe_start)
         {
+            frameOut_out(listener.e, frame);
+
             // Tell the frame pipe we are ready for another frame
-            frame->decref();
             ready_out(0, 0);
             return;
         }

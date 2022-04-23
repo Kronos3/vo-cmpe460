@@ -6,6 +6,8 @@
 #include <preview/preview.hpp>
 #include <functional>
 
+#include <opencv2/imgcodecs.hpp>
+
 namespace Rpi
 {
     VideoStreamerImpl::VideoStreamerImpl(const char* compName)
@@ -15,6 +17,7 @@ namespace Rpi
       m_preview(nullptr),
       m_encoder(nullptr),
       m_net(nullptr),
+      m_capture{.requesting=false},
       tlm_packets_sent(0),
       tlm_total_frames(0)
     {
@@ -105,6 +108,44 @@ namespace Rpi
             m_showing = frame;
         }
 
+        if (m_capture.requesting)
+        {
+            cv::Mat image((I32)frame->info.height,
+                          (I32)frame->info.width,
+                          CV_8U,
+                          frame->span.data(),
+                          frame->info.stride);
+
+            bool result;
+            try
+            {
+                result = cv::imwrite(m_capture.destination.toChar(), image);
+            }
+            catch (const cv::Exception& ex)
+            {
+                Fw::LogStringArg error_str(ex.what());
+                log_WARNING_HI_ImageCaptureEncodeFailed(error_str);
+                result = false;
+            }
+
+            Fw::LogStringArg destination_log(m_capture.destination);
+            if (result)
+            {
+                log_ACTIVITY_HI_ImageCaptured(destination_log);
+            }
+            else
+            {
+                log_WARNING_HI_ImageCaptureSaveFailed(destination_log);
+            }
+
+            // Reply to the command
+            cmdResponse_out(m_capture.opcode, m_capture.cmdSeq,
+                            result ? Fw::COMMAND_OK : Fw::COMMAND_EXECUTION_ERROR);
+
+            // Clear the capture request
+            m_capture.requesting = false;
+        }
+
         frame->decref();
     }
 
@@ -171,5 +212,23 @@ namespace Rpi
             encoding_buffers.front()->decref();
             encoding_buffers.pop();
         }
+    }
+
+    void VideoStreamerImpl::CAPTURE_cmdHandler(U32 opCode, U32 cmdSeq, const Fw::CmdStringArg &destination)
+    {
+        // Check if there is a running image request
+        if (m_capture.requesting)
+        {
+            cmdResponse_out(opCode, cmdSeq, Fw::COMMAND_BUSY);
+            return;
+        }
+
+        // Initial a capture request
+        m_capture.requesting = true;
+        m_capture.destination = destination;
+        m_capture.opcode = opCode;
+        m_capture.cmdSeq = cmdSeq;
+
+        // Replies will be sent one the image has saved to disk or failed
     }
 }

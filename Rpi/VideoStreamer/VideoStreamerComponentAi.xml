@@ -32,6 +32,12 @@
                 </arg>
             </args>
         </command>
+        <command kind="async" opcode="12" mnemonic="CAPTURE">
+            <comment>Capture the next image frame and place it into a file</comment>
+            <args>
+                <arg name="destination" type="string" size="80"/>
+            </args>
+        </command>
     </commands>
 
     <telemetry>
@@ -45,5 +51,26 @@
             <comment>Number of UDP packets send to server</comment>
         </channel>
     </telemetry>
+
+    <events>
+        <event id="1" name="ImageCaptured" severity="ACTIVITY_HI"
+               format_string="Image frame has been saved to %s">
+            <args>
+                <arg name="filename" type="string" size="80"/>
+            </args>
+        </event>
+        <event id="2" name="ImageCaptureEncodeFailed" severity="WARNING_HI"
+               format_string="Failed to encode image frame: %s">
+            <args>
+                <arg name="error" type="string" size="80"/>
+            </args>
+        </event>
+        <event id="3" name="ImageCaptureSaveFailed" severity="WARNING_HI"
+               format_string="Failed to save image frame to %s">
+            <args>
+                <arg name="filename" type="string" size="80"/>
+            </args>
+        </event>
+    </events>
 
 </component>

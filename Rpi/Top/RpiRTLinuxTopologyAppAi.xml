@@ -370,10 +370,10 @@
         <source component="nav" port="Log" type="Log" num="0"/>
         <target component="eventLogger" port="LogRecv" type="Log" num="0"/>
     </connection>
-    <!--    <connection name="videoStreamer__eventLogger_LogRecv">-->
-    <!--        <source component="videoStreamer" port="Log" type="Log" num="0"/>-->
-    <!--        <target component="eventLogger" port="LogRecv" type="Log" num="0"/>-->
-    <!--    </connection>-->
+    <connection name="videoStreamer__eventLogger_LogRecv">
+        <source component="videoStreamer" port="Log" type="Log" num="0"/>
+        <target component="eventLogger" port="LogRecv" type="Log" num="0"/>
+    </connection>
     <connection name="serialDriver__eventLogger_LogRecv">
         <source component="serialDriver" port="Log" type="Log" num="0"/>
         <target component="eventLogger" port="LogRecv" type="Log" num="0"/>
