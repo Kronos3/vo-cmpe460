@@ -15,15 +15,30 @@ namespace Rpi
         VisPipelineStage();
         virtual ~VisPipelineStage();
 
+        /**
+         * Run a chain of pipeline stages
+         * @param frame original raw camera frame
+         * @param image converted OpenCV image matrix
+         * @param recording a recording to pass between stages (or nullptr)
+         * @param valid (output) did the pipeline succeed?
+         * @return transformed image frame
+         */
         cv::Mat& run(CamFrame* frame, cv::Mat& image, VisRecord* recording, bool &valid);
+
+        /**
+         * Connect a pipeline stage to this one
+         * @param next the next stage
+         */
         void chain(VisPipelineStage* next);
 
     protected:
 
         /**
-         * Apply an in place transformation
+         * Apply a transformation to an image
+         * @param frame original raw camera frame
          * @param image the image to transform
-         * @param recording currently running recording
+         * @param recording currently running recording to pass information between pipeline stages
+         * @param valid (output) did the pipeline stage succeed?
          * @return transformed image
          */
         virtual cv::Mat& process(CamFrame* frame, cv::Mat& image, VisRecord* recording, bool &valid) = 0;
